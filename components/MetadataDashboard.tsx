@@ -23,9 +23,7 @@ interface DistributionStats {
   total: number;
 }
 
-interface FactStatusStats {
-  [key in FactStatus]: number;
-}
+type FactStatusStats = Record<FactStatus, number>;
 
 interface SourceStats {
   totalSources: number;
@@ -62,9 +60,9 @@ function calculateDistribution(scenes: Scene[] | undefined): DistributionStats {
   return stats;
 }
 
-function calculateFactStatus(scenes: Scene[] | undefined): Partial<FactStatusStats> {
+function calculateFactStatus(scenes: Scene[] | undefined): FactStatusStats {
   const scenes_ = scenes || [];
-  const stats: Partial<FactStatusStats> = {
+  const stats: FactStatusStats = {
     FACT: 0,
     SUPPORTED: 0,
     TESTIMONY: 0,
@@ -77,7 +75,7 @@ function calculateFactStatus(scenes: Scene[] | undefined): Partial<FactStatusSta
   for (const scene of scenes_) {
     const status = scene.factStatus || "UNVERIFIED";
     if (status in stats) {
-      stats[status as FactStatus]!++;
+      stats[status as FactStatus]++;
     }
   }
 
