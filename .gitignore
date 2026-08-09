@@ -1,0 +1,11 @@
+node_modules
+.next
+out
+dist/
+.env.local
+.env*.local
+*.log
+data/
+public/renders/
+public/generated/
+*.tsbuildinfo
