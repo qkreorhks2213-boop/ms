@@ -1,0 +1,28 @@
+{
+  "timestamp": "2026-08-09T15:39:28.665Z",
+  "stages": {
+    "image_generation": {
+      "status": "PASS",
+      "timestamp": "2026-08-09T15:39:29.077Z",
+      "path": "/home/user/-12/test-output/test-scene.png",
+      "type": "placeholder"
+    },
+    "audio_generation": {
+      "status": "PASS",
+      "timestamp": "2026-08-09T15:39:29.130Z",
+      "path": "/home/user/-12/test-output/test-scene.wav",
+      "duration": 6,
+      "size": 24200
+    },
+    "video_render": {
+      "status": "PASS",
+      "timestamp": "2026-08-09T15:39:33.239Z",
+      "path": "/home/user/-12/test-output/test-scene.mp4",
+      "duration": 6,
+      "size": 18754
+    }
+  },
+  "errors": [],
+  "output": "/home/user/-12/test-output/test-scene.mp4",
+  "overallStatus": "PASS"
+}

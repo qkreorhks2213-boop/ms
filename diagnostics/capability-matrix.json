@@ -1,0 +1,59 @@
+{
+  "timestamp": "2026-08-09T15:38:24.306Z",
+  "capabilities": {
+    "Web Research": {
+      "status": "AVAILABLE (MOCK)",
+      "reason": "Mock mode enabled",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "Fact Check": {
+      "status": "AVAILABLE",
+      "reason": "JSON parsing works",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "LLM Script": {
+      "status": "AVAILABLE (MOCK)",
+      "reason": "Mock mode enabled",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "Image Search": {
+      "status": "AVAILABLE (MOCK)",
+      "reason": "Mock mode enabled",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "TTS": {
+      "status": "AVAILABLE (MOCK)",
+      "reason": "Mock mode enabled",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "FFmpeg": {
+      "status": "AVAILABLE",
+      "reason": "FFmpeg found",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "Project Storage": {
+      "status": "AVAILABLE",
+      "reason": "File I/O working",
+      "autoFixable": false,
+      "userAction": "none"
+    },
+    "Mock Mode": {
+      "status": "ENABLED",
+      "reason": "Mock mode is enabled",
+      "autoFixable": false,
+      "userAction": "none"
+    }
+  },
+  "summary": {
+    "total": 8,
+    "available": 7,
+    "blocked": 0,
+    "deferred": 0
+  }
+}

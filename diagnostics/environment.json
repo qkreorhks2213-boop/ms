@@ -1,0 +1,69 @@
+{
+  "timestamp": "2026-08-09T15:38:12.684Z",
+  "status": "WARN",
+  "tools": {
+    "node": {
+      "available": true,
+      "version": "v22.22.2"
+    },
+    "npm": {
+      "available": true,
+      "version": "10.9.7"
+    },
+    "git": {
+      "available": true,
+      "version": "git version 2.43.0"
+    },
+    "ffmpeg": {
+      "available": false,
+      "error": "Command failed: ffmpeg --version\n/bin/sh: 1: ffmpeg: not found\n"
+    },
+    "ffprobe": {
+      "available": false,
+      "error": "Command failed: ffprobe --version\n/bin/sh: 1: ffprobe: not found\n"
+    },
+    "python": {
+      "available": true,
+      "version": "Python 3.11.15"
+    }
+  },
+  "environment": {
+    "NEXTAUTH_SECRET": "MISSING (Required)",
+    "NEXTAUTH_URL": "MISSING (Required)",
+    "GOOGLE_CLIENT_ID": "MISSING (Required)",
+    "GOOGLE_CLIENT_SECRET": "MISSING (Required)",
+    "OLLAMA_HOST": "MISSING",
+    "OLLAMA_MODEL": "MISSING",
+    "OPENAI_API_KEY": "MISSING",
+    "ANTHROPIC_API_KEY": "MISSING",
+    "GOOGLE_CSE_ID": "MISSING",
+    "GOOGLE_CSE_KEY": "MISSING",
+    "MYSTERY_MOCK_MODE": "MISSING"
+  },
+  "packages": {
+    "next": {
+      "inPackageJson": true,
+      "isInstalled": true
+    },
+    "@ffmpeg-installer/ffmpeg": {
+      "inPackageJson": true,
+      "isInstalled": true
+    },
+    "@ffprobe-installer/ffprobe": {
+      "inPackageJson": true,
+      "isInstalled": true
+    },
+    "fluent-ffmpeg": {
+      "inPackageJson": true,
+      "isInstalled": true
+    }
+  },
+  "internet": true,
+  "readiness": "PARTIAL",
+  "issues": [
+    "Missing required env var: NEXTAUTH_SECRET",
+    "Missing required env var: NEXTAUTH_URL",
+    "Missing required env var: GOOGLE_CLIENT_ID",
+    "Missing required env var: GOOGLE_CLIENT_SECRET"
+  ]
+}
