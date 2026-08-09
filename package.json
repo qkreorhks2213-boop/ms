@@ -19,7 +19,10 @@
     "capability": "node scripts/capability-check.js",
     "dry-run": "node scripts/dry-run.js",
     "test:scene": "node scripts/test-scene.js",
-    "test:short": "node scripts/test-short.js"
+    "test:short": "node scripts/test-short.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
   },
   "build": {
     "appId": "com.economicdocustudio.app",
@@ -60,6 +63,7 @@
   },
   "devDependencies": {
     "@types/fluent-ffmpeg": "^2.1.24",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
@@ -68,6 +72,8 @@
     "electron-builder": "^26.15.3",
     "eslint": "^8.57.0",
     "eslint-config-next": "14.2.35",
+    "jest": "^30.4.2",
+    "ts-jest": "^29.4.12",
     "typescript": "^5.5.3"
   }
 }

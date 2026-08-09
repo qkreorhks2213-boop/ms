@@ -25,6 +25,16 @@ export function inferVisualOrigin(
     return "AI_RECONSTRUCTION";
   }
 
+  // 아카이브 자료 (기록 검사 전에 먼저 확인)
+  if (
+    text.includes("사진") ||
+    text.includes("아카이브") ||
+    text.includes("자료") ||
+    text.includes("문서")
+  ) {
+    return "REAL_ARCHIVE_PHOTO";
+  }
+
   // 실제 뉴스/영상
   if (
     text.includes("보도") ||
@@ -35,17 +45,6 @@ export function inferVisualOrigin(
     text.includes("필름")
   ) {
     return "REAL_NEWS";
-  }
-
-  // 아카이브 자료
-  if (
-    text.includes("사진") ||
-    text.includes("아카이브") ||
-    text.includes("기록") ||
-    text.includes("자료") ||
-    text.includes("문서")
-  ) {
-    return "REAL_ARCHIVE_PHOTO";
   }
 
   // 증거/다이어그램
