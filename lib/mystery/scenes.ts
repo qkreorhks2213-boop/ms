@@ -158,6 +158,11 @@ export async function generateScenes(projectId: string, project: MysteryProject)
         visualLabel: visualPlan.visualLabel,
         visualStatus: "pending",
         narration: [],
+        // 섹션에서 메타데이터 상속
+        visualOrigin: section.visualOrigin,
+        factStatus: section.factStatus,
+        sources: section.sources,
+        aiReconstructionExplained: section.needsDisclaimer,
       };
       scenes.push(scene);
       sceneOrder++;

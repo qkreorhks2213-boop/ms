@@ -82,6 +82,7 @@ interface ClipPlan {
   zoomAmount: number;
   captions: CaptionCue[];
   sourceLabel?: string;
+  aiDisclaimerText?: string; // AI 재현 표시 텍스트
 }
 
 function buildHookClipPlans(project: MysteryProject): ClipPlan[] {
@@ -111,6 +112,7 @@ function buildHookClipPlans(project: MysteryProject): ClipPlan[] {
         durationSeconds: perCut,
         zoomAmount: HOOK_ZOOM_AMOUNT,
         captions: sliceCaptionsForWindow(hookCues, cursor, cursor + perCut),
+        aiDisclaimerText: scene.aiReconstructionExplained ? "AI 재현" : undefined,
       });
       cursor += perCut;
     }
@@ -139,6 +141,7 @@ function buildSceneClipPlans(scenes: Scene[]): ClipPlan[] {
       zoomAmount: DATA_VISUAL_TYPES.includes(s.visualType) ? DATA_CARD_ZOOM_AMOUNT : BODY_ZOOM_AMOUNT,
       captions: buildCaptionCues(s.narration),
       sourceLabel: s.visualSourceLabel,
+      aiDisclaimerText: s.aiReconstructionExplained ? "AI 재현" : undefined,
     }));
 }
 
@@ -171,6 +174,15 @@ function sourceLabelFilter(label: string, fontPath: string, workDir: string, cli
   return `drawtext=fontfile='${safeFont}':textfile='${safeFile}':expansion=none:fontsize=24:fontcolor=0xc8cad0:bordercolor=black:borderw=3:x=w-text_w-30:y=h-48`;
 }
 
+/** 화면 우측 상단에 AI 재현 표시를 낸다. */
+function aiDisclaimerFilter(label: string, fontPath: string, workDir: string, clipId: string): string {
+  const safeFont = escapeFfmpegPath(fontPath);
+  const file = path.join(workDir, `ai_${clipId}.txt`);
+  fs.writeFileSync(file, label.replace(/\r?\n/g, " ").trim(), "utf-8");
+  const safeFile = escapeFfmpegPath(file);
+  return `drawtext=fontfile='${safeFont}':textfile='${safeFile}':expansion=none:fontsize=24:fontcolor=0xffb3a7:bordercolor=0x8b4513:borderw=3:x=w-text_w-30:y=30`;
+}
+
 async function renderClipPlan(params: {
   plan: ClipPlan;
   fontPath: string | null;
@@ -196,6 +208,9 @@ async function renderClipPlan(params: {
   }
   videoFilters.push("setsar=1");
 
+  if (fontPath && plan.aiDisclaimerText) {
+    videoFilters.push(aiDisclaimerFilter(plan.aiDisclaimerText, fontPath, workDir, plan.id));
+  }
   if (fontPath && plan.sourceLabel) {
     videoFilters.push(sourceLabelFilter(plan.sourceLabel, fontPath, workDir, plan.id));
   }

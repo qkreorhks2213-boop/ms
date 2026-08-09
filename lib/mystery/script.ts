@@ -1,6 +1,7 @@
 import { generateText, generateJson } from "../common/localAI";
 import { formatResearchForPrompt } from "./research";
 import { updateProject } from "./store";
+import { enrichSectionsWithMetadata } from "./scriptAnalysis";
 import {
   CHARS_PER_MINUTE,
   type MysteryInput,
@@ -270,10 +271,13 @@ export async function generateScript(projectId: string, project: MysteryProject)
   const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
   const estimatedMinutes = totalChars / CHARS_PER_MINUTE / 60;
 
+  // 섹션 메타데이터 보강 (visualOrigin, factStatus 추론)
+  const enrichedSections = enrichSectionsWithMetadata(sections);
+
   const script: MysteryScript = {
     title: `${topic} - 미스터리 다큐`,
     outline: outlines.join("\n"),
-    sections,
+    sections: enrichedSections,
     totalCharCount: totalChars,
     estimatedMinutes,
   };
