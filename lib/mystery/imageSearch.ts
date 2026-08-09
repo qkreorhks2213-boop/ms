@@ -16,6 +16,10 @@ export interface ImageSearchResult {
   imageUrl: string;
   contextUrl: string;
   title: string;
+  source?: "wikimedia" | "archive" | "government" | "museum" | "google";
+  publisher?: string;
+  date?: string;
+  license?: string;
 }
 
 export function isImageSearchConfigured(): boolean {
@@ -100,4 +104,317 @@ export async function downloadImage(url: string): Promise<Buffer> {
   if (!res.ok) throw new Error(`이미지 다운로드 실패(HTTP ${res.status}): ${url}`);
   const arrayBuffer = await res.arrayBuffer();
   return Buffer.from(arrayBuffer);
+}
+
+/**
+ * Archive.org에서 역사 자료 검색.
+ *
+ * 신문, 사진, 문서 등 역사 아카이브 자료를 검색한다.
+ */
+export async function searchArchiveOrgImage(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://archive.org/advancedsearch.php");
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("fl", ["identifier", "title", "date", "mediatype"].join(","));
+    searchUrl.searchParams.set("output", "json");
+    searchUrl.searchParams.set("rows", "1");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const doc = data?.response?.docs?.[0];
+    if (!doc) return null;
+
+    // Archive.org에서 이미지 URL 구성
+    const imageUrl = `https://archive.org/download/${doc.identifier}/`;
+    const contextUrl = `https://archive.org/details/${doc.identifier}/`;
+
+    return {
+      imageUrl,
+      contextUrl,
+      title: doc.title || query,
+      source: "archive",
+      date: doc.date,
+      publisher: "archive.org",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 정부 오픈 데이터에서 자료 검색.
+ *
+ * 미국 국립기록청(NARA), 영국 국립기록보관소 등에서 검색.
+ */
+export async function searchGovernmentArchives(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    // 미국 NARA 검색
+    const nara = await searchNARA(query);
+    if (nara) return nara;
+
+    // 영국 국립기록보관소
+    const ukna = await searchUKNA(query);
+    if (ukna) return ukna;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * NARA (National Archives and Records Administration) 검색.
+ */
+async function searchNARA(query: string): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://catalog.archives.gov/api/v1/");
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("rows", "1");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const doc = data?.opaResponse?.docs?.[0];
+    if (!doc) return null;
+
+    // 썸네일 이미지 구성
+    const imageUrl = doc.thumbnail || `https://catalog.archives.gov/thumb/${doc.naId}`;
+    const contextUrl = `https://catalog.archives.gov/id/${doc.naId}`;
+
+    return {
+      imageUrl,
+      contextUrl,
+      title: doc.title || query,
+      source: "government",
+      date: doc.createdAt,
+      publisher: "National Archives (US)",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 영국 국립기록보관소 검색.
+ */
+async function searchUKNA(query: string): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://discovery.nationalarchives.gov.uk/api/search");
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("rows", "1");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const doc = data?.hits?.hits?.[0];
+    if (!doc) return null;
+
+    const source = doc._source;
+    return {
+      imageUrl: source.image_url || "",
+      contextUrl: `https://discovery.nationalarchives.gov.uk/details/r/${source.reference}`,
+      title: source.title || query,
+      source: "government",
+      date: source.date,
+      publisher: "The National Archives (UK)",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 박물관 API에서 검색.
+ *
+ * 스미소니언, 대영박물관 등의 개방형 수집품 검색.
+ */
+export async function searchMuseumArchives(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    // 스미소니언 검색
+    const smithsonian = await searchSmithsonian(query);
+    if (smithsonian) return smithsonian;
+
+    // 대영박물관
+    const british = await searchBritishMuseum(query);
+    if (british) return british;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 스미소니언 박물관 검색.
+ */
+async function searchSmithsonian(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://api.si.edu/openaccess/api/v1.0/search");
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("api_key", process.env.SMITHSONIAN_API_KEY || "DEMO_KEY");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const item = data?.response?.docs?.[0];
+    if (!item) return null;
+
+    const imageUrl = item.images?.[0]?.thumbnail || "";
+    const contextUrl = item.url || "";
+
+    return {
+      imageUrl,
+      contextUrl,
+      title: item.title || query,
+      source: "museum",
+      date: item.date,
+      publisher: "Smithsonian Institution",
+      license: item.rights || "CC0",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 대영박물관 검색.
+ */
+async function searchBritishMuseum(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://collection.britishmuseum.org/api/search");
+    searchUrl.searchParams.set("q", query);
+    searchUrl.searchParams.set("limit", "1");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const object = data?.results?.[0];
+    if (!object) return null;
+
+    const imageUrl = object.image || "";
+    const contextUrl = object.url || "";
+
+    return {
+      imageUrl,
+      contextUrl,
+      title: object.title || query,
+      source: "museum",
+      date: object.date_period || "",
+      publisher: "The British Museum",
+      license: "CC BY-NC-SA 4.0",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 신문 아카이브에서 검색.
+ */
+export async function searchNewspaperArchives(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    // Chronicling America (미국 신문)
+    const chronicling = await searchChroniclingAmerica(query);
+    if (chronicling) return chronicling;
+
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Chronicling America에서 신문 검색.
+ */
+async function searchChroniclingAmerica(
+  query: string
+): Promise<ImageSearchResult | null> {
+  try {
+    const searchUrl = new URL("https://chroniclingamerica.loc.gov/search/pages/results/");
+    searchUrl.searchParams.set("andtext", query);
+    searchUrl.searchParams.set("format", "json");
+    searchUrl.searchParams.set("rows", "1");
+
+    const res = await fetch(searchUrl.toString());
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    const item = data?.items?.[0];
+    if (!item) return null;
+
+    return {
+      imageUrl: item.jp2 || "",
+      contextUrl: item.id || "",
+      title: item.title || query,
+      source: "archive",
+      date: item.date,
+      publisher: `${item.newspaper_title} (${item.state})`,
+      license: "Public Domain",
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * 다중 소스에서 검색하고 결과를 통합.
+ *
+ * 신뢰도 순서:
+ * 1. 정부 아카이브
+ * 2. 박물관
+ * 3. 신문 아카이브
+ * 4. Archive.org
+ * 5. Wikimedia
+ */
+export async function searchRealAssets(
+  query: string
+): Promise<ImageSearchResult[]> {
+  const results: ImageSearchResult[] = [];
+
+  // 병렬로 모든 소스에서 검색
+  const [government, museum, newspaper, archive, wikimedia] =
+    await Promise.allSettled([
+      searchGovernmentArchives(query),
+      searchMuseumArchives(query),
+      searchNewspaperArchives(query),
+      searchArchiveOrgImage(query),
+      searchWikimediaImage(query),
+    ]);
+
+  // 결과 수집 (실패해도 계속 진행)
+  if (government.status === "fulfilled" && government.value) {
+    results.push(government.value);
+  }
+  if (museum.status === "fulfilled" && museum.value) {
+    results.push(museum.value);
+  }
+  if (newspaper.status === "fulfilled" && newspaper.value) {
+    results.push(newspaper.value);
+  }
+  if (archive.status === "fulfilled" && archive.value) {
+    results.push(archive.value);
+  }
+  if (wikimedia.status === "fulfilled" && wikimedia.value) {
+    results.push(wikimedia.value);
+  }
+
+  return results;
 }
