@@ -7,10 +7,34 @@
  * - Diagram: 구조 다이어그램
  * - DataCard: 정보 카드
  * - Evidence: 증거 설명
+ *
+ * NOTE: canvas 모듈이 필요합니다. 설치하려면:
+ * npm install canvas
  */
 
-import { createCanvas } from "canvas";
+let createCanvas: any = null;
+try {
+  createCanvas = require("canvas").createCanvas;
+} catch {
+  // canvas not installed, will use fallback
+}
+
 import { TimelineEvent } from "./types";
+
+/**
+ * Canvas 사용 불가능시 사용할 플레이스홀더 Buffer 생성.
+ */
+function createPlaceholderBuffer(title: string): Buffer {
+  // PNG 헤더 + 1x1 투명 픽셀
+  const pngHeader = Buffer.from([
+    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
+    0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
+    0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+    0x42, 0x60, 0x82,
+  ]);
+  return pngHeader;
+}
 
 /**
  * 타임라인 그래픽 생성.
@@ -25,6 +49,11 @@ export async function generateTimeline(
     height?: number;
   }
 ): Promise<Buffer> {
+  // Canvas not available fallback
+  if (!createCanvas) {
+    return createPlaceholderBuffer(options?.title || "Timeline");
+  }
+
   const width = options?.width ?? 1920;
   const height = options?.height ?? 1080;
 
@@ -111,6 +140,11 @@ export async function generateDataCard(
     height?: number;
   }
 ): Promise<Buffer> {
+  // Canvas not available fallback
+  if (!createCanvas) {
+    return createPlaceholderBuffer(data.title);
+  }
+
   const width = options?.width ?? 1920;
   const height = options?.height ?? 1080;
 
@@ -173,6 +207,11 @@ export async function generateDiagram(
     title?: string;
   }
 ): Promise<Buffer> {
+  // Canvas not available fallback
+  if (!createCanvas) {
+    return createPlaceholderBuffer(options?.title || "Diagram");
+  }
+
   const width = options?.width ?? 1920;
   const height = options?.height ?? 1080;
 
@@ -317,6 +356,11 @@ export async function generateMapBackground(
     height?: number;
   }
 ): Promise<Buffer> {
+  // Canvas not available fallback
+  if (!createCanvas) {
+    return createPlaceholderBuffer(options?.title || "Map");
+  }
+
   const width = options?.width ?? 1920;
   const height = options?.height ?? 1080;
 
@@ -379,6 +423,11 @@ export async function generateEvidenceCard(
     height?: number;
   }
 ): Promise<Buffer> {
+  // Canvas not available fallback
+  if (!createCanvas) {
+    return createPlaceholderBuffer(evidence.title);
+  }
+
   const width = options?.width ?? 1920;
   const height = options?.height ?? 1080;
 

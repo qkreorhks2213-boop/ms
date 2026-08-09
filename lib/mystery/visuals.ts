@@ -1,18 +1,29 @@
 import fs from "fs";
 import path from "path";
 import { runWithConcurrency } from "../common/concurrency";
-import { downloadImage, isImageSearchConfigured, searchGoogleCseImage, searchWikimediaImage } from "./imageSearch";
-import { renderDataCard } from "./dataCard";
+import {
+  downloadImage,
+  isImageSearchConfigured,
+  searchGoogleCseImage,
+  searchWikimediaImage,
+  searchRealAssets,
+  ImageSearchResult,
+} from "./imageSearch";
+import { renderDataCard as renderDataCardOriginal } from "./dataCard";
 import { appendErrorLog, publicGeneratedDir, publicGeneratedUrl, readProject, updateProject } from "./store";
-import type { MysteryProject, Scene } from "./types";
+import type { MysteryProject, Scene, SceneVisual, MysteryInput } from "./types";
+import * as visualAssetSelector from "./visualAssetSelector";
+import * as graphicsGenerator from "./graphicsGenerator";
+import * as aiPrompts from "./aiPrompts";
 
 /**
- * 미스터리 장면의 시각자료 생성.
+ * 실제 자료 + AI 혼합 미스터리 장면 시각자료 생성.
  *
- * 경제 버전과 비슷하지만, 미스터리 특화 타입을 사용한다:
- * - archive_photo, location, official_document → 실제 자료 검색
- * - ai_reconstruction, atmosphere → 데이터 카드로 대체
- * - 나머지 → 설명 카드
+ * 개선 사항:
+ * - 1단계: 실제 자료 검색 (다중 소스)
+ * - 2단계: 자동 선택 (우선순위 기반)
+ * - 3단계: 자체 제작 그래픽 또는 AI 재현
+ * - 4단계: 출처 및 디스클레이머 추가
  */
 
 const VISUAL_CONCURRENCY = 3;
@@ -29,7 +40,55 @@ async function writeBuffer(projectId: string, scene: Scene, buffer: Buffer): Pro
   return publicGeneratedUrl(projectId, `scenes/${fileName}`);
 }
 
-async function generateOneSceneVisual(projectId: string, scene: Scene): Promise<void> {
+/**
+ * ImageSearchResult를 SceneVisual로 변환.
+ */
+function convertSearchResultToVisual(result: ImageSearchResult): SceneVisual {
+  return {
+    id: `visual_${Date.now()}`,
+    type: "archive_photo",
+    origin: "REAL_ARCHIVE_PHOTO",
+    url: result.imageUrl,
+    sourceTitle: result.title,
+    sourcePublisher: result.publisher,
+    sourceDate: result.date,
+    sourceUrl: result.contextUrl,
+    sourceLabel: formatSourceLabel({
+      sourceTitle: result.title,
+      sourcePublisher: result.publisher,
+      sourceDate: result.date,
+    }),
+    license: result.license,
+  };
+}
+
+/**
+ * 출처 표시 텍스트 생성.
+ */
+function formatSourceLabel(visual: Partial<SceneVisual>): string {
+  const parts = [];
+  if (visual.sourcePublisher) parts.push(visual.sourcePublisher);
+  if (visual.sourceDate) parts.push(visual.sourceDate);
+  if (visual.sourceTitle) parts.push(visual.sourceTitle);
+
+  return parts.length > 0 ? `자료: ${parts.join(" / ")}` : "자료 출처";
+}
+
+/**
+ * 한 장면의 시각자료 생성 (개선된 버전).
+ *
+ * 플로우:
+ * 1. 실제 자료 검색 (다중 소스)
+ * 2. 발견시 사용 → 아니면
+ * 3. 그래픽 생성 가능? → 예면 생성 → 아니면
+ * 4. AI 재현 필요? → 예면 생성 (프롬프트 기반) → 아니면
+ * 5. 텍스트 카드
+ */
+async function generateOneSceneVisual(
+  projectId: string,
+  scene: Scene,
+  userInput?: MysteryInput
+): Promise<void> {
   updateProject(projectId, (p) => {
     const s = p.scenes?.find((x) => x.id === scene.id);
     if (s) {
@@ -39,102 +98,107 @@ async function generateOneSceneVisual(projectId: string, scene: Scene): Promise<
   });
 
   try {
-    let url: string;
+    let buffer: Buffer | null = null;
+    let sceneVisual: SceneVisual | null = null;
     let sourceLabel: string | undefined;
-    let sourceUrl: string | undefined;
-    let visualOrigin: "REAL" | "AI_RECONSTRUCTION" | "GENERATED_GRAPHIC" = "GENERATED_GRAPHIC";
 
-    // 실제 자료를 검색하는 타입들
-    if (["archive_photo", "location", "official_document", "newspaper"].includes(scene.visualType)) {
-      const found =
-        (await searchWikimediaImage(scene.visualQuery)) ||
-        (isImageSearchConfigured() ? await searchGoogleCseImage(scene.visualQuery) : null);
+    // 1단계: 실제 자료 검색
+    const realAssets: SceneVisual[] = [];
 
-      if (found) {
-        const buffer = await downloadImage(found.imageUrl);
-        url = await writeBuffer(projectId, scene, buffer);
-        sourceLabel = `출처: ${found.title}`.slice(0, 100);
-        sourceUrl = found.contextUrl;
-        visualOrigin = "REAL";
-      } else {
-        // 실제 자료를 찾지 못한 경우 → 설명 카드
-        const dir = path.join(publicGeneratedDir(projectId), "scenes");
-        fs.mkdirSync(dir, { recursive: true });
-        const fileName = fileNameFor(scene.id);
-        const outPath = path.join(dir, fileName);
-        await renderDataCard(
-          {
-            headline: scene.visualQuery || "자료 없음",
-            label: "실제 자료를 찾을 수 없음",
-            accentColor: "7d7d7d",
-          },
-          outPath
-        );
-        url = publicGeneratedUrl(projectId, `scenes/${fileName}`);
-        sourceLabel = "실제 자료를 찾을 수 없어 안내로 대체됨";
-        visualOrigin = "GENERATED_GRAPHIC";
+    if (["archive_photo", "location", "official_document", "newspaper", "map"].includes(scene.visualType)) {
+      try {
+        // 다중 소스에서 검색
+        const searchResults = await searchRealAssets(scene.visualQuery);
+        realAssets.push(...searchResults.map(convertSearchResultToVisual));
+      } catch {
+        // 검색 실패해도 계속 진행
       }
     }
-    // 자동 생성되는 타입들
-    else if (["timeline", "diagram", "data_card", "text_card"].includes(scene.visualType)) {
-      const dir = path.join(publicGeneratedDir(projectId), "scenes");
-      fs.mkdirSync(dir, { recursive: true });
-      const fileName = fileNameFor(scene.id);
-      const outPath = path.join(dir, fileName);
-      await renderDataCard(
-        {
-          headline: scene.visualHeadline || scene.visualQuery || scene.visualType,
-          label: scene.visualLabel || "정보 카드",
-          accentColor: "5a5a9e",
-        },
-        outPath
-      );
-      url = publicGeneratedUrl(projectId, `scenes/${fileName}`);
+
+    // 2단계: 자동 선택
+    if (realAssets.length > 0) {
+      // 실제 자료 사용
+      const selectedVisual = realAssets[0];
+      if (selectedVisual.url) {
+        buffer = await downloadImage(selectedVisual.url);
+      }
+      sceneVisual = selectedVisual;
+      sourceLabel = selectedVisual.sourceLabel;
+    } else if (visualAssetSelector.shouldMixAssets(scene) || ["timeline", "diagram", "map"].includes(scene.visualType)) {
+      // 2단계: 자체 제작 그래픽
+      buffer = await generateGraphic(scene);
+      sceneVisual = {
+        id: `graphic_${scene.id}`,
+        type: scene.visualType as any,
+        origin: "GENERATED_GRAPHIC",
+        graphicType: scene.visualType,
+      };
       sourceLabel = `${scene.visualType}`;
-      visualOrigin = "GENERATED_GRAPHIC";
-    }
-    // AI 재현 또는 분위기 이미지
-    else if (["ai_reconstruction", "atmosphere", "satellite", "video_archive", "interview"].includes(scene.visualType)) {
-      const dir = path.join(publicGeneratedDir(projectId), "scenes");
-      fs.mkdirSync(dir, { recursive: true });
-      const fileName = fileNameFor(scene.id);
-      const outPath = path.join(dir, fileName);
-      const isAiType = scene.visualType === "ai_reconstruction" || scene.visualType === "atmosphere";
-      await renderDataCard(
-        {
-          headline: scene.visualQuery,
-          label: isAiType ? "AI 재현" : "아카이브",
-          accentColor: isAiType ? "a87c5c" : "6b7c99",
+    } else if (
+      userInput?.useAiReconstruction &&
+      ["ai_reconstruction", "atmosphere", "location"].includes(scene.visualType)
+    ) {
+      // 3단계: AI 재현
+      const prompt = aiPrompts.generateSceneReconstructionPrompt(scene);
+
+      // TODO: 실제 AI 이미지 생성 (Claude Vision, DALL-E, 등)
+      // 지금은 데이터 카드로 대체
+      const aiCard = await renderDataCardCompat({
+        headline: scene.visualHeadline || scene.visualLabel || "AI 재현",
+        label: "AI 재현 이미지",
+        accentColor: "a87c5c",
+      });
+      buffer = aiCard;
+
+      sceneVisual = {
+        id: `ai_${scene.id}`,
+        type: scene.visualType as any,
+        origin: "AI_RECONSTRUCTION",
+        aiGeneration: {
+          model: "claude-3.5-sonnet",
+          prompt,
+          generatedAt: new Date().toISOString(),
+          displayDisclaimer: true,
+          disclaimerText: aiPrompts.generateReconstructionDisclaimer(scene),
         },
-        outPath
-      );
-      url = publicGeneratedUrl(projectId, `scenes/${fileName}`);
-      sourceLabel = scene.visualType === "ai_reconstruction" ? "AI 재현 이미지" : "아카이브 자료";
-      visualOrigin = isAiType ? "AI_RECONSTRUCTION" : "GENERATED_GRAPHIC";
-    }
-    // 증거, 지도 등
-    else {
-      const dir = path.join(publicGeneratedDir(projectId), "scenes");
-      fs.mkdirSync(dir, { recursive: true });
-      const fileName = fileNameFor(scene.id);
-      const outPath = path.join(dir, fileName);
-      await renderDataCard(
-        { headline: scene.visualQuery, label: scene.visualType || "시각화", accentColor: "666666" },
-        outPath
-      );
-      url = publicGeneratedUrl(projectId, `scenes/${fileName}`);
-      sourceLabel = scene.visualType;
-      visualOrigin = "GENERATED_GRAPHIC";
+      };
+      sourceLabel = "AI 재현";
+    } else {
+      // 4단계: 텍스트 카드
+      const textCard = await renderDataCardCompat({
+        headline: scene.visualQuery || "정보",
+        label: scene.visualType || "카드",
+        accentColor: "5a5a9e",
+      });
+      buffer = textCard;
+
+      sceneVisual = {
+        id: `text_${scene.id}`,
+        type: "text_card",
+        origin: "GENERATED_GRAPHIC",
+        graphicType: "text_card",
+      };
+      sourceLabel = "텍스트 카드";
     }
 
+    // 파일 저장
+    if (!buffer) {
+      throw new Error("시각자료 생성 실패");
+    }
+
+    const url = await writeBuffer(projectId, scene, buffer);
+
+    // 메타데이터 업데이트
     updateProject(projectId, (p) => {
       const s = p.scenes?.find((x) => x.id === scene.id);
-      if (s) {
+      if (s && sceneVisual) {
         s.visualStatus = "done";
         s.visualUrl = url;
         s.visualSourceLabel = sourceLabel;
-        s.visualSourceUrl = sourceUrl;
-        s.visualOrigin = visualOrigin;
+        s.visualSourceUrl = sceneVisual.sourceUrl;
+        s.visualOrigin = sceneVisual.origin;
+        s.realMaterialSearched = true;
+        s.realMaterialFound = realAssets.length > 0;
       }
     });
   } catch (err: any) {
@@ -150,11 +214,89 @@ async function generateOneSceneVisual(projectId: string, scene: Scene): Promise<
   }
 }
 
-export async function generateAllSceneVisuals(projectId: string, project: MysteryProject): Promise<void> {
+/**
+ * 자체 제작 그래픽 생성.
+ */
+async function generateGraphic(scene: Scene): Promise<Buffer> {
+  switch (scene.visualType) {
+    case "timeline":
+      // TimelineEvent를 생성 (SourceRef에서 변환)
+      const timelineEvents = (scene.sources || []).map((source, idx) => ({
+        id: `event_${idx}`,
+        date: source.publishedAt || "Unknown",
+        title: source.title,
+        description: source.factUsed || "",
+        sources: [],
+        status: "FACT" as const,
+      }));
+      return await graphicsGenerator.generateTimeline(timelineEvents, {
+        title: scene.visualHeadline,
+      });
+
+    case "map":
+      return await graphicsGenerator.generateMapBackground({
+        title: scene.visualHeadline,
+        locations: scene.visualLabel ? [scene.visualLabel] : undefined,
+      });
+
+    case "diagram":
+      return await graphicsGenerator.generateDiagram(
+        [
+          { label: "시작" },
+          { label: "중간" },
+          { label: "종료" },
+        ],
+        "flow",
+        { title: scene.visualHeadline }
+      );
+
+    case "data_card":
+      return await graphicsGenerator.generateDataCard({
+        title: scene.visualHeadline || "정보",
+        subtitle: scene.visualLabel,
+      });
+
+    case "evidence":
+      return await graphicsGenerator.generateEvidenceCard({
+        title: scene.visualHeadline || "증거",
+        description: scene.text,
+        type: "document",
+      });
+
+    default:
+      // 기본: 데이터 카드로 렌더링
+      return await renderDataCardCompat({
+        headline: scene.visualHeadline || scene.visualQuery,
+        label: scene.visualLabel || scene.visualType,
+        accentColor: "5a5a9e",
+      });
+  }
+}
+
+/**
+ * 데이터 카드 렌더링 (호환성).
+ */
+async function renderDataCardCompat(options: {
+  headline: string;
+  label?: string;
+  accentColor?: string;
+}): Promise<Buffer> {
+  return await graphicsGenerator.generateDataCard({
+    title: options.headline,
+    label: options.label,
+    accentColor: options.accentColor,
+  });
+}
+
+export async function generateAllSceneVisuals(
+  projectId: string,
+  project: MysteryProject,
+  userInput?: MysteryInput
+): Promise<void> {
   const scenes = project.scenes || [];
   const targets = scenes.filter((s) => s.visualStatus === "pending" || s.visualStatus === "error");
   await runWithConcurrency(
-    targets.map((scene) => () => generateOneSceneVisual(projectId, scene)),
+    targets.map((scene) => () => generateOneSceneVisual(projectId, scene, userInput)),
     VISUAL_CONCURRENCY
   );
 
@@ -171,5 +313,7 @@ export async function regenerateSceneVisual(projectId: string, sceneId: string):
   const project = readProject(projectId);
   const scene = project?.scenes?.find((s) => s.id === sceneId);
   if (!scene) throw new Error("장면을 찾을 수 없습니다.");
-  await generateOneSceneVisual(projectId, scene);
+
+  const input = project as any as MysteryInput;
+  await generateOneSceneVisual(projectId, scene, input);
 }

@@ -300,7 +300,7 @@ function extractContext(scene: Scene): string {
     parts.push(`Description: ${scene.text.slice(0, 100)}`);
   }
 
-  if (scene.sources.length > 0) {
+  if (scene.sources && scene.sources.length > 0) {
     const dates = scene.sources
       .map((s) => s.publishedAt)
       .filter(Boolean)
@@ -363,7 +363,7 @@ export function generateDisclaimer(
     return undefined;
   }
 
-  if (factStatus === "RECONSTRUCTION" || factStatus === "CLAIM") {
+  if (factStatus === "CLAIM" || factStatus === "UNVERIFIED") {
     return "기록을 바탕으로 재현한 이미지입니다";
   }
 

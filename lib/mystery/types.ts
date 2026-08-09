@@ -371,14 +371,18 @@ export interface Scene {
   realMaterialFound?: boolean; // 실제 자료 발견 여부
   requiresAiReconstruction?: boolean; // AI 재현 필요 여부
 
-  // 시각자료 상태 및 출처
-  visuals: SceneVisual | SceneVisual[]; // 단일 또는 혼합
+  // 시각자료 상태 및 출처 (호환성: 기존 + 신규)
+  visuals?: SceneVisual | SceneVisual[]; // 신규: 단일 또는 혼합
   visualStatus: AssetStatus;
   visualError?: string;
+  visualUrl?: string; // 기존: 생성된 이미지 URL
+  visualSourceLabel?: string; // 기존: 화면 표시 출처
+  visualSourceUrl?: string; // 기존: 원본 출처 URL
+  visualOrigin?: VisualOrigin; // 기존: 실제/AI/생성 구분
 
   // 팩트 연결
   factStatus?: FactStatus; // 이 장면이 표현하는 내용의 검증 상태
-  sources: SourceRef[]; // 이 장면이 근거로 삼은 출처들
+  sources?: SourceRef[]; // 이 장면이 근거로 삼은 출처들
 
   // 내레이션
   narration: NarrationChunk[];

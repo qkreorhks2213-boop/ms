@@ -52,7 +52,8 @@ export function generateLocationPrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "title" | "timeperiod">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "location" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate a historical location reconstruction image.
@@ -78,7 +79,8 @@ export function generateAtmospherePrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "description">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "atmosphere" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate an atmospheric scene reconstruction image for documentary purposes.
@@ -109,7 +111,8 @@ export function generateHistoricalSituationPrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "description" | "timeperiod">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "historical_situation" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate a historical situation reconstruction image.
@@ -141,7 +144,8 @@ export function generateSilhouettePrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "description">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "silhouette" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate a silhouette/back view scene reconstruction.
@@ -172,7 +176,8 @@ export function generateMovementPrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "description">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "movement" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate a path/movement visualization for documentary purposes.
@@ -203,7 +208,8 @@ export function generateEnvironmentPrompt(
   options: Omit<ReconstructionPromptOptions, "type"> &
     Required<Pick<ReconstructionPromptOptions, "description" | "timeperiod">>
 ): string {
-  const context = buildContextStatement(options);
+  const opt: ReconstructionPromptOptions = { ...options, type: "environment" };
+  const context = buildContextStatement(opt);
 
   return `
 Generate an environmental/background scene reconstruction.
@@ -242,13 +248,9 @@ function buildContextStatement(
     parts.push(`Details: ${options.description}`);
   }
 
-  if (options.factStatus === "RECONSTRUCTION") {
+  if (options.factStatus && ["CLAIM", "TESTIMONY"].includes(options.factStatus)) {
     parts.push(
-      `Note: This scene is not directly documented. It is based on eyewitness accounts and records.`
-    );
-  } else if (options.factStatus === "TESTIMONY") {
-    parts.push(
-      `Note: This scene is based on eyewitness testimony, not direct documentation.`
+      `Note: This scene is based on accounts and records, not direct documentation.`
     );
   } else if (options.factStatus === "DISPUTED") {
     parts.push(
@@ -257,10 +259,12 @@ function buildContextStatement(
   }
 
   if (options.references && options.references.length > 0) {
-    const sourceList = options.references
+    const sourceList = (options.references || [])
       .map((r) => `- ${r.title} (${r.publisher}, ${r.publishedAt})`)
       .join("\n");
-    parts.push(`Based on:\n${sourceList}`);
+    if (sourceList) {
+      parts.push(`Based on:\n${sourceList}`);
+    }
   }
 
   return parts.join("\n\n");
@@ -273,14 +277,15 @@ function buildContextStatement(
  */
 export function generateSceneReconstructionPrompt(scene: Scene): string {
   const type = scene.visualType;
+  const sources = scene.sources || [];
 
   // 타입별 프롬프트 생성
   if (type === "location") {
     return generateLocationPrompt({
       title: scene.visualLabel || scene.visualHeadline || "Location",
-      timeperiod: extractTimePeriod(scene.sources),
+      timeperiod: extractTimePeriod(sources),
       description: scene.text,
-      references: scene.sources,
+      references: sources,
       factStatus: scene.factStatus,
     });
   }
@@ -289,8 +294,8 @@ export function generateSceneReconstructionPrompt(scene: Scene): string {
     return generateAtmospherePrompt({
       description: scene.text || scene.visualLabel || "Atmospheric scene",
       title: scene.visualHeadline,
-      timeperiod: extractTimePeriod(scene.sources),
-      references: scene.sources,
+      timeperiod: extractTimePeriod(sources),
+      references: sources,
       factStatus: scene.factStatus,
     });
   }
@@ -299,8 +304,8 @@ export function generateSceneReconstructionPrompt(scene: Scene): string {
   return generateHistoricalSituationPrompt({
     description: scene.text || "Historical scene",
     title: scene.visualHeadline,
-    timeperiod: extractTimePeriod(scene.sources),
-    references: scene.sources,
+    timeperiod: extractTimePeriod(sources),
+    references: sources,
     factStatus: scene.factStatus,
   });
 }
@@ -308,8 +313,8 @@ export function generateSceneReconstructionPrompt(scene: Scene): string {
 /**
  * 출처에서 시간 기간 추출.
  */
-function extractTimePeriod(sources: SourceRef[]): string {
-  if (sources.length === 0) return "Unknown period";
+function extractTimePeriod(sources?: SourceRef[]): string {
+  if (!sources || sources.length === 0) return "Unknown period";
 
   const dates = sources
     .filter((s) => s.publishedAt)
@@ -353,7 +358,7 @@ export function validatePrompt(
   }
 
   // 출처 확인
-  if (scene.sources.length === 0) {
+  if (!scene.sources || scene.sources.length === 0) {
     issues.push("No sources provided for reconstruction");
   }
 
@@ -380,7 +385,7 @@ export function cannotReconstruct(scene: Scene): boolean {
   }
 
   // 출처가 없음
-  if (scene.sources.length === 0) {
+  if (!scene.sources || scene.sources.length === 0) {
     return true;
   }
 
@@ -396,12 +401,12 @@ export function cannotReconstruct(scene: Scene): boolean {
 export function generateReconstructionDisclaimer(
   scene: Scene
 ): string {
-  if (scene.factStatus === "RECONSTRUCTION") {
-    return `기록을 바탕으로 재현한 이미지입니다`;
-  }
-
   if (scene.factStatus === "TESTIMONY") {
     return `증언에 기반한 재현 이미지입니다`;
+  }
+
+  if (scene.factStatus === "CLAIM" || scene.factStatus === "UNVERIFIED") {
+    return `기록을 바탕으로 재현한 이미지입니다`;
   }
 
   if (scene.factStatus === "DISPUTED") {
