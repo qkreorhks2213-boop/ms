@@ -229,6 +229,9 @@ export interface ScriptSection {
   status: SectionStatus;
   error?: string;
   sources: SourceRef[]; // 이 섹션이 근거로 삼은 출처
+  visualOrigin?: VisualOrigin; // 이 섹션에서 사용할 시각자료의 출처
+  factStatus?: FactStatus; // 이 섹션의 검증 상태
+  needsDisclaimer?: boolean; // "재구성하면", "추정하면" 같은 설명 필요 여부
 }
 
 export interface MysteryScript {
@@ -275,7 +278,20 @@ export type SceneVisualType =
 /**
  * 시각자료의 출처 (실제 자료 vs AI 생성).
  */
-export type VisualOrigin = "REAL" | "AI_RECONSTRUCTION" | "GENERATED_GRAPHIC";
+export type VisualOrigin =
+  | "REAL_ARCHIVE_PHOTO"        // 실제 아카이브 사진
+  | "REAL_DOCUMENT"             // 실제 공식 문서
+  | "REAL_NEWS"                 // 실제 뉴스 영상/화면
+  | "REAL_INTERVIEW"            // 실제 인터뷰
+  | "REAL_VIDEO"                // 실제 사건 영상
+  | "REAL_MAP"                  // 실제 지도/위성자료
+  | "GENERATED_GRAPHIC"         // 자체 제작 그래픽
+  | "GENERATED_DIAGRAM"         // 자체 제작 다이어그램
+  | "GENERATED_TIMELINE"        // 자체 제작 타임라인
+  | "AI_RECONSTRUCTION"         // AI 재현 이미지
+  | "AI_RECONSTRUCTION_VIDEO"   // AI 재현 영상
+  | "AI_ATMOSPHERE"             // AI 분위기 이미지
+  | "MIXED";                    // 실제 + AI 혼합
 
 export const VISUAL_TYPE_LABEL: Record<SceneVisualType, string> = {
   archive_photo: "아카이브 사진",
@@ -296,6 +312,46 @@ export const VISUAL_TYPE_LABEL: Record<SceneVisualType, string> = {
 };
 
 /**
+ * AI 생성 정보.
+ */
+export interface AiGenerationInfo {
+  model: string; // 사용한 AI 모델
+  prompt: string; // 생성 프롬프트 (팩트체크된 정보 기반)
+  generatedAt: string; // ISO 날짜
+  displayDisclaimer: boolean; // 화면에 "AI 재현" 표시 여부
+  disclaimerText?: string; // 커스텀 표시 텍스트
+}
+
+/**
+ * 장면의 시각자료 (실제/AI/생성 혼합 가능).
+ */
+export interface SceneVisual {
+  id: string;
+  type: SceneVisualType;
+  origin: VisualOrigin; // 출처 타입
+  url?: string;
+  thumbnailUrl?: string;
+
+  // 실제 자료의 경우
+  sourceId?: string; // 연결된 SourceRef의 id
+  sourceTitle?: string;
+  sourcePublisher?: string;
+  sourceDate?: string;
+  sourceUrl?: string;
+  sourceLabel?: string; // 화면에 표시할 텍스트 (예: "출처: BBC / 2019")
+  license?: string;
+
+  // AI 생성의 경우
+  aiGeneration?: AiGenerationInfo;
+
+  // 생성 그래픽의 경우
+  graphicType?: string; // "timeline", "diagram", "data_card" 등
+
+  // 혼합 자료의 경우
+  components?: SceneVisual[]; // 혼합 구성요소
+}
+
+/**
  * 장면 (Scene).
  */
 export interface Scene {
@@ -303,18 +359,33 @@ export interface Scene {
   sectionId: string;
   order: number;
   text: string;
+
+  // 메인 시각자료
   visualType: SceneVisualType;
-  visualQuery: string;
+  visualQuery: string; // 검색 쿼리 (실제 자료 검색용)
   visualHeadline?: string;
   visualLabel?: string;
+
+  // 시각자료 우선순위 확인
+  realMaterialSearched?: boolean; // 실제 자료 검색 여부
+  realMaterialFound?: boolean; // 실제 자료 발견 여부
+  requiresAiReconstruction?: boolean; // AI 재현 필요 여부
+
+  // 시각자료 상태 및 출처
+  visuals: SceneVisual | SceneVisual[]; // 단일 또는 혼합
   visualStatus: AssetStatus;
   visualError?: string;
-  visualUrl?: string;
-  visualOrigin?: VisualOrigin; // 실제/AI/생성 구분
-  visualSourceLabel?: string; // 화면에 표시할 출처 (예: "출처: U.S. Army / 2002")
-  visualSourceUrl?: string;
+
+  // 팩트 연결
+  factStatus?: FactStatus; // 이 장면이 표현하는 내용의 검증 상태
+  sources: SourceRef[]; // 이 장면이 근거로 삼은 출처들
+
+  // 내레이션
   narration: NarrationChunk[];
   durationSeconds?: number;
+
+  // 메타데이터
+  aiReconstructionExplained?: boolean; // "재구성하면" 같은 설명이 내레이션에 포함되었는지
 }
 
 export type PipelineStage =
