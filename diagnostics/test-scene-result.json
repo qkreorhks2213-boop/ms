@@ -1,25 +1,25 @@
 {
-  "timestamp": "2026-08-09T15:39:28.665Z",
+  "timestamp": "2026-08-09T16:17:36.132Z",
   "stages": {
     "image_generation": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:39:29.077Z",
+      "timestamp": "2026-08-09T16:17:37.388Z",
       "path": "/home/user/-12/test-output/test-scene.png",
       "type": "placeholder"
     },
     "audio_generation": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:39:29.130Z",
+      "timestamp": "2026-08-09T16:17:37.404Z",
       "path": "/home/user/-12/test-output/test-scene.wav",
       "duration": 6,
-      "size": 24200
+      "type": "wav"
     },
     "video_render": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:39:33.239Z",
+      "timestamp": "2026-08-09T16:17:40.864Z",
       "path": "/home/user/-12/test-output/test-scene.mp4",
       "duration": 6,
-      "size": 18754
+      "size": 19098
     }
   },
   "errors": [],

@@ -1,42 +1,42 @@
 {
-  "timestamp": "2026-08-09T15:38:27.247Z",
+  "timestamp": "2026-08-09T16:17:33.124Z",
   "stages": {
     "research": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.253Z",
+      "timestamp": "2026-08-09T16:17:33.133Z",
       "findings": 1,
       "timeline": 1
     },
     "factcheck": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.134Z",
       "checks": 1
     },
     "script": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.134Z",
       "sections": 2,
       "estimatedMinutes": 2
     },
     "scenes": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.134Z",
       "scenes": 2
     },
     "visuals": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.134Z",
       "visuals": 2
     },
     "narration": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.134Z",
       "narrations": 2,
       "totalSeconds": 10
     },
     "render": {
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z",
+      "timestamp": "2026-08-09T16:17:33.135Z",
       "duration": 10,
       "resolution": "1920x1080"
     }
@@ -45,37 +45,37 @@
     {
       "stage": "research",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.253Z"
+      "timestamp": "2026-08-09T16:17:33.133Z"
     },
     {
       "stage": "factcheck",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.134Z"
     },
     {
       "stage": "script",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.134Z"
     },
     {
       "stage": "scenes",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.134Z"
     },
     {
       "stage": "visuals",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.134Z"
     },
     {
       "stage": "narration",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.134Z"
     },
     {
       "stage": "render",
       "status": "PASS",
-      "timestamp": "2026-08-09T15:38:27.254Z"
+      "timestamp": "2026-08-09T16:17:33.135Z"
     }
   ],
   "errors": [],
