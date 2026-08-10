@@ -24,7 +24,8 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:render": "ts-node scripts/test-render.ts",
-    "test:video": "ts-node scripts/generate-test-video.ts"
+    "test:video": "ts-node scripts/generate-test-video.ts",
+    "generate:cases": "ts-node scripts/generate-real-case-video.ts"
   },
   "build": {
     "appId": "com.economicdocustudio.app",
