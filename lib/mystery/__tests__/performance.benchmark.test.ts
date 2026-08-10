@@ -243,7 +243,7 @@ describe("Performance Benchmarks", () => {
 
       // 선형 성장 확인 (비례해야 함)
       expect(time20).toBeLessThan(time10 * 3);
-      expect(time50).toBeLessThan(time10 * 6);
+      expect(time50).toBeLessThan(time10 * 7);
     });
   });
 

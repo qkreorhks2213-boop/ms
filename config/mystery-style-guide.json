@@ -1,0 +1,360 @@
+{
+  "version": "1.0.0",
+  "lastUpdated": "2026-08-09",
+  "referenceVideos": [],
+  "commonPatterns": {
+    "hook": {
+      "description": "오프닝 훅",
+      "principles": [
+        "사건의 핵심 의문을 명확히 제시",
+        "시청자의 호기심을 즉각 자극",
+        "구체적인 숫자나 팩트로 시작",
+        "3~10초 내에 핵심 전달",
+        "시각적 임팩트 (AI 재현 또는 실제 자료)"
+      ],
+      "examples": [
+        "한 사람이 갑자기 사라졌습니다.",
+        "공식 기록에는 없는 일이 실제로 일어났습니다.",
+        "20년이 지난 지금도 풀리지 않은 미스터리입니다."
+      ],
+      "antiPatterns": [
+        "너무 긴 설명",
+        "불명확한 표현",
+        "사건과 무관한 배경 설명",
+        "여러 개의 의문을 동시에 제시"
+      ]
+    },
+    "storyStructure": {
+      "description": "이야기 구조",
+      "phases": [
+        {
+          "name": "Hook (5-15%)",
+          "purpose": "호기심 자극",
+          "duration": "0:00~1:00"
+        },
+        {
+          "name": "Background (15-30%)",
+          "purpose": "사건의 배경과 상황 설명",
+          "duration": "1:00~5:00"
+        },
+        {
+          "name": "Timeline (20-35%)",
+          "purpose": "사건의 시간 순서대로 정리",
+          "duration": "5:00~15:00"
+        },
+        {
+          "name": "Evidence (20-35%)",
+          "purpose": "증거와 단서 제시",
+          "duration": "15:00~25:00"
+        },
+        {
+          "name": "Hypotheses (10-20%)",
+          "purpose": "여러 가설 또는 주장 비교",
+          "duration": "25:00~35:00"
+        },
+        {
+          "name": "Conclusion (5-15%)",
+          "purpose": "현재까지의 결론 또는 열린 결말",
+          "duration": "35:00~40:00"
+        }
+      ],
+      "flexibility": "단계는 사건에 따라 생략 가능하며, 재배열 가능",
+      "principle": "정보 밀도를 유지하고 지루함을 방지하는 것이 목표"
+    },
+    "pacing": {
+      "description": "영상 속도와 흐름",
+      "newInformationInterval": "3-5분",
+      "visualChangeInterval": "15-20초",
+      "sceneTransitionSpeed": "0.5-1초",
+      "narrationPacing": "268 characters per minute (한국어 기준)",
+      "principle": "시청자가 정보를 소화할 시간을 주되, 지루하지 않게 유지"
+    },
+    "visualStyle": {
+      "description": "시각자료 사용 원칙",
+      "priority": [
+        "REAL_PHOTO (실제 사진)",
+        "REAL_VIDEO (실제 영상)",
+        "REAL_INTERVIEW (실제 인터뷰)",
+        "NEWS_FOOTAGE (뉴스 자료)",
+        "OFFICIAL_DOCUMENT (공식 문서)",
+        "MAP (지도)",
+        "GRAPHIC (그래픽)",
+        "AI_RECONSTRUCTION (AI 재현)"
+      ],
+      "mixture": {
+        "real": "50-70% (실제 자료가 중심)",
+        "graphic": "15-25% (설명/정리용)",
+        "ai": "10-25% (재현/보완용)"
+      },
+      "principleReals": "실제 자료 = 신뢰성",
+      "principleGraphics": "그래픽 = 명확성",
+      "principleAI": "AI = 보완성 (사실을 왜곡하지 않음)"
+    },
+    "realMaterialUsage": {
+      "description": "실제 자료를 찾고 사용하는 방법",
+      "searchStrategy": [
+        "사건명 + 뉴스",
+        "사건명 + 인터뷰",
+        "사건명 + 영상",
+        "사건명 + 사진",
+        "당사자 이름 + 인터뷰",
+        "공식 기관 + 성명",
+        "법원 판례",
+        "경찰 발표",
+        "아카이브",
+        "신문 기사",
+        "다큐멘터리"
+      ],
+      "verification": [
+        "출처 명확히",
+        "날짜 확인",
+        "팩트체크",
+        "저작권 확인",
+        "사용 조건 확인"
+      ],
+      "sourceTracking": {
+        "title": "필수",
+        "publisher": "필수",
+        "url": "필수",
+        "date": "필수",
+        "mediaType": "필수",
+        "factStatus": "필수",
+        "copyright": "필수",
+        "usageRights": "필수"
+      }
+    },
+    "interviewUsage": {
+      "description": "인터뷰 활용",
+      "types": [
+        "당사자 직접 인터뷰",
+        "목격자 증언",
+        "수사관/경찰 설명",
+        "변호사/법률 전문가",
+        "기자/언론인 분석",
+        "학자/역사가 해석"
+      ],
+      "integration": {
+        "principle": "인터뷰는 내레이션의 뒷받침 역할",
+        "timing": "핵심 주장 직후에 배치",
+        "duration": "한 인터뷰 클립 5-15초",
+        "repetition": "같은 인터뷰는 3회 이상 반복 금지"
+      },
+      "distinction": {
+        "principle": "인터뷰 = 증언 (TESTIMONY)",
+        "note": "인터뷰 발언이 전부 사실은 아님",
+        "verification": "인터뷰 내용은 별도 팩트체크 필요"
+      }
+    },
+    "subtitleStyle": {
+      "description": "자막 스타일",
+      "principles": [
+        "내레이션과 동기화",
+        "한 화면에 2줄 이내",
+        "한국어 가독성 중심",
+        "숫자는 한자 또는 아라비아 숫자",
+        "인물명은 명확히",
+        "출처명은 작게 (상단)"
+      ],
+      "sourceSubtitle": {
+        "format": "자료: [출처명] / [연도]",
+        "example": "자료: BBC News / 2019",
+        "position": "화면 상단 우측 또는 좌측",
+        "color": "흰색 또는 노란색"
+      },
+      "aiIndicator": {
+        "format": "🤖 AI 재현",
+        "principle": "실제처럼 오해할 여지가 있는 장면은 반드시 표시",
+        "timing": "AI 장면 시작 시"
+      }
+    },
+    "audioStyle": {
+      "description": "음성과 BGM",
+      "narration": {
+        "pace": "268 characters/minute (자연스러운 속도)",
+        "tone": "뉴스 보도체 (객관적, 진지함)",
+        "emphasis": "중요한 숫자/단어 강조",
+        "pauseTiming": "문장 끝에 0.5초 정지"
+      },
+      "bgm": {
+        "principle": "긴장감을 유지하되 내레이션을 방해하지 않음",
+        "volume": "-18dB (내레이션 -3dB)",
+        "timing": "Hook, 중요 전개, 반전에서 사용",
+        "genre": "미스터리/스릴러/다큐"
+      },
+      "silence": {
+        "principle": "조용한 순간도 효과적 (숨고르기)",
+        "duration": "1-2초 정도"
+      }
+    },
+    "boringPrevention": {
+      "description": "지루함을 방지하는 장치",
+      "techniques": [
+        {
+          "name": "정보 변화",
+          "description": "새로운 정보, 새로운 단서, 새로운 자료",
+          "interval": "3-5분마다"
+        },
+        {
+          "name": "시각적 변화",
+          "description": "다른 이미지, 다른 스타일, 다른 자료 타입",
+          "interval": "15-20초마다"
+        },
+        {
+          "name": "음성 변화",
+          "description": "내레이션, 인터뷰, 효과음",
+          "interval": "2-3분마다"
+        },
+        {
+          "name": "질문 제시",
+          "description": "시청자에게 직접 질문 (수사적 질문)",
+          "interval": "5-10분마다"
+        },
+        {
+          "name": "반대 증거",
+          "description": "기존 가설을 부정하는 근거",
+          "interval": "필요할 때마다"
+        },
+        {
+          "name": "타임라인",
+          "description": "사건의 시간 순서를 명확히",
+          "interval": "주요 장면 전환 시"
+        },
+        {
+          "name": "등장인물 추가",
+          "description": "새로운 인물 등장",
+          "interval": "필요할 때마다"
+        },
+        {
+          "name": "장소 변화",
+          "description": "사건 현장, 수사 장소, 법원 등",
+          "interval": "필요할 때마다"
+        }
+      ],
+      "boringRiskAssessment": {
+        "newInformation": "LOW = 새로운 정보 없음",
+        "mysteryProgress": "LOW = 미스터리 진행 없음",
+        "visualChange": "LOW = 시각 변화 없음",
+        "emotionalChange": "LOW = 감정 변화 없음",
+        "sourceChange": "LOW = 자료 타입 변화 없음",
+        "pacing": "LOW = 속도 변화 없음",
+        "threshold": "3개 이상 LOW → BORING_RISK = HIGH"
+      },
+      "boringSceneRemoval": {
+        "principle": "BORING_RISK=HIGH인 장면은 반드시 처리",
+        "options": [
+          "1. 삭제 (가장 간단)",
+          "2. 축소 (15초 → 5초)",
+          "3. 중복 제거 (같은 내용 다시 반복하지 않기)",
+          "4. 새로운 자료 추가",
+          "5. 인터뷰 추가",
+          "6. 반대 근거 제시",
+          "7. 타임라인 또는 지도 추가",
+          "8. 질문 제시 (다음은?)",
+          "9. AI 시각화 추가",
+          "10. 다음 핵심 사건으로 빠르게 이동"
+        ],
+        "antiPattern": "영상 길이를 맞추기 위해 지루한 장면 유지"
+      }
+    }
+  },
+  "contentDensity": {
+    "HIGH": "37개 이상의 팩트, 새로운 정보가 많음",
+    "MEDIUM": "20-36개의 팩트, 적절한 정보량",
+    "LOW": "20개 미만의 팩트, 간단한 사건"
+  },
+  "estimatedLength": {
+    "calculation": "SOURCE_COUNT * UNIQUE_FACT_COUNT / REPETITION_FACTOR",
+    "examples": [
+      {
+        "case": "잘 알려진 사건 (많은 영상/기사)",
+        "sourceCount": 40,
+        "uniqueFacts": 35,
+        "estimatedLength": "40-50분"
+      },
+      {
+        "case": "중간 규모 사건 (일부 자료)",
+        "sourceCount": 20,
+        "uniqueFacts": 18,
+        "estimatedLength": "20-30분"
+      },
+      {
+        "case": "짧은 사건 (기본 자료만)",
+        "sourceCount": 10,
+        "uniqueFacts": 8,
+        "estimatedLength": "10-15분"
+      }
+    ],
+    "principle": "길이는 사건이 결정한다. 110분을 맞추지 않는다."
+  },
+  "quality": {
+    "minInformationDensity": 0.7,
+    "maxRepetitionRatio": 0.15,
+    "minNewInformationInterval": "3-5분",
+    "maxBoringSegment": "30초"
+  },
+  "factChecking": {
+    "levels": [
+      {
+        "status": "FACT",
+        "definition": "공식 기록, 다중 신뢰도 높은 출처",
+        "example": "경찰 공식 발표"
+      },
+      {
+        "status": "SUPPORTED",
+        "definition": "1개 이상의 신뢰도 높은 출처",
+        "example": "주요 언론사 보도"
+      },
+      {
+        "status": "TESTIMONY",
+        "definition": "증인이나 당사자의 증언",
+        "example": "인터뷰 발언"
+      },
+      {
+        "status": "CLAIM",
+        "definition": "주장 또는 추정",
+        "example": "전문가 의견"
+      },
+      {
+        "status": "DISPUTED",
+        "definition": "서로 다른 주장이 존재",
+        "example": "당사자 주장 vs 경찰 주장"
+      },
+      {
+        "status": "UNVERIFIED",
+        "definition": "확인되지 않은 정보",
+        "example": "루머, 미확인 증언"
+      },
+      {
+        "status": "FALSE",
+        "definition": "거짓으로 입증됨",
+        "example": "나중에 기각된 주장"
+      }
+    ],
+    "principle": "모든 핵심 주장에 팩트 상태 부여",
+    "visualization": "영상에는 보통 FACT, SUPPORTED, TESTIMONY만 표시"
+  },
+  "aiUsage": {
+    "allowed": [
+      "실제 사진이 없는 역사적 장면 재현",
+      "사건 당시의 장소 모습 재현",
+      "이동 경로 애니메이션",
+      "설명용 그래픽",
+      "분위기 연출",
+      "지도 애니메이션"
+    ],
+    "prohibited": [
+      "존재하지 않는 증거 생성",
+      "가짜 문서 생성",
+      "존재하지 않는 인터뷰 생성",
+      "사실로 오해할 만한 AI 내용"
+    ],
+    "principle": "AI = 확인된 사실의 시각적 보완 (사실 생성 아님)",
+    "disclosure": "AI 재현은 명확하게 표시"
+  },
+  "notes": [
+    "이 가이드는 참고 영상이 추가될 때마다 업데이트된다.",
+    "특정 영상의 고유한 요소를 그대로 복사하지 않는다.",
+    "공통적인 장점만 축적한다.",
+    "사건에 따라 유연하게 적용한다."
+  ]
+}
