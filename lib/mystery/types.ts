@@ -450,9 +450,19 @@ export interface MysteryProject {
   scenes?: Scene[];
   hookNarration?: NarrationChunk[];
 
+  // 새로 추가: 음성, 자막, 자료
+  narrationSegments?: any[]; // NarrationSegment[]
+  narrationError?: string;
+  subtitleTracks?: any[]; // SubtitleTrack[]
+  sceneAssets?: any[]; // SceneAsset[]
+
   // 렌더링 및 에러
   render: RenderState;
   hookMontageSceneIds?: string[];
+  output?: {
+    mp4?: string;
+    status?: string;
+  };
   pipelineError?: string;
   errorLog: ErrorLogEntry[];
 }

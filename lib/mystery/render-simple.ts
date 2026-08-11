@@ -1,6 +1,6 @@
 /**
- * Simplified rendering for E2E testing
- * Creates a real MP4 file from script sections
+ * Rendering with narration, subtitles, and scene composition
+ * Creates a real MP4 file with audio, subtitles, and text overlay
  */
 
 import { spawn } from "child_process";
@@ -13,40 +13,35 @@ const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 360;
 const TARGET_FPS = 24;
 
-async function generateTestVideo(projectId: string, project: MysteryProject): Promise<void> {
-  const sections = project.script?.sections || [];
-  if (sections.length === 0) {
-    throw new Error("No script sections to render");
+async function concatenateAudioSegments(narrationSegments: any[], outputPath: string): Promise<boolean> {
+  // Check if all audio files exist
+  const validSegments = narrationSegments.filter((seg) => seg.audioPath && fs.existsSync(seg.audioPath));
+
+  if (validSegments.length === 0) {
+    console.log("[render] No audio segments found, skipping audio concatenation");
+    return false;
   }
 
-  const projectDir = path.join(process.cwd(), "data", "mystery-projects", projectId);
-  const outputPath = path.join(projectDir, "output.mp4");
+  if (validSegments.length !== narrationSegments.length) {
+    console.warn(
+      `[render] Warning: Only ${validSegments.length}/${narrationSegments.length} audio segments exist`
+    );
+  }
 
-  console.log(`[render] Generating MP4 with ${sections.length} sections...`);
+  return new Promise((resolve) => {
+    // Create concat demuxer file
+    const concatFile = outputPath + ".txt";
+    const concatContent = validSegments
+      .map((seg) => `file '${seg.audioPath}'`)
+      .join("\n");
 
-  // Calculate total duration (assuming ~60 chars per second)
-  const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
-  const totalSeconds = Math.ceil(totalChars / 60);
-  const sectionDuration = totalSeconds / sections.length;
+    fs.writeFileSync(concatFile, concatContent);
 
-  // Create a simple black background video with text overlay
-  const filterComplex = sections
-    .map((section, idx) => {
-      const startTime = idx * sectionDuration;
-      const endTime = startTime + sectionDuration;
-      const displayText = section.text.replace(/'/g, "\\'").slice(0, 150);
-      return `drawtext=text='${displayText}':fontsize=16:fontcolor=white:x=20:y=20:w=600:h=320:enable='between(t,${startTime},${endTime})'`;
-    })
-    .join(",");
-
-  return new Promise((resolve, reject) => {
     const ffmpeg = spawn("ffmpeg", [
-      "-f", "lavfi",
-      "-i", `color=c=black:s=${TARGET_WIDTH}x${TARGET_HEIGHT}:d=${totalSeconds}`,
-      "-vf", filterComplex,
-      "-c:v", "libx264",
-      "-preset", "ultrafast",
-      "-pix_fmt", "yuv420p",
+      "-f", "concat",
+      "-safe", "0",
+      "-i", concatFile,
+      "-c", "aac",
       "-y",
       outputPath,
     ]);
@@ -57,12 +52,221 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     });
 
     ffmpeg.on("close", (code) => {
+      fs.unlinkSync(concatFile);
+      if (code === 0 && fs.existsSync(outputPath)) {
+        console.log(`[render] Audio concatenated: ${outputPath}`);
+        resolve(true);
+      } else {
+        console.warn(`[render] Audio concatenation failed: ${stderr.slice(-300)}`);
+        resolve(false);
+      }
+    });
+  });
+}
+
+async function generateSubtitleFile(subtitleTrack: any, outputPath: string): Promise<boolean> {
+  if (!subtitleTrack || !subtitleTrack.subtitles || subtitleTrack.subtitles.length === 0) {
+    return false;
+  }
+
+  try {
+    if (subtitleTrack.format === "ass") {
+      // Generate ASS format
+      const assContent = generateASSContent(subtitleTrack.subtitles);
+      fs.writeFileSync(outputPath, assContent);
+    } else {
+      // Generate SRT format
+      const srtContent = generateSRTContent(subtitleTrack.subtitles);
+      fs.writeFileSync(outputPath, srtContent);
+    }
+    console.log(`[render] Subtitle file created: ${outputPath}`);
+    return true;
+  } catch (err) {
+    console.warn(`[render] Subtitle generation failed:`, err);
+    return false;
+  }
+}
+
+function generateSRTContent(subtitles: any[]): string {
+  return subtitles
+    .map((sub, idx) => {
+      const startTime = formatSRTTime(sub.startTime);
+      const endTime = formatSRTTime(sub.endTime);
+      return `${idx + 1}\n${startTime} --> ${endTime}\n${sub.text}\n`;
+    })
+    .join("\n");
+}
+
+function generateASSContent(subtitles: any[]): string {
+  const header = `[Script Info]
+Title: Mystery Documentary
+ScriptType: v4.00+
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: Default,Arial,20,&H00FFFFFF,&H000000FF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,2,0,2,10,10,10,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`;
+
+  const events = subtitles
+    .map((sub) => {
+      const start = formatASSTime(sub.startTime);
+      const end = formatASSTime(sub.endTime);
+      const text = sub.text.replace(/\n/g, "\\N");
+      return `Dialogue: 0,${start},${end},Default,,0,0,0,,${text}`;
+    })
+    .join("\n");
+
+  return header + events;
+}
+
+function formatSRTTime(milliseconds: number): string {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const ms = milliseconds % 1000;
+
+  return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")},${String(ms).padStart(3, "0")}`;
+}
+
+function formatASSTime(milliseconds: number): string {
+  const totalSeconds = Math.floor(milliseconds / 1000);
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  const cs = Math.floor((milliseconds % 1000) / 10);
+
+  return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
+}
+
+async function generateTestVideo(projectId: string, project: MysteryProject): Promise<void> {
+  const sections = project.script?.sections || [];
+  if (sections.length === 0) {
+    throw new Error("No script sections to render");
+  }
+
+  const projectDir = path.join(process.cwd(), "data", "mystery-projects", projectId);
+  const outputPath = path.join(projectDir, "output.mp4");
+  const audioPath = path.join(projectDir, "audio.m4a");
+  const subtitlePath = path.join(projectDir, "subtitles.ass");
+
+  console.log(`[render] Generating MP4 with ${sections.length} sections...`);
+
+  // Calculate total duration
+  let totalDuration = 0;
+  if (project.narrationSegments && project.narrationSegments.length > 0) {
+    totalDuration = project.narrationSegments.reduce((sum: number, seg: any) => sum + (seg.durationSeconds || 0), 0);
+  } else {
+    const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
+    totalDuration = Math.ceil(totalChars / 60);
+  }
+
+  console.log(`[render] Total duration: ${totalDuration}s`);
+
+  // Handle audio
+  let hasAudio = false;
+  if (project.narrationSegments && project.narrationSegments.length > 0) {
+    console.log(`[render] Processing ${project.narrationSegments.length} narration segments...`);
+    hasAudio = await concatenateAudioSegments(project.narrationSegments, audioPath);
+  }
+
+  // Handle subtitles
+  let hasSubtitles = false;
+  if (project.subtitleTracks && project.subtitleTracks.length > 0) {
+    console.log(`[render] Generating subtitles...`);
+    hasSubtitles = await generateSubtitleFile(project.subtitleTracks[0], subtitlePath);
+  }
+
+  // Build FFmpeg command based on available components
+  const ffmpegArgs: string[] = ["-f", "lavfi", "-i", `color=c=black:s=${TARGET_WIDTH}x${TARGET_HEIGHT}:d=${totalDuration}`];
+
+  // Add audio if available
+  if (hasAudio) {
+    ffmpegArgs.push("-i", audioPath);
+  }
+
+  // Build video filter for subtitles and text overlay
+  const vfilters: string[] = [];
+
+  // Add subtitle filter if available
+  if (hasSubtitles) {
+    vfilters.push(`ass='${subtitlePath.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`);
+  }
+
+  // Add text overlay for sections
+  const sectionDuration = totalDuration / sections.length;
+  const textFilters = sections
+    .map((section, idx) => {
+      const startTime = idx * sectionDuration;
+      const endTime = startTime + sectionDuration;
+      const displayText = section.text.replace(/'/g, "\\'").slice(0, 120);
+      return `drawtext=text='${displayText}':fontsize=14:fontcolor=white:x=20:y=20:w=600:h=300:enable='between(t,${startTime.toFixed(1)},${endTime.toFixed(1)})'`;
+    })
+    .join(",");
+
+  vfilters.push(textFilters);
+
+  const filterComplex = vfilters.join(",");
+
+  ffmpegArgs.push(
+    "-vf", filterComplex,
+    "-c:v", "libx264",
+    "-preset", "ultrafast",
+    "-pix_fmt", "yuv420p"
+  );
+
+  // Map audio if available
+  if (hasAudio) {
+    ffmpegArgs.push("-c:a", "aac");
+    ffmpegArgs.push("-map", "0:v:0");
+    ffmpegArgs.push("-map", "1:a:0");
+  }
+
+  ffmpegArgs.push("-y", outputPath);
+
+  return new Promise((resolve, reject) => {
+    console.log(`[render] Running FFmpeg...`);
+    const ffmpeg = spawn("ffmpeg", ffmpegArgs);
+
+    let stderr = "";
+    ffmpeg.stderr.on("data", (data) => {
+      stderr += data.toString();
+      // Log progress
+      if (stderr.includes("frame=")) {
+        const match = stderr.match(/frame=\s*(\d+)/);
+        if (match) {
+          const frame = parseInt(match[1]);
+          process.stdout.write(`\r[render] Encoding... frame ${frame}`);
+        }
+      }
+    });
+
+    ffmpeg.on("close", (code) => {
+      process.stdout.write("\n");
       if (code === 0 && fs.existsSync(outputPath)) {
         console.log(`[render] MP4 created successfully: ${outputPath}`);
+        const fileSize = fs.statSync(outputPath).size;
+        console.log(`[render] File size: ${(fileSize / 1024).toFixed(1)} KB`);
+
+        // Clean up temporary files
+        if (hasAudio && fs.existsSync(audioPath)) {
+          fs.unlinkSync(audioPath);
+        }
+        if (hasSubtitles && fs.existsSync(subtitlePath)) {
+          fs.unlinkSync(subtitlePath);
+        }
+
         resolve();
       } else {
-        reject(new Error(`FFmpeg failed: ${stderr.slice(-500)}`));
+        reject(new Error(`FFmpeg failed with code ${code}: ${stderr.slice(-500)}`));
       }
+    });
+
+    ffmpeg.on("error", (err) => {
+      reject(new Error(`FFmpeg error: ${err.message}`));
     });
   });
 }

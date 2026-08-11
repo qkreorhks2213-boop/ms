@@ -5,6 +5,9 @@ import { generateScript } from "@/lib/mystery/script";
 import { generateScenes } from "@/lib/mystery/scenes";
 import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "@/lib/mystery/boredumDetector";
 import { renderMysteryVideo } from "@/lib/mystery/render-simple";
+import { generateNarrationForScenes } from "@/lib/mystery/narration";
+import { generateSubtitles } from "@/lib/mystery/subtitles";
+import { integrateAssetsWithScenes, validateAssetSources } from "@/lib/mystery/assets";
 import type { Scene } from "@/lib/mystery/types";
 
 /**
@@ -100,52 +103,112 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // 6. Visual research
-        console.log(`[test] Step 6: Visual research & AI`);
+        // 6. Asset integration
+        console.log(`[test] Step 6: Real visual asset integration`);
+        const updated6 = readProject(projectId)!;
+        if (updated6.scenes) {
+          const { scenes: scenesWithAssets, assets: sceneAssets } = integrateAssetsWithScenes(
+            updated6.input.topic,
+            updated6.scenes
+          );
+          const assetValidation = validateAssetSources(sceneAssets);
+          console.log(
+            `[test] Assets integrated: ${assetValidation.summary.realAssets} real, ${assetValidation.summary.aiGenerated} AI`
+          );
+          updateProject(projectId, (p) => {
+            p.scenes = scenesWithAssets;
+            p.sceneAssets = sceneAssets as any;
+          });
+        }
+
+        // 7. Visual research
+        console.log(`[test] Step 7: Visual research & AI`);
         updateProject(projectId, (p) => {
           p.stage = "visuals";
         });
 
-        // 7. Boredom detection
-        console.log(`[test] Step 7: Scene optimization`);
-        const updated7 = readProject(projectId)!;
-        if (updated7.scenes) {
-          const analyses = detectBoringScenes(updated7.scenes);
+        // 8. Boredom detection
+        console.log(`[test] Step 8: Scene optimization`);
+        const updated8 = readProject(projectId)!;
+        if (updated8.scenes) {
+          const analyses = detectBoringScenes(updated8.scenes);
           const report = generateBoredumReport(analyses);
           console.log(`[test] ${report}`);
           if (analyses.length > 0) {
-            const optimized = optimizeBoringScenes(updated7.scenes, analyses);
+            const optimized = optimizeBoringScenes(updated8.scenes, analyses);
             updateProject(projectId, (p) => {
               p.scenes = optimized;
             });
           }
         }
 
-        // 8. Narration
-        console.log(`[test] Step 8: Narration & audio`);
+        // 9. Narration (Piper TTS)
+        console.log(`[test] Step 9: Narration & audio`);
         updateProject(projectId, (p) => {
           p.stage = "narration";
         });
-
-        // 9. QA
-        console.log(`[test] Step 9: QA checks`);
         const updated9 = readProject(projectId)!;
+        try {
+          const narrationResult = await generateNarrationForScenes(projectId, updated9);
+          if (narrationResult.success) {
+            console.log(`[test] ✅ Narration generated: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
+            updateProject(projectId, (p) => {
+              p.narrationSegments = narrationResult.segments as any;
+            });
+          } else {
+            console.warn(`[test] ⚠️ Narration failed: ${narrationResult.error}`);
+            updateProject(projectId, (p) => {
+              p.narrationError = narrationResult.error;
+            });
+          }
+        } catch (err: any) {
+          console.warn(`[test] Narration generation error:`, err?.message);
+        }
+
+        // 10. Subtitles
+        console.log(`[test] Step 10: Subtitle generation`);
+        const updated10 = readProject(projectId)!;
+        try {
+          if (updated10.narrationSegments && updated10.script?.sections) {
+            const sceneIds = updated10.scenes?.map((s) => s.id) || [];
+            const subtitleTrack = generateSubtitles(
+              updated10.narrationSegments,
+              sceneIds,
+              "ko-KR"
+            );
+            const verifiedCount = subtitleTrack.subtitles.filter((s) => s.verified).length;
+            console.log(
+              `[test] ✅ Subtitles generated: ${subtitleTrack.subtitles.length} subtitles (${verifiedCount} verified)`
+            );
+            updateProject(projectId, (p) => {
+              p.subtitleTracks = [subtitleTrack] as any;
+            });
+          }
+        } catch (err: any) {
+          console.warn(`[test] Subtitle generation error:`, err?.message);
+        }
+
+        // 11. QA
+        console.log(`[test] Step 11: QA checks`);
+        const updated11 = readProject(projectId)!;
         const checks = {
-          hasResearch: !!updated9.research && updated9.research.length > 0,
-          hasScript: !!updated9.script && updated9.script.sections.length > 0,
-          hasScenes: !!updated9.scenes && updated9.scenes.length > 0,
+          hasResearch: !!updated11.research && updated11.research.length > 0,
+          hasScript: !!updated11.script && updated11.script.sections.length > 0,
+          hasScenes: !!updated11.scenes && updated11.scenes.length > 0,
+          hasNarration: !!updated11.narrationSegments && updated11.narrationSegments.length > 0,
+          hasSubtitles: !!updated11.subtitleTracks && updated11.subtitleTracks.length > 0,
         };
         console.log("[test] QA checks:", checks);
 
-        // 10. Render
-        console.log(`[test] Step 10: Video rendering`);
+        // 12. Render
+        console.log(`[test] Step 12: Video rendering`);
         updateProject(projectId, (p) => {
           p.stage = "render";
         });
         try {
-          const updated10 = readProject(projectId)!;
-          await renderMysteryVideo(projectId, updated10);
-          console.log(`[test] Step 10 complete: MP4 rendered`);
+          const updated12 = readProject(projectId)!;
+          await renderMysteryVideo(projectId, updated12);
+          console.log(`[test] Step 12 complete: MP4 rendered`);
         } catch (err: any) {
           console.warn(`[test] Video rendering failed:`, err?.message);
           // Don't fail the pipeline, just log the error
@@ -156,8 +219,8 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        // 11. Done
-        console.log(`[test] Step 11: Complete`);
+        // 13. Done
+        console.log(`[test] Step 13: Complete`);
         updateProject(projectId, (p) => {
           p.stage = "done";
         });
