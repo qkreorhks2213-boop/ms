@@ -19,6 +19,14 @@ interface BoringAnalysis {
 }
 
 /**
+ * 장면의 지루함 점수 계산 결과
+ */
+interface BoringScoreResult {
+  score: number;
+  reasons: string[];
+}
+
+/**
  * 장면의 지루함 점수 계산
  * 점수가 높을수록 더 지루함
  */
@@ -26,7 +34,7 @@ function calculateBoringScore(
   scene: Scene,
   previousScenes: Scene[],
   nextScenes: Scene[]
-): number {
+): BoringScoreResult {
   let score = 0;
   const reasons: string[] = [];
 

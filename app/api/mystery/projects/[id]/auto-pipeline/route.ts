@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readProject, updateProject, appendErrorLog } from "../../../../../lib/mystery/store";
-import { checkOwnership, requireUserId } from "../../../../../lib/economic/authGuard";
-import { researchTopic } from "../../../../../lib/mystery/research";
-import { generateScript } from "../../../../../lib/mystery/script";
-import { generateScenes } from "../../../../../lib/mystery/scenes";
-import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "../../../../../lib/mystery/boredumDetector";
-import { generateText } from "../../../../../lib/common/localAI";
+import { readProject, updateProject, appendErrorLog } from "../../../../../../lib/mystery/store";
+import { checkOwnership, requireUserId } from "../../../../../../lib/economic/authGuard";
+import { researchTopic } from "../../../../../../lib/mystery/research";
+import { generateScript } from "../../../../../../lib/mystery/script";
+import { generateScenes } from "../../../../../../lib/mystery/scenes";
+import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "../../../../../../lib/mystery/boredumDetector";
+import { generateText } from "../../../../../../lib/common/localAI";
 
 export const runtime = "nodejs";
 
@@ -164,7 +164,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
 
           updateProject(projectId, (p) => {
             p.scenes = optimized;
-            console.log(`[mystery:auto] Optimized ${updated.scenes.length} scenes to ${optimized.length} scenes`);
+            console.log(`[mystery:auto] Optimized ${updated.scenes?.length || 0} scenes to ${optimized.length} scenes`);
           });
         }
       },
