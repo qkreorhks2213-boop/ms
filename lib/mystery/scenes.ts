@@ -107,8 +107,18 @@ async function planAllScenesVisuals(
   const all: VisualPlanItem[] = [];
   for (let i = 0; i < sceneTexts.length; i += SCENES_PER_BATCH) {
     const batch = sceneTexts.slice(i, i + SCENES_PER_BATCH);
-    const batchPlan = await planScenesVisualsBatch(batch, researchText);
-    all.push(...batchPlan);
+    try {
+      const batchPlan = await planScenesVisualsBatch(batch, researchText);
+      all.push(...batchPlan);
+    } catch (err: any) {
+      console.warn(`[mystery] 시각자료 계획 실패, 기본값 사용:`, err?.message);
+      // Fallback: use default visuals
+      const defaults = batch.map((t) => ({
+        visualType: "ai_reconstruction" as SceneVisualType,
+        visualQuery: t.slice(0, 120),
+      }));
+      all.push(...defaults);
+    }
   }
   return all;
 }

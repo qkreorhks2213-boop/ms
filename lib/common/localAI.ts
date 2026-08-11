@@ -57,20 +57,28 @@ async function callOllama(params: {
 }): Promise<string> {
   let res: Response;
   try {
-    res = await fetch(`${OLLAMA_HOST}/api/generate`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: OLLAMA_MODEL,
-        prompt: params.prompt,
-        stream: false,
-        ...(params.json ? { format: "json" } : {}),
-        options: {
-          temperature: params.temperature ?? 0.9,
-          ...(params.maxOutputTokens ? { num_predict: params.maxOutputTokens } : {}),
-        },
-      }),
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+    try {
+      res = await fetch(`${OLLAMA_HOST}/api/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: OLLAMA_MODEL,
+          prompt: params.prompt,
+          stream: false,
+          ...(params.json ? { format: "json" } : {}),
+          options: {
+            temperature: params.temperature ?? 0.9,
+            ...(params.maxOutputTokens ? { num_predict: params.maxOutputTokens } : {}),
+          },
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
   } catch (err: any) {
     throw new Error(ollamaSetupHint(err?.message || String(err)));
   }

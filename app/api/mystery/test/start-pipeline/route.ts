@@ -4,6 +4,8 @@ import { researchTopic } from "@/lib/mystery/research";
 import { generateScript } from "@/lib/mystery/script";
 import { generateScenes } from "@/lib/mystery/scenes";
 import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "@/lib/mystery/boredumDetector";
+import { renderMysteryVideo } from "@/lib/mystery/render-simple";
+import type { Scene } from "@/lib/mystery/types";
 
 /**
  * Test endpoint for starting the auto-pipeline without authentication.
@@ -70,7 +72,33 @@ export async function POST(req: NextRequest) {
           p.stage = "scenes";
         });
         const updated5 = readProject(projectId)!;
-        await generateScenes(projectId, updated5);
+        try {
+          await generateScenes(projectId, updated5);
+        } catch (err: any) {
+          console.warn(`[test] Scene composition failed, continuing:`, err?.message);
+          // Create minimal fallback scenes from script sections
+          const sections = updated5.script?.sections || [];
+          const fallbackScenes = sections.flatMap((section, sectionIdx) => {
+            const sentences = section.text.match(/[^.!?…]+(?:[.!?…]+|$)/g) || [section.text];
+            return sentences.map((sentence, sentenceIdx) => ({
+              id: `scene-${sectionIdx}-${sentenceIdx}`,
+              sectionId: section.id,
+              order: sentenceIdx,
+              text: sentence.trim(),
+              visualType: "ai_reconstruction" as const,
+              visualQuery: sentence.trim().slice(0, 120),
+              visualStatus: "pending" as const,
+              narration: [],
+              visualOrigin: section.visualOrigin,
+              factStatus: section.factStatus,
+              sources: section.sources || [],
+              aiReconstructionExplained: section.needsDisclaimer,
+            }));
+          });
+          updateProject(projectId, (p) => {
+            p.scenes = fallbackScenes;
+          });
+        }
 
         // 6. Visual research
         console.log(`[test] Step 6: Visual research & AI`);
@@ -114,6 +142,19 @@ export async function POST(req: NextRequest) {
         updateProject(projectId, (p) => {
           p.stage = "render";
         });
+        try {
+          const updated10 = readProject(projectId)!;
+          await renderMysteryVideo(projectId, updated10);
+          console.log(`[test] Step 10 complete: MP4 rendered`);
+        } catch (err: any) {
+          console.warn(`[test] Video rendering failed:`, err?.message);
+          // Don't fail the pipeline, just log the error
+          appendErrorLog(projectId, {
+            stage: "render",
+            message: `Rendering failed: ${err?.message}`,
+            retryable: false,
+          });
+        }
 
         // 11. Done
         console.log(`[test] Step 11: Complete`);

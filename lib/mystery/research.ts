@@ -1,6 +1,7 @@
 import { searchGoogleNewsRss } from "../common/rssNews";
 import { generateText } from "../common/localAI";
 import { updateProject } from "./store";
+import { getOfflineResearch } from "./research-offline";
 import type { MysteryProject, ResearchFinding, SourceRef, TimelineEvent, FactStatus } from "./types";
 
 /**
@@ -128,39 +129,67 @@ export async function researchTopic(projectId: string, project: MysteryProject):
 
   const findings: ResearchFinding[] = [...existing];
 
-  // 각 관점별로 리서치 실행
-  for (const { key, label, suffix } of RESEARCH_QUERY_SUFFIXES) {
-    if (doneKeys.has(label)) continue;
+  // Try offline research first for known cases
+  const offlineFindings = getOfflineResearch(topic);
+  if (offlineFindings.length > 0) {
+    console.log(`[mystery] 오프라인 리서치 데이터 사용: ${topic} (${offlineFindings.length}개 찾음)`);
+    findings.push(...offlineFindings);
 
-    console.log(`[mystery] 리서칭: ${topic} - ${label}`);
-
-    const articles = await searchGoogleNewsRss(`${topic} ${suffix}`, 8);
-    const summary =
-      articles.length === 0
-        ? `이 관점("${suffix}")으로는 관련 자료를 찾지 못했습니다.`
-        : (await generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 })).trim();
-
-    const sources: SourceRef[] = articles.map((a) => ({
-      title: a.title,
-      publisher: a.source,
-      publishedAt: a.pubDate,
-      url: a.link,
-      sourceType: "major_media",
-      reliability: "medium",
-      factUsed: a.snippet.slice(0, 200),
-    }));
-
-    const finding: ResearchFinding = {
-      id: `research-${key}`,
-      query: label,
-      sources,
-      summary,
-    };
-    findings.push(finding);
-
+    // Update project with offline findings
     updateProject(projectId, (p) => {
-      p.research = [...(p.research || []).filter((f) => f.id !== finding.id), finding];
+      p.research = [...(p.research || []), ...offlineFindings];
     });
+  } else {
+    // 각 관점별로 리서치 실행
+    for (const { key, label, suffix } of RESEARCH_QUERY_SUFFIXES) {
+      if (doneKeys.has(label)) continue;
+
+      console.log(`[mystery] 리서칭: ${topic} - ${label}`);
+
+      let articles: any[] = [];
+      try {
+        articles = await searchGoogleNewsRss(`${topic} ${suffix}`, 8);
+      } catch (err: any) {
+        console.warn(`[mystery] RSS 검색 실패: ${err.message}, 오프라인 데이터 확인 중...`);
+        // Check offline data as fallback
+        const offlineData = getOfflineResearch(topic);
+        if (offlineData.length > 0) {
+          console.log(`[mystery] 오프라인 데이터로 대체: ${offlineData.length}개 항목`);
+          findings.push(...offlineData);
+          updateProject(projectId, (p) => {
+            p.research = [...(p.research || []), ...offlineData];
+          });
+          continue;
+        }
+      }
+
+      const summary =
+        articles.length === 0
+          ? `이 관점("${suffix}")으로는 관련 자료를 찾지 못했습니다.`
+          : (await generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 })).trim();
+
+      const sources: SourceRef[] = articles.map((a) => ({
+        title: a.title,
+        publisher: a.source,
+        publishedAt: a.pubDate,
+        url: a.link,
+        sourceType: "major_media",
+        reliability: "medium",
+        factUsed: a.snippet.slice(0, 200),
+      }));
+
+      const finding: ResearchFinding = {
+        id: `research-${key}`,
+        query: label,
+        sources,
+        summary,
+      };
+      findings.push(finding);
+
+      updateProject(projectId, (p) => {
+        p.research = [...(p.research || []).filter((f) => f.id !== finding.id), finding];
+      });
+    }
   }
 
   // 타임라인 생성

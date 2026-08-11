@@ -2,6 +2,7 @@ import { generateText, generateJson } from "../common/localAI";
 import { formatResearchForPrompt } from "./research";
 import { updateProject } from "./store";
 import { enrichSectionsWithMetadata } from "./scriptAnalysis";
+import { generateOfflineScript } from "./script-offline";
 import {
   CHARS_PER_MINUTE,
   type MysteryInput,
@@ -200,72 +201,99 @@ export async function generateScript(projectId: string, project: MysteryProject)
 
   console.log(`[mystery] 스크립트 생성 시작: ${topic} (${chapterCount}개 챕터, 목표 ${targetMinutes}분)`);
 
-  // 아웃라인
-  console.log(`[mystery] 아웃라인 생성...`);
-  const outlines = await generateOutline(topic, caseType, researchText, chapterCount);
+  let sections: ScriptSection[] = [];
+  let outlines: string[] = [];
 
-  const sections: ScriptSection[] = [];
-  let sectionIndex = 0;
-
-  // 훅
-  console.log(`[mystery] 훅 생성...`);
+  // Try LLM first, fall back to offline if it fails
   try {
-    const hookText = await generateHook(topic, researchText, hookSeconds);
-    const hookChars = hookText.length;
-    sections.push({
-      id: `hook-${sectionIndex}`,
-      kind: "hook",
-      text: hookText,
-      charCount: hookChars,
-      estimatedSeconds: estimateSeconds(hookChars),
-      status: "done",
-      sources: research.flatMap((r) => r.sources).slice(0, 3),
-    });
-    sectionIndex++;
-  } catch (err) {
-    console.warn(`[mystery] 훅 생성 실패:`, err);
-  }
+    // 아웃라인
+    console.log(`[mystery] 아웃라인 생성...`);
+    outlines = await generateOutline(topic, caseType, researchText, chapterCount);
 
-  // 챕터
-  console.log(`[mystery] ${chapterCount}개 챕터 생성...`);
-  try {
-    const chapters = await generateChapters(topic, researchText, outlines, chapterCount, targetCharsPerChapter);
-    for (let i = 0; i < chapters.length; i++) {
-      const chapterText = chapters[i];
-      const chapterType = MYSTERY_CHAPTER_TYPES[i % MYSTERY_CHAPTER_TYPES.length];
+    let sectionIndex = 0;
+
+    // 훅
+    console.log(`[mystery] 훅 생성...`);
+    try {
+      const hookText = await generateHook(topic, researchText, hookSeconds);
+      const hookChars = hookText.length;
       sections.push({
-        id: `chapter-${i}`,
-        kind: "chapter",
-        index: i + 1,
-        chapterType,
-        outlineSummary: outlines[i] || "",
-        text: chapterText,
-        charCount: chapterText.length,
-        estimatedSeconds: estimateSeconds(chapterText.length),
+        id: `hook-${sectionIndex}`,
+        kind: "hook",
+        text: hookText,
+        charCount: hookChars,
+        estimatedSeconds: estimateSeconds(hookChars),
         status: "done",
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
       sectionIndex++;
+    } catch (err) {
+      console.warn(`[mystery] 훅 생성 실패:`, err);
     }
-  } catch (err) {
-    console.warn(`[mystery] 챕터 생성 실패:`, err);
+
+    // 챕터
+    console.log(`[mystery] ${chapterCount}개 챕터 생성...`);
+    try {
+      const chapters = await generateChapters(topic, researchText, outlines, chapterCount, targetCharsPerChapter);
+      for (let i = 0; i < chapters.length; i++) {
+        const chapterText = chapters[i];
+        const chapterType = MYSTERY_CHAPTER_TYPES[i % MYSTERY_CHAPTER_TYPES.length];
+        sections.push({
+          id: `chapter-${i}`,
+          kind: "chapter",
+          index: i + 1,
+          chapterType,
+          outlineSummary: outlines[i] || "",
+          text: chapterText,
+          charCount: chapterText.length,
+          estimatedSeconds: estimateSeconds(chapterText.length),
+          status: "done",
+          sources: research.flatMap((r) => r.sources).slice(0, 3),
+        });
+        sectionIndex++;
+      }
+    } catch (err) {
+      console.warn(`[mystery] 챕터 생성 실패:`, err);
+    }
+
+    // 결말
+    console.log(`[mystery] 결말 생성...`);
+    try {
+      const endingText = await generateEnding(topic, researchText, endingStyle, endingMinutes);
+      sections.push({
+        id: `ending-${sectionIndex}`,
+        kind: "summary",
+        text: endingText,
+        charCount: endingText.length,
+        estimatedSeconds: estimateSeconds(endingText.length),
+        status: "done",
+        sources: research.flatMap((r) => r.sources).slice(0, 3),
+      });
+    } catch (err) {
+      console.warn(`[mystery] 결말 생성 실패:`, err);
+    }
+  } catch (llmErr: any) {
+    console.warn(`[mystery] LLM 스크립트 생성 실패, 오프라인 데이터 사용:`, llmErr?.message);
+
+    // Use offline script as fallback
+    const offlineScript = generateOfflineScript(topic, targetMinutes);
+    if (offlineScript.length > 0) {
+      console.log(`[mystery] 오프라인 스크립트 사용: ${offlineScript.length}개 섹션`);
+      sections = offlineScript.map((section, idx) => ({
+        id: `script-${idx}`,
+        kind: section.type as any,
+        text: section.text,
+        charCount: section.text.length,
+        estimatedSeconds: section.durationSeconds || estimateSeconds(section.text.length),
+        status: "done" as const,
+        sources: research.flatMap((r) => r.sources).slice(0, 3),
+      }));
+      outlines = offlineScript.map(s => s.title);
+    }
   }
 
-  // 결말
-  console.log(`[mystery] 결말 생성...`);
-  try {
-    const endingText = await generateEnding(topic, researchText, endingStyle, endingMinutes);
-    sections.push({
-      id: `ending-${sectionIndex}`,
-      kind: "summary",
-      text: endingText,
-      charCount: endingText.length,
-      estimatedSeconds: estimateSeconds(endingText.length),
-      status: "done",
-      sources: research.flatMap((r) => r.sources).slice(0, 3),
-    });
-  } catch (err) {
-    console.warn(`[mystery] 결말 생성 실패:`, err);
+  if (sections.length === 0) {
+    throw new Error("스크립트 생성에 실패했습니다.");
   }
 
   const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
