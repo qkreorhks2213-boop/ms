@@ -2,15 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import type { MysteryProject } from "@/lib/mystery/types";
 import { SceneListViewer } from "@/components/SceneAssetViewer";
 import { MetadataDashboard } from "@/components/MetadataDashboard";
+
+export const dynamic = "force-dynamic";
 
 type Tab = "dashboard" | "scenes" | "metadata";
 
 export default function MysteryStudio() {
   const { data: session, status: authStatus } = useSession();
-  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+  const searchParams = useSearchParams();
   const [projectList, setProjectList] = useState<MysteryProject[] | null>(null);
   const [project, setProject] = useState<MysteryProject | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -41,7 +44,7 @@ export default function MysteryStudio() {
       refreshProjectList();
 
       // Check if projectId is in URL
-      const projectId = searchParams?.get("projectId");
+      const projectId = searchParams.get("projectId");
       if (projectId) {
         api(`/api/mystery/projects/${projectId}`)
           .then((data) => {
