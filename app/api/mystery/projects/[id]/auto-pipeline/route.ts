@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { readProject, updateProject, appendErrorLog } from "../../../../../lib/mystery/store";
 import { checkOwnership, requireUserId } from "../../../../../lib/economic/authGuard";
 import { researchTopic } from "../../../../../lib/mystery/research";
-import { generateMysteryScript } from "../../../../../lib/mystery/scriptGenerator";
-import { buildScenesForMystery } from "../../../../../lib/mystery/sceneBuilder";
+import { generateScript } from "../../../../../lib/mystery/script";
+import { generateScenes } from "../../../../../lib/mystery/scenes";
+import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "../../../../../lib/mystery/boredumDetector";
 import { generateText } from "../../../../../lib/common/localAI";
 
 export const runtime = "nodejs";
@@ -101,7 +102,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           p.stage = "script";
         });
 
-        await generateMysteryScript(projectId, updated);
+        await generateScript(projectId, updated);
       },
     },
     {
@@ -114,7 +115,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           p.stage = "scenes";
         });
 
-        await buildScenesForMystery(projectId, updated);
+        await generateScenes(projectId, updated);
       },
     },
     {
@@ -153,19 +154,17 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
 
         // Run boredom detection
-        const boringScenes = updated.scenes.filter((s) => {
-          // Mark scenes as boring if:
-          // - Same visual repeated 3+ times
-          // - No narration change for >60 seconds
-          // - Static scene >30 seconds without visual change
-          // - Identical topic as previous 2 scenes
-          return false; // Placeholder - implement in sceneOptimizer
-        });
+        const analyses = detectBoringScenes(updated.scenes);
+        const report = generateBoredumReport(analyses);
+        console.log(`[mystery:auto] ${report}`);
 
-        if (boringScenes.length > 0) {
-          console.log(`[mystery:auto] Found ${boringScenes.length} potentially boring scenes, optimizing...`);
+        if (analyses.length > 0) {
+          // Optimize scenes by removing/merging boring ones
+          const optimized = optimizeBoringScenes(updated.scenes, analyses);
+
           updateProject(projectId, (p) => {
-            // Scenes will be optimized during visual phase
+            p.scenes = optimized;
+            console.log(`[mystery:auto] Optimized ${updated.scenes.length} scenes to ${optimized.length} scenes`);
           });
         }
       },
