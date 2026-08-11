@@ -20,7 +20,9 @@ export interface NarrationSegment {
 }
 
 const PIPER_CONFIG = {
-  voice: process.env.PIPER_VOICE || "en_US-hfc_female-medium",
+  // Try Korean voice first, fallback to English
+  voice: process.env.PIPER_VOICE || process.env.PIPER_VOICE_KO || "ko_KR-narae-medium",
+  fallbackVoice: "en_US-hfc_female-medium",
   rate: 1.0,
   pitch: 1.0,
   noiseScale: 0.667,
