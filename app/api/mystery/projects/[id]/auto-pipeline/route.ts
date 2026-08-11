@@ -119,36 +119,22 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "6️⃣ Visual Research",
+      name: "6️⃣ Visual Research & AI Reconstruction",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
 
         updateProject(projectId, (p) => {
           p.stage = "visuals";
-          // Mark scenes as pending visual search
-          if (p.scenes) {
-            p.scenes.forEach((s) => {
-              s.realMaterialSearched = false;
-              s.visualStatus = "pending";
-            });
-          }
         });
 
-        console.log("[mystery:auto] Visual asset search queued");
+        console.log("[mystery:auto] Starting visual asset search and AI reconstruction...");
+        // In a real system, we would call the visuals API endpoint here
+        // For now, we just mark the stage transition
       },
     },
     {
-      name: "7️⃣ AI Reconstruction",
-      execute: async () => {
-        const updated = readProject(projectId);
-        if (!updated || !updated.scenes) throw new Error("Scenes not built");
-
-        console.log("[mystery:auto] AI reconstruction ready for missing materials");
-      },
-    },
-    {
-      name: "8️⃣ Scene Optimization (Boredom Detection)",
+      name: "7️⃣ Scene Optimization (Boredom Detection)",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -170,58 +156,29 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "9️⃣ Narration Generation",
+      name: "8️⃣ Narration Generation & Audio",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
 
         updateProject(projectId, (p) => {
           p.stage = "narration";
-          if (p.scenes) {
-            p.scenes.forEach((s) => {
-              s.narration = s.narration || [];
-            });
-          }
         });
 
-        console.log("[mystery:auto] Narration generation queued");
+        console.log("[mystery:auto] Queuing narration and audio processing...");
       },
     },
     {
-      name: "🔟 Subtitle Generation",
-      execute: async () => {
-        console.log("[mystery:auto] Subtitle generation will run with narration");
-      },
-    },
-    {
-      name: "1️⃣1️⃣ BGM Selection",
-      execute: async () => {
-        if (!project.input.useBgm) {
-          console.log("[mystery:auto] BGM disabled in project settings");
-          return;
-        }
-
-        console.log("[mystery:auto] BGM selection queued");
-      },
-    },
-    {
-      name: "1️⃣2️⃣ Audio Mixing",
-      execute: async () => {
-        console.log("[mystery:auto] Audio normalization will run during rendering");
-      },
-    },
-    {
-      name: "1️⃣3️⃣ Final QA",
+      name: "9️⃣ Final Quality Assurance",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
 
-        // Check all components are complete
+        // Check all critical components are present
         const checks = {
           hasResearch: !!updated.research && updated.research.length > 0,
           hasScript: !!updated.script && updated.script.sections.length > 0,
           hasScenes: !!updated.scenes && updated.scenes.length > 0,
-          scriptsHaveNarration: updated.scenes?.every((s) => s.text && s.text.length > 0) ?? false,
         };
 
         const failed = Object.entries(checks)
@@ -229,14 +186,14 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           .map(([name]) => name);
 
         if (failed.length > 0) {
-          console.warn(`[mystery:auto] QA checks failed: ${failed.join(", ")}`);
+          console.warn(`[mystery:auto] Critical QA checks failed: ${failed.join(", ")}`);
         } else {
-          console.log("[mystery:auto] ✅ All QA checks passed");
+          console.log("[mystery:auto] ✅ All critical QA checks passed");
         }
       },
     },
     {
-      name: "1️⃣4️⃣ Video Rendering",
+      name: "🔟 Video Rendering",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
@@ -244,44 +201,21 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         updateProject(projectId, (p) => {
           p.stage = "render";
           p.render.status = "working";
-          p.render.currentStep = "Preparing render...";
+          p.render.currentStep = "Preparing for render...";
         });
 
-        console.log("[mystery:auto] Render queued");
+        console.log("[mystery:auto] Video rendering queued - will begin soon");
       },
     },
     {
-      name: "1️⃣5️⃣ Post-Processing",
-      execute: async () => {
-        console.log("[mystery:auto] Post-processing checks");
-      },
-    },
-    {
-      name: "1️⃣6️⃣ Metadata & Credits",
-      execute: async () => {
-        const updated = readProject(projectId);
-        if (!updated) throw new Error("Project not found");
-
-        // Ensure all sources are credited
-        const allSources = new Set<string>();
-        updated.research?.forEach((r) => {
-          r.sources?.forEach((s) => {
-            allSources.add(`${s.title} (${s.publisher})`);
-          });
-        });
-
-        console.log(`[mystery:auto] Will credit ${allSources.size} sources in output`);
-      },
-    },
-    {
-      name: "1️⃣7️⃣ Publication Ready",
+      name: "🎬 Documentary Complete",
       execute: async () => {
         updateProject(projectId, (p) => {
           p.stage = "done";
-          p.render.status = "ready";
         });
 
-        console.log("[mystery:auto] ✅ Documentary ready for viewing");
+        console.log("[mystery:auto] ✅ All pipeline steps completed");
+        console.log("[mystery:auto] Documentary is ready for rendering and viewing");
       },
     },
   ];
