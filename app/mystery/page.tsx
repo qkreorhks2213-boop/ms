@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import type { MysteryProject } from "@/lib/mystery/types";
@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 type Tab = "dashboard" | "scenes" | "metadata";
 
-export default function MysteryStudio() {
+function MysteryStudioContent() {
   const { data: session, status: authStatus } = useSession();
   const searchParams = useSearchParams();
   const [projectList, setProjectList] = useState<MysteryProject[] | null>(null);
@@ -469,5 +469,13 @@ export default function MysteryStudio() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function MysteryStudio() {
+  return (
+    <Suspense fallback={<div className="p-8 text-center">로딩 중...</div>}>
+      <MysteryStudioContent />
+    </Suspense>
   );
 }
