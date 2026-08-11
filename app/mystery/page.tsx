@@ -10,6 +10,7 @@ type Tab = "dashboard" | "scenes" | "metadata";
 
 export default function MysteryStudio() {
   const { data: session, status: authStatus } = useSession();
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
   const [projectList, setProjectList] = useState<MysteryProject[] | null>(null);
   const [project, setProject] = useState<MysteryProject | null>(null);
   const [tab, setTab] = useState<Tab>("dashboard");
@@ -38,8 +39,40 @@ export default function MysteryStudio() {
   useEffect(() => {
     if (authStatus === "authenticated" && !project) {
       refreshProjectList();
+
+      // Check if projectId is in URL
+      const projectId = searchParams?.get("projectId");
+      if (projectId) {
+        api(`/api/mystery/projects/${projectId}`)
+          .then((data) => {
+            if (data.project) {
+              setProject(data.project);
+              // Remove projectId from URL
+              window.history.replaceState({}, "", "/mystery");
+            }
+          })
+          .catch((err) => console.error("Failed to load project:", err));
+      }
     }
-  }, [authStatus, project]);
+  }, [authStatus, project, searchParams]);
+
+  // Auto-refresh project status while pipeline is running
+  useEffect(() => {
+    if (!project || project.stage === "done") return;
+
+    const interval = setInterval(async () => {
+      try {
+        const data = await api(`/api/mystery/projects/${project.id}`);
+        if (data.project) {
+          setProject(data.project);
+        }
+      } catch (err) {
+        console.error("Failed to refresh project:", err);
+      }
+    }, 2000); // Refresh every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [project?.id, project?.stage]);
 
   if (authStatus === "loading") {
     return (
@@ -83,58 +116,109 @@ export default function MysteryStudio() {
           </div>
         )}
 
-        <div style={{ backgroundColor: "var(--surface-raised)", borderRadius: 12, padding: 30, border: "1px solid var(--line)" }}>
-          <h2 style={{ marginBottom: 20 }}>내 프로젝트</h2>
-
-          {projectList === null ? (
-            <p style={{ color: "var(--text-muted)" }}>불러오는 중...</p>
-          ) : projectList.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)" }}>
-              <p style={{ fontSize: 16, marginBottom: 10 }}>아직 만든 프로젝트가 없습니다.</p>
-              <p style={{ fontSize: 14 }}>새 미스터리 프로젝트를 시작해보세요!</p>
-            </div>
-          ) : (
-            <div style={{ display: "grid", gap: 15 }}>
-              {projectList.map((p) => (
-                <div
-                  key={p.id}
-                  onClick={() => setProject(p)}
+        {projectList === null ? (
+          <p style={{ color: "var(--text-muted)" }}>불러오는 중...</p>
+        ) : projectList.length === 0 ? (
+          <div style={{ textAlign: "center", padding: "60px 20px" }}>
+            <div style={{ fontSize: 48, marginBottom: 20 }}>🎬</div>
+            <h2 style={{ fontSize: 24, marginBottom: 10 }}>새 미스터리 다큐멘터리를 만들어보세요!</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: 16, marginBottom: 30 }}>
+              사건을 설명하면 자동으로 완성된 다큐멘터리 영상이 생성됩니다
+            </p>
+            <button
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.location.href = "/mystery/quick-create";
+                }
+              }}
+              style={{
+                padding: "16px 40px",
+                fontSize: 16,
+                fontWeight: 600,
+                backgroundColor: "var(--primary)",
+                color: "white",
+                border: "none",
+                borderRadius: 8,
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "0.8";
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.opacity = "1";
+              }}
+            >
+              ✨ 자동 제작 시작
+            </button>
+          </div>
+        ) : (
+          <div style={{ display: "grid", gap: 30 }}>
+            <div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <h2>내 프로젝트</h2>
+                <button
+                  onClick={() => {
+                    if (typeof window !== "undefined") {
+                      window.location.href = "/mystery/quick-create";
+                    }
+                  }}
                   style={{
-                    padding: 20,
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--line)",
-                    borderRadius: 8,
+                    padding: "8px 16px",
+                    fontSize: 14,
+                    fontWeight: 600,
+                    backgroundColor: "var(--primary)",
+                    color: "white",
+                    border: "none",
+                    borderRadius: 6,
                     cursor: "pointer",
-                    transition: "all 0.2s",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface-hover)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)";
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface)";
-                    (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 10 }}>
-                    <div>
-                      <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 5 }}>{p.name}</div>
-                      <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{p.input.topic}</div>
+                  + 새 프로젝트
+                </button>
+              </div>
+              <div style={{ display: "grid", gap: 15 }}>
+                {projectList.map((p) => (
+                  <div
+                    key={p.id}
+                    onClick={() => setProject(p)}
+                    style={{
+                      padding: 20,
+                      backgroundColor: "var(--surface)",
+                      border: "1px solid var(--line)",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                      transition: "all 0.2s",
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface-hover)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--line-strong)";
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.backgroundColor = "var(--surface)";
+                      (e.currentTarget as HTMLElement).style.borderColor = "var(--line)";
+                    }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: 10 }}>
+                      <div>
+                        <div style={{ fontSize: 16, fontWeight: 600, marginBottom: 5 }}>{p.name}</div>
+                        <div style={{ fontSize: 13, color: "var(--text-muted)" }}>{p.input.topic}</div>
+                      </div>
+                      <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
+                        {new Date(p.createdAt).toLocaleDateString("ko-KR")}
+                      </div>
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--text-muted)" }}>
-                      {new Date(p.createdAt).toLocaleDateString("ko-KR")}
+                    <div style={{ display: "flex", gap: 20, fontSize: 13, color: "var(--text-muted)" }}>
+                      <span>단계: {p.stage}</span>
+                      <span>장면: {p.scenes?.length || 0}</span>
+                      <span>대본: {p.script?.sections.length || 0}</span>
                     </div>
                   </div>
-                  <div style={{ display: "flex", gap: 20, fontSize: 13, color: "var(--text-muted)" }}>
-                    <span>단계: {p.stage}</span>
-                    <span>장면: {p.scenes?.length || 0}</span>
-                    <span>대본: {p.script?.sections.length || 0}</span>
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -217,6 +301,72 @@ export default function MysteryStudio() {
         {tab === "dashboard" && (
           <div>
             <h2 style={{ fontSize: 20, marginBottom: 20 }}>프로젝트 진행 상황</h2>
+
+            {/* Pipeline status indicator */}
+            <div
+              style={{
+                padding: 20,
+                marginBottom: 30,
+                backgroundColor: "var(--surface-raised)",
+                borderRadius: 8,
+                border: "1px solid var(--line)",
+              }}
+            >
+              <div style={{ fontSize: 12, color: "var(--text-muted)", marginBottom: 10 }}>
+                📊 자동 생성 진행 단계
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, marginBottom: 5 }}>
+                {project.stage === "done"
+                  ? "✅ 완료됨"
+                  : project.stage === "research"
+                    ? "🔍 사건 조사 중..."
+                    : project.stage === "script"
+                      ? "📝 대본 생성 중..."
+                      : project.stage === "scenes"
+                        ? "🎬 장면 구성 중..."
+                        : project.stage === "visuals"
+                          ? "🖼️ 시각 자료 수집 중..."
+                          : project.stage === "narration"
+                            ? "🎤 음성 생성 중..."
+                            : project.stage === "render"
+                              ? "🎥 영상 렌더링 중..."
+                              : `진행 중: ${project.stage}`}
+              </div>
+              <div
+                style={{
+                  width: "100%",
+                  height: 8,
+                  backgroundColor: "var(--surface)",
+                  borderRadius: 4,
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    height: "100%",
+                    backgroundColor: "var(--primary)",
+                    width: `${
+                      project.stage === "done"
+                        ? 100
+                        : project.stage === "research"
+                          ? 15
+                          : project.stage === "script"
+                            ? 35
+                            : project.stage === "scenes"
+                              ? 50
+                              : project.stage === "visuals"
+                                ? 65
+                                : project.stage === "narration"
+                                  ? 80
+                                  : project.stage === "render"
+                                    ? 90
+                                    : 50
+                    }%`,
+                    transition: "width 0.3s ease",
+                  }}
+                />
+              </div>
+            </div>
             <div
               style={{
                 display: "grid",
