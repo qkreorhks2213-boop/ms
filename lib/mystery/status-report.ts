@@ -132,7 +132,7 @@ export function generateStatusReport(project: MysteryProject, apiStatus: Record<
   }
 
   // Check narration phase
-  const hasNarration = project.narrationSegments && project.narrationSegments.length > 0;
+  const hasNarration: boolean = !!(project.narrationSegments && project.narrationSegments.length > 0);
   if (!hasNarration) {
     issues.push({
       severity: "warning",
@@ -145,7 +145,7 @@ export function generateStatusReport(project: MysteryProject, apiStatus: Record<
   }
 
   // Check subtitles phase
-  const hasSubtitles = project.subtitleTracks && project.subtitleTracks.length > 0;
+  const hasSubtitles: boolean = !!(project.subtitleTracks && project.subtitleTracks.length > 0);
   if (!hasSubtitles && hasNarration) {
     issues.push({
       severity: "warning",
@@ -285,7 +285,7 @@ export function generateStatusReport(project: MysteryProject, apiStatus: Record<
     },
 
     sourcesTracked: project.research?.reduce((sum, r) => sum + r.sources.length, 0) || 0,
-    sourceAttributionsIncluded: hasResearch && (project.research?.[0]?.sources.length || 0) > 0,
+    sourceAttributionsIncluded: !!(hasResearch && (project.research?.[0]?.sources.length || 0) > 0),
 
     realVsAiDistribution: {
       realAssets,

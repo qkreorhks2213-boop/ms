@@ -188,28 +188,19 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     ffmpegArgs.push("-i", audioPath);
   }
 
-  // Build video filter for subtitles and text overlay
+  // Build video filter - simplified for reliability
   const vfilters: string[] = [];
 
   // Add subtitle filter if available
   if (hasSubtitles) {
-    vfilters.push(`ass='${subtitlePath.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}'`);
+    const escapeForFilter = (filepath: string) => filepath.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
+    vfilters.push(`subtitles='${escapeForFilter(subtitlePath)}'`);
   }
 
-  // Add text overlay for sections
-  const sectionDuration = totalDuration / sections.length;
-  const textFilters = sections
-    .map((section, idx) => {
-      const startTime = idx * sectionDuration;
-      const endTime = startTime + sectionDuration;
-      const displayText = section.text.replace(/'/g, "\\'").slice(0, 120);
-      return `drawtext=text='${displayText}':fontsize=14:fontcolor=white:x=20:y=20:w=600:h=300:enable='between(t,${startTime.toFixed(1)},${endTime.toFixed(1)})'`;
-    })
-    .join(",");
+  // Simpler approach: skip complex text overlay, just add subtitles
+  // Complex drawtext filters can cause escaping issues with special characters
 
-  vfilters.push(textFilters);
-
-  const filterComplex = vfilters.join(",");
+  let filterComplex = vfilters.length > 0 ? vfilters.join(",") : "null";
 
   ffmpegArgs.push(
     "-vf", filterComplex,

@@ -255,13 +255,15 @@ export function integrateAssetsWithScenes(topic: string, scenes: Scene[]): { sce
         visualType: asset.assetType as any,
         visualQuery: asset.title,
         sources: [...(scene.sources || []), {
+          id: `asset-${asset.id}`,
           title: asset.title,
-          source: asset.publisher,
-          sourceType: "archive",
-          pubDate: asset.date,
+          publisher: asset.publisher,
+          sourceType: "museum" as const,
+          publishedAt: asset.date,
           url: asset.url,
           reliability: "high" as const,
-        } as SourceRef],
+          factUsed: asset.title,
+        }],
       };
     }
 

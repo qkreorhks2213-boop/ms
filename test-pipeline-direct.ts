@@ -46,7 +46,6 @@ async function runFullPipeline(topic: string, caseType: string) {
   console.log(`[1/13] Creating project: ${projectId}`);
 
   const project = createProject({
-    name: `Test: ${topic}`,
     topic,
     caseType: caseType as any,
     targetMinutes: 10,
@@ -57,7 +56,7 @@ async function runFullPipeline(topic: string, caseType: string) {
     useBgm: true,
     voiceName: "default",
     sceneVisualTarget: 40,
-  });
+  }, "test-user");
 
   // 1. Research
   console.log(`[2/13] Researching: ${topic}`);
