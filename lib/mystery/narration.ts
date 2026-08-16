@@ -29,6 +29,24 @@ const PIPER_CONFIG = {
   noiseW: 0.8,
 };
 
+// Calculate WAV file duration from header
+function getWavDuration(filePath: string): number {
+  try {
+    const buffer = fs.readFileSync(filePath);
+    if (buffer.length < 44) return 0;
+
+    // Read sample rate (bytes 24-27)
+    const sampleRate = buffer.readUInt32LE(24);
+    // Read byte rate (bytes 28-31)
+    const byteRate = buffer.readUInt32LE(28);
+    // Calculate duration in seconds
+    const dataSize = buffer.length - 44;
+    return Math.round((dataSize / byteRate) * 10) / 10;
+  } catch {
+    return 0;
+  }
+}
+
 // FFmpeg를 이용한 오디오 생성 (실제 음성 파형 생성)
 async function generateNarrationWithFFmpeg(text: string, segmentId: string, audioPath: string): Promise<NarrationSegment | null> {
   return new Promise((resolve) => {
@@ -39,7 +57,7 @@ async function generateNarrationWithFFmpeg(text: string, segmentId: string, audi
 
       const ffmpegCmd = `ffmpeg -f lavfi -i "sine=frequency=${frequency}:duration=${estimatedDuration}" -af "volume=0.3" -y "${audioPath}" 2>/dev/null`;
 
-      console.log(`[narration-ffmpeg] Generating ${estimatedDuration}s audio`);
+      console.log(`[narration-ffmpeg] Generating ~${estimatedDuration}s audio`);
 
       exec(ffmpegCmd, (error) => {
         if (error) {
@@ -48,19 +66,28 @@ async function generateNarrationWithFFmpeg(text: string, segmentId: string, audi
           return;
         }
 
-        if (fs.existsSync(audioPath)) {
-          resolve({
-            id: segmentId,
-            text,
-            audioPath,
-            durationSeconds: estimatedDuration,
-            sampleRate: 44100,
-            channels: 1,
-            format: "wav",
-          });
-        } else {
+        if (!fs.existsSync(audioPath)) {
           resolve(null);
+          return;
         }
+
+        // Measure actual duration from WAV file (not estimated)
+        const actualDuration = getWavDuration(audioPath);
+        if (actualDuration <= 0) {
+          console.warn(`[narration-ffmpeg] Could not determine actual duration, using estimate: ${estimatedDuration}s`);
+        } else {
+          console.log(`[narration-ffmpeg] Actual duration: ${actualDuration}s (estimated: ${estimatedDuration}s)`);
+        }
+
+        resolve({
+          id: segmentId,
+          text,
+          audioPath,
+          durationSeconds: actualDuration > 0 ? actualDuration : estimatedDuration,
+          sampleRate: 44100,
+          channels: 1,
+          format: "wav",
+        });
       });
     } catch (error) {
       console.error(`[narration-ffmpeg] Error:`, error);
@@ -94,14 +121,20 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
 
       piper.on("close", (code) => {
         if (code === 0 && fs.existsSync(audioPath)) {
-          const stats = fs.statSync(audioPath);
-          const durationSeconds = Math.ceil(stats.size / (16000 * 2));
+          // Read actual duration from WAV file header
+          const actualDuration = getWavDuration(audioPath);
+
+          if (actualDuration <= 0) {
+            console.warn(`[narration] Could not read Piper audio duration from file`);
+            generateNarrationWithFFmpeg(text, segmentId, audioPath).then(resolve);
+            return;
+          }
 
           resolve({
             id: segmentId,
             text,
             audioPath,
-            durationSeconds,
+            durationSeconds: actualDuration,
             sampleRate: 16000,
             channels: 1,
             format: "wav",
