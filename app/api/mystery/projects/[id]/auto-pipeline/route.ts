@@ -110,7 +110,27 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "5️⃣ Scene Composition",
+      name: "5️⃣ Visual Asset Discovery",
+      execute: async () => {
+        const updated = readProject(projectId);
+        if (!updated || !updated.script) throw new Error("Script not generated");
+
+        updateProject(projectId, (p) => {
+          p.stage = "visuals";
+        });
+
+        console.log("[mystery:auto] Discovering real visual assets...");
+        const topic = updated.name || "unknown";
+        // Pre-discover assets so scene generation can use them
+        const { scenes: emptyScenes, assets } = integrateAssetsWithScenes(topic, []);
+        updateProject(projectId, (p) => {
+          p.sceneAssets = assets as any;
+        });
+        console.log(`[mystery:auto] Real assets discovered: ${assets.length} assets`);
+      },
+    },
+    {
+      name: "6️⃣ Scene Composition",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.script) throw new Error("Script not generated");
@@ -123,27 +143,23 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "6️⃣ Visual Research & AI Reconstruction",
+      name: "7️⃣ Visual Assets Integration",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
 
-        updateProject(projectId, (p) => {
-          p.stage = "visuals";
-        });
-
-        console.log("[mystery:auto] Starting visual asset search and AI reconstruction...");
+        console.log("[mystery:auto] Integrating visual assets with scenes...");
         const topic = updated.name || "unknown";
         const { scenes, assets } = integrateAssetsWithScenes(topic, updated.scenes);
         updateProject(projectId, (p) => {
           p.scenes = scenes;
           p.sceneAssets = assets as any;
         });
-        console.log(`[mystery:auto] Visual assets integrated: ${assets.length} assets`);
+        console.log(`[mystery:auto] Visual assets integrated: ${assets.length} assets mapped to scenes`);
       },
     },
     {
-      name: "7️⃣ Scene Optimization (Boredom Detection)",
+      name: "8️⃣ Scene Optimization (Boredom Detection)",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -165,7 +181,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "8️⃣ Narration Generation & Audio",
+      name: "9️⃣ Narration Generation & Audio",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -186,7 +202,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "8️⃣.5️⃣ Subtitle Generation",
+      name: "9️⃣.5️⃣ Subtitle Generation",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.narrationSegments) throw new Error("Narration not completed");
@@ -200,7 +216,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "9️⃣ Final Quality Assurance",
+      name: "🔟 Final Quality Assurance",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
@@ -226,7 +242,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "🔟 Video Rendering",
+      name: "1️⃣1️⃣ Video Rendering",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
@@ -249,7 +265,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "🎬 Final Verification & Complete",
+      name: "1️⃣2️⃣ Final Verification & Complete",
       execute: async () => {
         const finalProject = readProject(projectId);
         if (!finalProject) throw new Error("Project not found");
