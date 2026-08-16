@@ -464,5 +464,7 @@ export interface MysteryProject {
     status?: string;
   };
   pipelineError?: string;
+  pipelineRunning?: boolean; // 파이프라인이 현재 실행 중인지 여부 (중복 실행 방지)
+  pipelineStartedAt?: string; // 파이프라인 시작 시간 (타임아웃 감지용)
   errorLog: ErrorLogEntry[];
 }

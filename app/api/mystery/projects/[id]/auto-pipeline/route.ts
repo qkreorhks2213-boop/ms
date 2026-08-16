@@ -346,6 +346,33 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
+  // Check if pipeline is already running (duplicate execution prevention)
+  if (project.pipelineRunning) {
+    const startedAt = project.pipelineStartedAt ? new Date(project.pipelineStartedAt) : new Date();
+    const elapsedSeconds = (Date.now() - startedAt.getTime()) / 1000;
+
+    // If pipeline has been running for more than 30 minutes, assume it's stuck and allow restart
+    if (elapsedSeconds < 1800) {
+      return NextResponse.json(
+        {
+          error: "Pipeline already running",
+          message: `Pipeline started ${Math.round(elapsedSeconds)} seconds ago. Wait for completion or clear the lock after 30 minutes.`,
+          pipelineRunning: true,
+          elapsedSeconds: Math.round(elapsedSeconds),
+        },
+        { status: 409 }
+      );
+    } else {
+      console.warn(`[mystery:auto] Pipeline appears stuck (running for ${Math.round(elapsedSeconds)}s), allowing restart`);
+    }
+  }
+
+  // Mark pipeline as running
+  updateProject(params.id, (p) => {
+    p.pipelineRunning = true;
+    p.pipelineStartedAt = new Date().toISOString();
+  });
+
   // Start auto-pipeline in background
   runAutoPipeline(params.id, project)
     .catch((err) => {
@@ -357,6 +384,12 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       });
       updateProject(params.id, (p) => {
         p.pipelineError = err?.message || String(err);
+      });
+    })
+    .finally(() => {
+      // Clear running flag when pipeline completes (success or failure)
+      updateProject(params.id, (p) => {
+        p.pipelineRunning = false;
       });
     });
 
