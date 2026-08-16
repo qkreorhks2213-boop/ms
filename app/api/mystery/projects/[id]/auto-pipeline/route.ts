@@ -224,7 +224,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         // Check all critical components are present
         const checks = {
           hasResearch: !!updated.research && updated.research.length > 0,
-          hasScript: !!updated.script && updated.script.sections.length > 0,
+          hasScript: !!updated.script && updated.script.sections && updated.script.sections.length > 0,
           hasScenes: !!updated.scenes && updated.scenes.length > 0,
           hasNarration: !!updated.narrationSegments && updated.narrationSegments.length > 0,
           hasSubtitles: !!updated.subtitleTracks && updated.subtitleTracks.length > 0,
@@ -235,10 +235,11 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           .map(([name]) => name);
 
         if (failed.length > 0) {
-          console.warn(`[mystery:auto] Critical QA checks failed: ${failed.join(", ")}`);
-        } else {
-          console.log("[mystery:auto] ✅ All critical QA checks passed");
+          console.error(`[mystery:auto] QA checks failed: ${failed.join(", ")}`);
+          throw new Error(`Quality assurance failed: missing ${failed.join(", ")}`);
         }
+
+        console.log("[mystery:auto] ✅ All QA checks passed");
       },
     },
     {
