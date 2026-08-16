@@ -330,9 +330,53 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
   });
 }
 
+async function validateMP4File(filePath: string): Promise<boolean> {
+  try {
+    if (!fs.existsSync(filePath)) {
+      console.error(`[render] Output file not found: ${filePath}`);
+      return false;
+    }
+
+    const stats = fs.statSync(filePath);
+
+    // MP4 files must be at least 1KB
+    if (stats.size < 1024) {
+      console.error(`[render] Output file too small: ${(stats.size / 1024).toFixed(1)}KB (expected >1KB)`);
+      return false;
+    }
+
+    // Check MP4 file header (ftypisom, ftypmp42, etc.)
+    const buffer = Buffer.alloc(12);
+    const fd = fs.openSync(filePath, 'r');
+    fs.readSync(fd, buffer, 0, 12, 4); // Read at offset 4 where ftyp is located
+    fs.closeSync(fd);
+
+    const header = buffer.toString('ascii', 0, 4);
+    if (header !== 'ftyp') {
+      console.error(`[render] Invalid MP4 header: expected 'ftyp' but got '${header}'`);
+      return false;
+    }
+
+    console.log(`[render] ✅ Output file validated: ${(stats.size / 1024 / 1024).toFixed(1)}MB, proper MP4 format`);
+    return true;
+  } catch (err: any) {
+    console.error(`[render] Validation error:`, err?.message);
+    return false;
+  }
+}
+
 export async function renderMysteryVideo(projectId: string, project: MysteryProject): Promise<void> {
   try {
+    const projectDir = path.join(process.cwd(), "data", "mystery-projects", projectId);
+    const outputPath = path.join(projectDir, "output.mp4");
+
     await generateTestVideo(projectId, project);
+
+    // Validate output file before marking as complete
+    const isValid = await validateMP4File(outputPath);
+    if (!isValid) {
+      throw new Error("Output MP4 file validation failed - file may be corrupted or incomplete");
+    }
 
     updateProject(projectId, (p) => {
       p.stage = "done";
