@@ -58,14 +58,19 @@ function distributeTimeAcrossText(
   const totalDuration = endTime - startTime;
   const durationPerLine = totalDuration / lines.length;
 
-  return lines.map((line, idx) => ({
-    id: `subtitle-${startTime}-${idx}`,
-    text: line,
-    startTime: Math.round(startTime + idx * durationPerLine),
-    endTime: Math.round(startTime + (idx + 1) * durationPerLine),
-    sceneId: "",
-    verified: false,
-  }));
+  return lines.map((line, idx) => {
+    const lineStartTime = Math.round(startTime + idx * durationPerLine);
+    const lineEndTime = Math.round(startTime + (idx + 1) * durationPerLine);
+
+    return {
+      id: `sub-${lineStartTime}-${lineEndTime}`,
+      text: line,
+      startTime: lineStartTime,
+      endTime: lineEndTime,
+      sceneId: "",
+      verified: false,
+    };
+  });
 }
 
 export function generateSubtitles(
@@ -76,6 +81,8 @@ export function generateSubtitles(
   const subtitles: Subtitle[] = [];
   let currentTime = 0;
   let sceneIndex = 0;
+
+  const totalNarrationDuration = narrationSegments.reduce((sum, seg) => sum + seg.durationSeconds, 0);
 
   for (const segment of narrationSegments) {
     const startTime = currentTime * 1000; // Convert to milliseconds
@@ -95,9 +102,28 @@ export function generateSubtitles(
     sceneIndex++;
   }
 
+  const validatedSubs = validateSubtitles(subtitles);
+
+  // Verify subtitle coverage
+  if (subtitles.length === 0 && narrationSegments.length > 0) {
+    console.warn(`[subtitles] No subtitles generated for ${narrationSegments.length} narration segments`);
+  }
+
+  if (subtitles.length > 0) {
+    const firstStart = subtitles[0].startTime;
+    const lastEnd = subtitles[subtitles.length - 1].endTime;
+    const subtitleDuration = (lastEnd - firstStart) / 1000;
+    const expectedDuration = totalNarrationDuration;
+    const durationDiff = Math.abs(subtitleDuration - expectedDuration);
+
+    if (durationDiff > 1) { // Allow 1 second tolerance
+      console.warn(`[subtitles] Duration mismatch: subtitles ${subtitleDuration.toFixed(1)}s vs narration ${expectedDuration.toFixed(1)}s (diff: ${durationDiff.toFixed(1)}s)`);
+    }
+  }
+
   return {
     language,
-    subtitles: validateSubtitles(subtitles),
+    subtitles: validatedSubs,
     format: language === "ko-KR" ? "ass" : "srt",
   };
 }
