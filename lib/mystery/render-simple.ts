@@ -122,6 +122,59 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
   return header + events;
 }
 
+async function generateAssetOverlayFile(sceneAssets: any[], narrationSegments: any[], outputPath: string): Promise<boolean> {
+  if (!sceneAssets || sceneAssets.length === 0) {
+    return false;
+  }
+
+  try {
+    // Create ASS file showing discovered assets as text overlays
+    const header = `[Script Info]
+Title: Mystery Documentary - Real Assets
+ScriptType: v4.00+
+
+[V4+ Styles]
+Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
+Style: AssetLabel,Arial,14,&H00CCFFFF,&H000000FF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,1,0,1,10,10,50,1
+
+[Events]
+Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
+`;
+
+    const events: string[] = [];
+
+    // For each scene asset, create an overlay showing the source
+    sceneAssets.forEach((sceneAsset: any) => {
+      const asset = sceneAsset.asset;
+      if (!asset || !asset.realAsset) return;
+
+      // Use timing from sceneAsset or estimate from narration
+      let startTime = sceneAsset.startTime || 0;
+      let endTime = sceneAsset.endTime || startTime + 5;
+
+      // Create asset label text
+      const label = `SOURCE: ${asset.publisher} (${asset.date.substring(0, 4)})`;
+      const start = formatASSTime(startTime * 1000);
+      const end = formatASSTime(endTime * 1000);
+
+      // Add as top-right corner text
+      events.push(`Dialogue: 1,${start},${end},AssetLabel,,0,0,0,,${label}`);
+    });
+
+    if (events.length === 0) {
+      return false;
+    }
+
+    const assContent = header + events.join("\n");
+    fs.writeFileSync(outputPath, assContent);
+    console.log(`[render] Asset overlay created: ${events.length} discovered real assets labeled`);
+    return true;
+  } catch (err) {
+    console.warn(`[render] Asset overlay generation failed:`, err);
+    return false;
+  }
+}
+
 function formatSRTTime(milliseconds: number): string {
   const totalSeconds = Math.floor(milliseconds / 1000);
   const hours = Math.floor(totalSeconds / 3600);
@@ -152,6 +205,7 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
   const outputPath = path.join(projectDir, "output.mp4");
   const audioPath = path.join(projectDir, "audio.m4a");
   const subtitlePath = path.join(projectDir, "subtitles.ass");
+  const assetsPath = path.join(projectDir, "assets.ass");
 
   console.log(`[render] Generating MP4 with ${sections.length} sections...`);
 
@@ -180,6 +234,14 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     hasSubtitles = await generateSubtitleFile(project.subtitleTracks[0], subtitlePath);
   }
 
+  // Handle scene assets - show real asset sources as overlay
+  let hasAssetOverlay = false;
+  const sceneAssets = (project.sceneAssets as any[]) || [];
+  if (sceneAssets.length > 0) {
+    console.log(`[render] Using ${sceneAssets.length} discovered scene assets...`);
+    hasAssetOverlay = await generateAssetOverlayFile(sceneAssets, project.narrationSegments || [], assetsPath);
+  }
+
   // Build FFmpeg command based on available components
   const ffmpegArgs: string[] = ["-f", "lavfi", "-i", `color=c=black:s=${TARGET_WIDTH}x${TARGET_HEIGHT}:d=${totalDuration}`];
 
@@ -191,14 +253,17 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
   // Build video filter - simplified for reliability
   const vfilters: string[] = [];
 
+  // Add asset overlay if available (shows discovered real assets)
+  if (hasAssetOverlay) {
+    const escapeForFilter = (filepath: string) => filepath.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
+    vfilters.push(`subtitles='${escapeForFilter(assetsPath)}'`);
+  }
+
   // Add subtitle filter if available
   if (hasSubtitles) {
     const escapeForFilter = (filepath: string) => filepath.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
     vfilters.push(`subtitles='${escapeForFilter(subtitlePath)}'`);
   }
-
-  // Simpler approach: skip complex text overlay, just add subtitles
-  // Complex drawtext filters can cause escaping issues with special characters
 
   let filterComplex = vfilters.length > 0 ? vfilters.join(",") : "null";
 
@@ -248,6 +313,9 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
         }
         if (hasSubtitles && fs.existsSync(subtitlePath)) {
           fs.unlinkSync(subtitlePath);
+        }
+        if (hasAssetOverlay && fs.existsSync(assetsPath)) {
+          fs.unlinkSync(assetsPath);
         }
 
         resolve();
