@@ -6,6 +6,10 @@ import { generateScript } from "../../../../../../lib/mystery/script";
 import { generateScenes } from "../../../../../../lib/mystery/scenes";
 import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "../../../../../../lib/mystery/boredumDetector";
 import { generateText } from "../../../../../../lib/common/localAI";
+import { generateNarrationForScenes } from "../../../../../../lib/mystery/narration";
+import { renderMysteryVideo } from "../../../../../../lib/mystery/render-simple";
+import { integrateAssetsWithScenes } from "../../../../../../lib/mystery/assets";
+import { generateSubtitles } from "../../../../../../lib/mystery/subtitles";
 
 export const runtime = "nodejs";
 
@@ -129,8 +133,13 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         });
 
         console.log("[mystery:auto] Starting visual asset search and AI reconstruction...");
-        // In a real system, we would call the visuals API endpoint here
-        // For now, we just mark the stage transition
+        const topic = updated.name || "unknown";
+        const { scenes, assets } = integrateAssetsWithScenes(topic, updated.scenes);
+        updateProject(projectId, (p) => {
+          p.scenes = scenes;
+          p.sceneAssets = assets as any;
+        });
+        console.log(`[mystery:auto] Visual assets integrated: ${assets.length} assets`);
       },
     },
     {
@@ -165,7 +174,29 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           p.stage = "narration";
         });
 
-        console.log("[mystery:auto] Queuing narration and audio processing...");
+        console.log("[mystery:auto] Generating narration and audio processing...");
+        const narrationResult = await generateNarrationForScenes(projectId, updated);
+        if (!narrationResult.success) {
+          throw new Error(`Narration generation failed: ${narrationResult.error}`);
+        }
+        updateProject(projectId, (p) => {
+          p.narrationSegments = narrationResult.segments as any;
+        });
+        console.log(`[mystery:auto] Narration completed: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
+      },
+    },
+    {
+      name: "8️⃣.5️⃣ Subtitle Generation",
+      execute: async () => {
+        const updated = readProject(projectId);
+        if (!updated || !updated.narrationSegments) throw new Error("Narration not completed");
+
+        const sceneIds = updated.scenes?.map((s) => s.id) || [];
+        const subtitleTrack = generateSubtitles(updated.narrationSegments, sceneIds, "ko-KR");
+        updateProject(projectId, (p) => {
+          p.subtitleTracks = [subtitleTrack] as any;
+        });
+        console.log(`[mystery:auto] Subtitles generated: ${subtitleTrack.subtitles.length} items`);
       },
     },
     {
@@ -179,6 +210,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           hasResearch: !!updated.research && updated.research.length > 0,
           hasScript: !!updated.script && updated.script.sections.length > 0,
           hasScenes: !!updated.scenes && updated.scenes.length > 0,
+          hasNarration: !!updated.narrationSegments && updated.narrationSegments.length > 0,
+          hasSubtitles: !!updated.subtitleTracks && updated.subtitleTracks.length > 0,
         };
 
         const failed = Object.entries(checks)
@@ -201,38 +234,88 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         updateProject(projectId, (p) => {
           p.stage = "render";
           p.render.status = "working";
-          p.render.currentStep = "Preparing for render...";
+          p.render.currentStep = "Rendering video...";
         });
 
-        console.log("[mystery:auto] Video rendering queued - will begin soon");
+        console.log("[mystery:auto] Starting video rendering...");
+        await renderMysteryVideo(projectId, updated);
+
+        const finalProject = readProject(projectId);
+        if (!finalProject?.output?.mp4) {
+          throw new Error("Video rendering completed but output file not found");
+        }
+
+        console.log(`[mystery:auto] Video rendered successfully: ${finalProject.output.mp4}`);
       },
     },
     {
-      name: "🎬 Documentary Complete",
+      name: "🎬 Final Verification & Complete",
       execute: async () => {
+        const finalProject = readProject(projectId);
+        if (!finalProject) throw new Error("Project not found");
+
+        // Verify all required outputs exist
+        const checks = {
+          hasResearch: !!(finalProject.research && finalProject.research.length > 0),
+          hasScript: !!(finalProject.script && finalProject.script.sections.length > 0),
+          hasScenes: !!(finalProject.scenes && finalProject.scenes.length > 0),
+          hasNarration: !!(finalProject.narrationSegments && finalProject.narrationSegments.length > 0),
+          hasSubtitles: !!(finalProject.subtitleTracks && finalProject.subtitleTracks.length > 0),
+          hasOutput: !!finalProject.output?.mp4,
+        };
+
+        const allPassed = Object.values(checks).every((v) => v);
+
+        if (!allPassed) {
+          const failed = Object.entries(checks)
+            .filter(([_, passed]) => !passed)
+            .map(([name]) => name);
+          throw new Error(`Final verification failed: ${failed.join(", ")}`);
+        }
+
         updateProject(projectId, (p) => {
           p.stage = "done";
         });
 
-        console.log("[mystery:auto] ✅ All pipeline steps completed");
-        console.log("[mystery:auto] Documentary is ready for rendering and viewing");
+        console.log("[mystery:auto] ✅ All pipeline steps completed and verified");
+        console.log(`[mystery:auto] Final output: ${finalProject.output?.mp4}`);
       },
     },
   ];
 
   // Execute all steps in sequence
-  let stepIndex = 0;
-  for (const step of steps) {
+  let lastSuccessfulStep = -1;
+  for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
+    const step = steps[stepIndex];
     const success = await executeStep(projectId, step.name, () => step.execute(projectId, project));
-    if (!success && stepIndex < steps.length - 1) {
-      // Continue with next step even if current fails
-      // Some steps are optional (e.g., BGM if disabled)
-      console.log(`[mystery:auto] Continuing despite step failure...`);
+
+    if (!success) {
+      // Critical failure - stop pipeline
+      console.error(`[mystery:auto] ❌ Pipeline stopped at step ${stepIndex}: ${step.name}`);
+
+      updateProject(projectId, (p) => {
+        p.pipelineError = `Failed at step: ${step.name}`;
+      });
+
+      appendErrorLog(projectId, {
+        stage: "research",
+        message: `Pipeline failed at step ${stepIndex}: ${step.name}`,
+        retryable: true,
+      });
+
+      return; // Stop execution
     }
-    stepIndex++;
+
+    lastSuccessfulStep = stepIndex;
   }
 
-  console.log("[mystery:auto] ✅ Auto-pipeline completed");
+  console.log(`[mystery:auto] ✅ Auto-pipeline completed (${lastSuccessfulStep + 1}/${steps.length} steps)`);
+
+  // Final verification
+  const finalProject = readProject(projectId);
+  if (finalProject?.output?.mp4) {
+    console.log(`[mystery:auto] ✅ Final output: ${finalProject.output.mp4}`);
+  }
 }
 
 export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
