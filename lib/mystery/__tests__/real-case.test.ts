@@ -3,7 +3,7 @@
  * 실제 한국 미스터리 사건으로 테스트
  */
 
-import { MysteryScript, Scene, Source } from "../types";
+import { MysteryScript, Scene, SourceRef } from "../types";
 import {
   analyzeLengthRequirement,
   detectBoringSegments,
@@ -13,7 +13,7 @@ import {
 describe("Real Mystery Cases", () => {
   describe("Case 1: 노래방 살인 사건 (Karaoke Murder Case)", () => {
     it("should analyze real case with actual sources", () => {
-      const sources: Source[] = [
+      const sources: SourceRef[] = [
         {
           id: "s1",
           title: "노래방 살인 사건 - 경찰청 공식 발표",
@@ -103,7 +103,7 @@ describe("Real Mystery Cases", () => {
           sectionId: "s1",
           order: 0,
           text: "노래방 외부 시점",
-          visualType: "news",
+          visualType: "newspaper",
           visualQuery: "노래방 사건 현장",
           visualStatus: "done",
           visualUrl: "https://example.com/karaoke.jpg",
@@ -131,7 +131,7 @@ describe("Real Mystery Cases", () => {
           sectionId: "s2",
           order: 2,
           text: "용의자 체포",
-          visualType: "news",
+          visualType: "newspaper",
           visualQuery: "용의자 체포 뉴스",
           visualStatus: "done",
           visualUrl: "https://example.com/arrest.jpg",
@@ -145,13 +145,13 @@ describe("Real Mystery Cases", () => {
           sectionId: "s3",
           order: 3,
           text: "법원 판결",
-          visualType: "document",
+          visualType: "official_document",
           visualQuery: "법원 판결 문서",
           visualStatus: "done",
           visualUrl: "https://example.com/court.jpg",
           narration: [],
           factStatus: "FACT",
-          visualOrigin: "REAL_OFFICIAL_DOCUMENT",
+          visualOrigin: "REAL_DOCUMENT",
           sources: [sources[3]],
         },
       ];
@@ -181,8 +181,8 @@ describe("Real Mystery Cases", () => {
           sectionId: "sec1",
           order: 0,
           text: "Real news coverage",
-          visualType: "news",
-          visualQuery: "news",
+          visualType: "newspaper",
+          visualQuery: "major_media",
           visualStatus: "done",
           visualUrl: "/real.jpg",
           narration: [],
@@ -194,13 +194,13 @@ describe("Real Mystery Cases", () => {
           sectionId: "sec1",
           order: 1,
           text: "Police statement",
-          visualType: "document",
+          visualType: "official_document",
           visualQuery: "police",
           visualStatus: "done",
           visualUrl: "/police.jpg",
           narration: [],
           factStatus: "FACT",
-          visualOrigin: "REAL_OFFICIAL_DOCUMENT",
+          visualOrigin: "REAL_DOCUMENT",
         },
         {
           id: "s3",
@@ -224,7 +224,7 @@ describe("Real Mystery Cases", () => {
 
   describe("Case 2: 실종 사건 (Missing Person Case)", () => {
     it("should validate length for missing person case", () => {
-      const sources: Source[] = [
+      const sources: SourceRef[] = [
         {
           id: "mp1",
           title: "실종자 수색 공고",
@@ -287,7 +287,7 @@ describe("Real Mystery Cases", () => {
           sectionId: "mp1",
           order: 0,
           text: "실종자 사진",
-          visualType: "photo",
+          visualType: "archive_photo",
           visualQuery: "missing person",
           visualStatus: "done",
           visualUrl: "https://example.com/missing.jpg",
@@ -301,7 +301,7 @@ describe("Real Mystery Cases", () => {
           sectionId: "mp2",
           order: 1,
           text: "수색 현장",
-          visualType: "video",
+          visualType: "video_archive",
           visualQuery: "search operation",
           visualStatus: "done",
           visualUrl: "https://example.com/search.mp4",
@@ -325,11 +325,11 @@ describe("Real Mystery Cases", () => {
 
   describe("Case 3: 미제 사건 재조명 (Cold Case Review)", () => {
     it("should handle complex case with mixed evidence", () => {
-      const sources: Source[] = [
+      const sources: SourceRef[] = [
         { id: "c1", title: "원본 뉴스", publisher: "조선일보", url: "https://chosun.com", sourceType: "major_media", reliability: "high", factUsed: "사건 개요" },
         { id: "c2", title: "형사 인터뷰", publisher: "중앙일보", url: "https://joongang.com", sourceType: "major_media", reliability: "high", factUsed: "수사 기법" },
         { id: "c3", title: "유죄 판단 논거", publisher: "대법원", url: "https://scourt.go.kr", sourceType: "official", reliability: "high", factUsed: "판결 근거" },
-        { id: "c4", title: "제3자 주장", publisher: "인터넷 커뮤니티", url: "https://example.com", sourceType: "user_generated", reliability: "low", factUsed: "대안 가설" },
+        { id: "c4", title: "제3자 주장", publisher: "인터넷 커뮤니티", url: "https://example.com", sourceType: "secondary", reliability: "low", factUsed: "대안 가설" },
       ];
 
       const scenes: Scene[] = [
@@ -338,8 +338,8 @@ describe("Real Mystery Cases", () => {
           sectionId: "c1",
           order: 0,
           text: "원본 뉴스 영상",
-          visualType: "news",
-          visualQuery: "news",
+          visualType: "newspaper",
+          visualQuery: "major_media",
           visualStatus: "done",
           visualUrl: "/news.jpg",
           narration: [],
@@ -366,13 +366,13 @@ describe("Real Mystery Cases", () => {
           sectionId: "c3",
           order: 2,
           text: "법원 판결문",
-          visualType: "document",
+          visualType: "official_document",
           visualQuery: "court",
           visualStatus: "done",
           visualUrl: "/court.jpg",
           narration: [],
           factStatus: "FACT",
-          visualOrigin: "REAL_OFFICIAL_DOCUMENT",
+          visualOrigin: "REAL_DOCUMENT",
           sources: [sources[2]],
         },
         {
@@ -380,7 +380,7 @@ describe("Real Mystery Cases", () => {
           sectionId: "c4",
           order: 3,
           text: "대안 이론",
-          visualType: "graphic",
+          visualType: "diagram",
           visualQuery: "theory",
           visualStatus: "done",
           visualUrl: "/theory.jpg",
@@ -427,7 +427,7 @@ describe("Real Mystery Cases", () => {
           title: "Test",
           publisher: "Test",
           url: "https://example.com",
-          sourceType: "news" as const,
+          sourceType: "major_media" as const,
           reliability: "high" as const,
           factUsed: "test",
         },

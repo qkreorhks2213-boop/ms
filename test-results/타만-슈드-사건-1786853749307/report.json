@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-08-16T04:15:49.292Z",
+  "projectId": "3b02603b-0e56-4973-9e58-7eed1c62cf95",
+  "projectName": "타만 슈드 사건",
+  "overallStatus": "PASS",
+  "pipelineComplete": true,
+  "build": "PASS",
+  "apiStatus": {
+    "ffmpeg": "READY",
+    "piper": "READY",
+    "ollama": "OPTIONAL"
+  },
+  "stages": [
+    {
+      "stage": "research",
+      "status": "PASS",
+      "details": "6 findings from 2+ sources",
+      "itemsProcessed": 6
+    },
+    {
+      "stage": "script",
+      "status": "PASS",
+      "details": "7 sections, 1222 chars, ~0.07599502487562189min",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "scenes",
+      "status": "PASS",
+      "details": "7 scenes with visual planning",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "assets",
+      "status": "PASS",
+      "details": "7 real assets, 0 AI-generated",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "narration",
+      "status": "PASS",
+      "details": "7 segments, 115s total",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "subtitles",
+      "status": "PASS",
+      "details": "28 subtitles generated",
+      "itemsProcessed": 28
+    },
+    {
+      "stage": "render",
+      "status": "PASS",
+      "details": "MP4 video file created"
+    }
+  ],
+  "research": {
+    "status": "PASS",
+    "findingsCount": 6,
+    "sourcesCount": 8
+  },
+  "script": {
+    "status": "PASS",
+    "sectionsCount": 7,
+    "totalChars": 1222,
+    "estimatedMinutes": 0.07599502487562189
+  },
+  "scenes": {
+    "status": "PASS",
+    "scenesCount": 7,
+    "realAssetsCount": 7,
+    "aiGeneratedCount": 0
+  },
+  "narration": {
+    "status": "PASS",
+    "segmentsCount": 7,
+    "totalDuration": 115,
+    "available": true
+  },
+  "subtitles": {
+    "status": "PASS",
+    "subtitlesCount": 28,
+    "verifiedCount": 28,
+    "available": true
+  },
+  "render": {
+    "status": "PASS",
+    "outputPath": "/output.mp4"
+  },
+  "sourcesTracked": 8,
+  "sourceAttributionsIncluded": true,
+  "realVsAiDistribution": {
+    "realAssets": 7,
+    "aiGenerated": 0,
+    "mixed": 0
+  },
+  "issues": [],
+  "recommendations": []
+}
