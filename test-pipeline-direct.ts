@@ -42,8 +42,7 @@ async function runFullPipeline(topic: string, caseType: string) {
   console.log(`${"=".repeat(60)}\n`);
 
   // Create project
-  const projectId = Math.random().toString(36).substring(7);
-  console.log(`[1/13] Creating project: ${projectId}`);
+  console.log(`[1/13] Creating project`);
 
   const project = createProject({
     topic,
@@ -57,6 +56,9 @@ async function runFullPipeline(topic: string, caseType: string) {
     voiceName: "default",
     sceneVisualTarget: 40,
   }, "test-user");
+
+  const projectId = project.id;
+  console.log(`      ✓ Project created: ${projectId}`);
 
   // 1. Research
   console.log(`[2/13] Researching: ${topic}`);
