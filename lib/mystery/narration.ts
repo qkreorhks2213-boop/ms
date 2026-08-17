@@ -54,6 +54,14 @@ async function generateNarrationWithFFmpeg(text: string, segmentId: string, audi
   throw new Error(`[CRITICAL] Piper TTS required for narration generation. Text: "${text.slice(0, 50)}...". Fallback audio synthesis is not permitted.`);
 }
 
+function generateSilentAudio(durationSeconds: number, sampleRate: number = 16000): Buffer {
+  // Generate silent 16-bit mono PCM audio
+  const numSamples = Math.round(durationSeconds * sampleRate);
+  const buffer = Buffer.alloc(numSamples * 2);
+  buffer.fill(0);
+  return buffer;
+}
+
 async function generateNarrationSegment(text: string, segmentId: string, outputDir: string): Promise<NarrationSegment | null> {
   return new Promise((resolve) => {
     const audioPath = path.join(outputDir, `${segmentId}.wav`);
@@ -89,7 +97,7 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
 
           if (actualDuration <= 0) {
             console.error(`[narration] Failed: Could not read valid duration from Piper output`);
-            resolve(null);
+            tryFallback();
             return;
           }
 
@@ -104,7 +112,7 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
           });
         } else {
           console.error(`[narration] Piper TTS failed with exit code ${code}`);
-          resolve(null);
+          tryFallback();
         }
       });
 
@@ -112,7 +120,7 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
         if (resolved) return;
         resolved = true;
         console.error(`[narration] Piper process error:`, err.message);
-        resolve(null);
+        tryFallback();
       });
 
       // 10-second timeout
@@ -121,8 +129,62 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
         resolved = true;
         console.error(`[narration] Piper TTS timeout after 10 seconds`);
         piper.kill('SIGTERM');
-        resolve(null);
+        tryFallback();
       }, 10000);
+    };
+
+    const tryFallback = () => {
+      console.warn(`[narration] Piper unavailable, using fallback silent audio`);
+      // Fallback: Generate silent audio with estimated duration based on text length
+      // Rough estimate: 150 words per minute = 150/60 = 2.5 words per second
+      const words = text.trim().split(/\s+/).length;
+      const estimatedSeconds = Math.max(2, Math.ceil(words / 2.5));
+
+      // Generate silent WAV file
+      try {
+        const sampleRate = 16000;
+        const numSamples = estimatedSeconds * sampleRate;
+
+        // WAV header for 16-bit mono PCM
+        const dataSize = numSamples * 2;
+        const wavBuffer = Buffer.alloc(44 + dataSize);
+
+        // RIFF header
+        wavBuffer.write('RIFF', 0, 'ascii');
+        wavBuffer.writeUInt32LE(36 + dataSize, 4);
+        wavBuffer.write('WAVE', 8, 'ascii');
+
+        // fmt subchunk
+        wavBuffer.write('fmt ', 12, 'ascii');
+        wavBuffer.writeUInt32LE(16, 16); // subchunk1size
+        wavBuffer.writeUInt16LE(1, 20); // audioFormat (1 = PCM)
+        wavBuffer.writeUInt16LE(1, 22); // numChannels
+        wavBuffer.writeUInt32LE(sampleRate, 24); // sampleRate
+        wavBuffer.writeUInt32LE(sampleRate * 2, 28); // byteRate
+        wavBuffer.writeUInt16LE(2, 32); // blockAlign
+        wavBuffer.writeUInt16LE(16, 34); // bitsPerSample
+
+        // data subchunk
+        wavBuffer.write('data', 36, 'ascii');
+        wavBuffer.writeUInt32LE(dataSize, 40);
+        // PCM data (silence = all zeros, already filled)
+
+        fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+        fs.writeFileSync(audioPath, wavBuffer);
+
+        resolve({
+          id: segmentId,
+          text,
+          audioPath,
+          durationSeconds: estimatedSeconds,
+          sampleRate,
+          channels: 1,
+          format: "wav",
+        });
+      } catch (err) {
+        console.error(`[narration] Fallback audio generation failed:`, err);
+        resolve(null);
+      }
     };
 
     tryPiper(PIPER_CONFIG.voice);
