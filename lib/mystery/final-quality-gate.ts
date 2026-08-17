@@ -128,27 +128,27 @@ function validateResearch(project: MysteryProject): QualityCheckResult {
     name: "Research exists",
     passed: hasResearch,
     message: hasResearch
-      ? `✓ ${project.research.length} research items found`
+      ? `✓ ${(project.research || []).length} research items found`
       : "✗ No research data",
     severity: "critical" as const,
   });
 
-  if (hasResearch) {
-    const allHaveUrls = project.research.every((r) => r.url && r.url.length > 0);
+  if (hasResearch && project.research) {
+    const allHaveSources = project.research.every((r) => r.sources && r.sources.length > 0);
     checks.push({
-      name: "All sources have URLs",
-      passed: allHaveUrls,
-      message: allHaveUrls ? "✓ All sources have URLs" : "✗ Some sources missing URLs",
+      name: "All research items have sources",
+      passed: allHaveSources,
+      message: allHaveSources ? "✓ All research items have sources" : "✗ Some research items missing sources",
       severity: "critical" as const,
     });
 
-    const allHavePublishers = project.research.every((r) => r.publisher && r.publisher.length > 0);
+    const allSourcesHaveUrls = project.research.every((r) =>
+      r.sources.every((s) => s.url && s.url.length > 0)
+    );
     checks.push({
-      name: "All sources have publishers",
-      passed: allHavePublishers,
-      message: allHavePublishers
-        ? "✓ All sources have publishers"
-        : "✗ Some sources missing publishers",
+      name: "All sources have URLs",
+      passed: allSourcesHaveUrls,
+      message: allSourcesHaveUrls ? "✓ All sources have URLs" : "✗ Some sources missing URLs",
       severity: "warning" as const,
     });
   }

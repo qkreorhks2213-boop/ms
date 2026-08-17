@@ -304,7 +304,6 @@ export async function validateFrameContent(filePath: string): Promise<FrameExtra
   } catch (err: any) {
     result.message = `[CRITICAL] Frame validation failed: ${err.message}`;
     result.valid = false;
-    result.errors?.push(`[CRITICAL] Frame content validation failed: ${err.message}`);
     return result;
   }
 }

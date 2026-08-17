@@ -387,6 +387,7 @@ export interface Scene {
   // 내레이션
   narration: NarrationChunk[];
   durationSeconds?: number;
+  narrationSegmentId?: string; // 연결된 narration segment의 ID
 
   // 타이밍 정보 (누적 시간)
   startTime?: number; // 영상에서의 시작 시간 (초)
@@ -395,6 +396,29 @@ export interface Scene {
 
   // 메타데이터
   aiReconstructionExplained?: boolean; // "재구성하면" 같은 설명이 내레이션에 포함되었는지
+}
+
+/**
+ * 자막 항목
+ */
+export interface Subtitle {
+  id: string;
+  text: string;
+  startTime: number; // 시작 시간 (초)
+  endTime: number;   // 종료 시간 (초)
+  verified: boolean;
+  sceneId: string;   // 연결된 scene ID
+}
+
+/**
+ * 자막 트랙 (전체)
+ */
+export interface SubtitleTrack {
+  id: string;
+  format: string; // "srt", "vtt", etc.
+  languageCode: string; // "ko-KR", "en-US", etc.
+  subtitles: Subtitle[];
+  verified: boolean;
 }
 
 export type PipelineStage =
@@ -407,7 +431,8 @@ export type PipelineStage =
   | "narration"
   | "review"
   | "render"
-  | "done";
+  | "done"
+  | "failed";
 
 // 공식 14개 Step ID (STEP_01 ~ STEP_14)
 export type PipelineStepId =
@@ -485,7 +510,7 @@ export interface MysteryProject {
   // 각 단계의 산출물
   case?: MysteryCase;
   research?: ResearchFinding[];
-  factcheckResults?: Record<string, FactStatus>; // 주요 주장 -> 팩트체크 상태
+  factcheckResults?: any; // FactCheckReport from factcheck module
   timeline?: TimelineEvent[];
   script?: MysteryScript;
   scenes?: Scene[];
@@ -503,6 +528,7 @@ export interface MysteryProject {
   output?: {
     mp4?: string;
     status?: string;
+    fileSize?: number; // MP4 file size in bytes
   };
   pipelineError?: string;
   errorLog: ErrorLogEntry[];

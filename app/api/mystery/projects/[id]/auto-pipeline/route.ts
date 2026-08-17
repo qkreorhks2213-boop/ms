@@ -118,7 +118,8 @@ async function executeStep(
 async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   const steps: PipelineStep[] = [
     {
-      name: "1️⃣ Investigation",
+      stepId: "STEP_01",
+      name: "Research Investigation",
       stage: "research",
       execute: async () => {
         updateProject(projectId, (p) => {
@@ -128,7 +129,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "2️⃣ Fact-Checking",
+      stepId: "STEP_02",
+      name: "Fact-Checking & Analysis",
       stage: "research",
       execute: async () => {
         const updated = readProject(projectId);
@@ -146,7 +148,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "3️⃣ Timeline",
+      stepId: "STEP_03",
+      name: "Timeline Generation",
       stage: "research",
       execute: async () => {
         const updated = readProject(projectId);
@@ -165,7 +168,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "4️⃣ Script Generation",
+      stepId: "STEP_04",
+      name: "Script Generation",
       stage: "script",
       execute: async () => {
         const updated = readProject(projectId);
@@ -179,28 +183,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "5️⃣ Visual Asset Discovery",
-      stage: "visuals",
-      execute: async () => {
-        const updated = readProject(projectId);
-        if (!updated || !updated.script) throw new Error("Script not generated");
-
-        updateProject(projectId, (p) => {
-          p.stage = "visuals";
-        });
-
-        console.log("[mystery:auto] Discovering real visual assets...");
-        const topic = updated.name || "unknown";
-        // Pre-discover assets so scene generation can use them
-        const { scenes: emptyScenes, assets } = integrateAssetsWithScenes(topic, []);
-        updateProject(projectId, (p) => {
-          p.sceneAssets = assets as any;
-        });
-        console.log(`[mystery:auto] Real assets discovered: ${assets.length} assets`);
-      },
-    },
-    {
-      name: "6️⃣ Scene Composition",
+      stepId: "STEP_05",
+      name: "Scene Composition",
       stage: "scenes",
       execute: async () => {
         const updated = readProject(projectId);
@@ -214,13 +198,18 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "7️⃣ Visual Assets Integration",
+      stepId: "STEP_06",
+      name: "Visual Discovery & Asset Integration",
       stage: "visuals",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
 
-        console.log("[mystery:auto] Integrating visual assets with scenes...");
+        updateProject(projectId, (p) => {
+          p.stage = "visuals";
+        });
+
+        console.log("[mystery:auto] Discovering and integrating visual assets...");
         const topic = updated.name || "unknown";
         const { scenes, assets } = integrateAssetsWithScenes(topic, updated.scenes);
         updateProject(projectId, (p) => {
@@ -231,7 +220,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "7️⃣.5️⃣ Generate Individual Scene Visuals",
+      stepId: "STEP_07",
+      name: "Visual Generation (Real + AI)",
       stage: "visuals",
       execute: async () => {
         const updated = readProject(projectId);
@@ -262,7 +252,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "8️⃣ Scene Optimization (Boredom Detection)",
+      stepId: "STEP_08",
+      name: "Scene Optimization",
       stage: "scenes",
       execute: async () => {
         const updated = readProject(projectId);
@@ -285,7 +276,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "9️⃣ Narration Generation & Audio",
+      stepId: "STEP_09",
+      name: "Narration Generation",
       stage: "narration",
       execute: async () => {
         const updated = readProject(projectId);
@@ -304,22 +296,13 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           p.narrationSegments = narrationResult.segments as any;
         });
         console.log(`[mystery:auto] Narration completed: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
-      },
-    },
-    {
-      name: "9️⃣.5️⃣ Update Scenes with Narration Metadata",
-      stage: "narration",
-      execute: async () => {
-        const updated = readProject(projectId);
-        if (!updated || !updated.narrationSegments || !updated.scenes) throw new Error("Narration or scenes not found");
 
         // Update each scene with its narration segment ID and duration
         const sceneNarrationMap = new Map<string, string>();
         updateProject(projectId, (p) => {
-          if (!p.scenes || !p.script?.sections) return;
+          if (!p.scenes || !p.script?.sections || !p.narrationSegments) return;
 
           for (const scene of p.scenes) {
-            // Find the narration segment index that corresponds to this scene's section
             const sectionIndex = p.script.sections.findIndex((s) => s.id === scene.sectionId);
             if (sectionIndex >= 0 && sectionIndex < p.narrationSegments.length) {
               const narrationSegment = p.narrationSegments[sectionIndex];
@@ -329,23 +312,21 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
             }
           }
         });
-
         console.log(`[mystery:auto] Scene narration metadata updated: ${updated.scenes.length} scenes linked to narration`);
       },
     },
     {
-      name: "1️⃣0️⃣ Subtitle Generation",
+      stepId: "STEP_10",
+      name: "Subtitle Generation",
       stage: "narration",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.narrationSegments) throw new Error("Narration not completed");
 
         // Build scene-to-narration mapping
-        // Each scene belongs to a script section, which has a corresponding narration segment
         const sceneNarrationMap = new Map<string, string>();
         if (updated.scenes && updated.script?.sections) {
           for (const scene of updated.scenes) {
-            // Find the narration segment index that corresponds to this scene's section
             const sectionIndex = updated.script.sections.findIndex((s) => s.id === scene.sectionId);
             if (sectionIndex >= 0 && sectionIndex < updated.narrationSegments.length) {
               sceneNarrationMap.set(scene.id, updated.narrationSegments[sectionIndex].id);
@@ -370,7 +351,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "1️⃣1️⃣ Final Quality Assurance",
+      stepId: "STEP_11",
+      name: "Quality Verification",
       stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
@@ -398,7 +380,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "1️⃣2️⃣ Video Rendering",
+      stepId: "STEP_12",
+      name: "Video Rendering",
       stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
@@ -422,7 +405,8 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "1️⃣3️⃣ Final Verification & Complete",
+      stepId: "STEP_13",
+      name: "Final MP4 Validation",
       stage: "render",
       execute: async () => {
         const finalProject = readProject(projectId);
@@ -474,13 +458,26 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         }
         console.log(`[mystery:auto] ${sceneCheck.message}`);
 
-        // All validations passed - mark as done
+        console.log(`[mystery:auto] ✅ MP4 validation passed: ${finalProject.output?.mp4} (${mp4Validation.fileSize / 1024 / 1024}MB)`);
+      },
+    },
+    {
+      stepId: "STEP_14",
+      name: "Completion & Archival",
+      stage: "render",
+      execute: async () => {
+        const finalProject = readProject(projectId);
+        if (!finalProject) throw new Error("Project not found");
+
+        // Mark project as completed
         updateProject(projectId, (p) => {
           p.stage = "done";
+          p.completedAt = new Date().toISOString();
         });
 
         console.log("[mystery:auto] ✅ All pipeline steps completed and validated");
-        console.log(`[mystery:auto] Final output: ${finalProject.output?.mp4} (${mp4Validation.fileSize / 1024 / 1024}MB)`);
+        console.log(`[mystery:auto] Final output: ${finalProject.output?.mp4}`);
+        console.log(`[mystery:auto] Project archived and marked as complete`);
       },
     },
   ];
@@ -489,11 +486,11 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   let lastSuccessfulStep = -1;
   for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
     const step = steps[stepIndex];
-    const success = await executeStep(projectId, step.name, step.stage, () => step.execute(projectId, project));
+    const success = await executeStep(projectId, step.stepId, step.name, step.stage, () => step.execute(projectId, project));
 
     if (!success) {
       // Critical failure - stop pipeline and mark as failed
-      console.error(`[mystery:auto] ❌ Pipeline failed at step ${stepIndex + 1}/${steps.length}: ${step.name}`);
+      console.error(`[mystery:auto] ❌ Pipeline failed at step ${stepIndex + 1}/${steps.length}: ${step.stepId} - ${step.name}`);
 
       // Get detailed error info
       const project = readProject(projectId);
