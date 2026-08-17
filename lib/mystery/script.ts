@@ -48,7 +48,8 @@ const MYSTERY_CHAPTER_TYPES: MysteryChapterType[] = [
 ];
 
 function estimateSeconds(charCount: number): number {
-  return Math.round((charCount / CHARS_PER_MINUTE) * 60);
+  const minutes = charCount / CHARS_PER_MINUTE;
+  return Math.round(minutes * 60);
 }
 
 function hookSecondsFor(targetMinutes: number): number {
@@ -195,9 +196,11 @@ export async function generateScript(projectId: string, project: MysteryProject)
   const hookSeconds = hookSecondsFor(targetMinutes);
   const endingMinutes = endingMinutesFor(targetMinutes);
   const chapterCount = chapterCountFor(targetMinutes);
-  const targetCharsPerChapter = Math.round(
-    ((targetMinutes * 60 - hookSeconds - endingMinutes * 60) / chapterCount / CHARS_PER_MINUTE) * CHARS_PER_MINUTE
-  );
+
+  // 챕터용 목표 시간 계산 (정확한 단위 사용)
+  const hookMinutes = hookSeconds / 60;
+  const chaptersTotalMinutes = targetMinutes - hookMinutes - endingMinutes;
+  const targetCharsPerChapter = Math.round((chaptersTotalMinutes / chapterCount) * CHARS_PER_MINUTE);
 
   console.log(`[mystery] 스크립트 생성 시작: ${topic} (${chapterCount}개 챕터, 목표 ${targetMinutes}분)`);
 
@@ -212,10 +215,14 @@ export async function generateScript(projectId: string, project: MysteryProject)
 
     let sectionIndex = 0;
 
-    // 훅
+    // 훅 - 필수
     console.log(`[mystery] 훅 생성...`);
+    let hookText = "";
     try {
-      const hookText = await generateHook(topic, researchText, hookSeconds);
+      hookText = await generateHook(topic, researchText, hookSeconds);
+      if (!hookText || hookText.trim().length === 0) {
+        throw new Error("Hook text is empty");
+      }
       const hookChars = hookText.length;
       sections.push({
         id: `hook-${sectionIndex}`,
@@ -227,16 +234,27 @@ export async function generateScript(projectId: string, project: MysteryProject)
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
       sectionIndex++;
-    } catch (err) {
-      console.warn(`[mystery] 훅 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Hook generation failed: ${err?.message}`);
     }
 
-    // 챕터
+    // 챕터 - 필수
     console.log(`[mystery] ${chapterCount}개 챕터 생성...`);
+    let chapters: string[] = [];
     try {
-      const chapters = await generateChapters(topic, researchText, outlines, chapterCount, targetCharsPerChapter);
+      chapters = await generateChapters(topic, researchText, outlines, chapterCount, targetCharsPerChapter);
+      if (!Array.isArray(chapters) || chapters.length === 0) {
+        throw new Error("No chapters generated");
+      }
+      if (chapters.length !== chapterCount) {
+        throw new Error(`Expected ${chapterCount} chapters, got ${chapters.length}`);
+      }
+
       for (let i = 0; i < chapters.length; i++) {
         const chapterText = chapters[i];
+        if (!chapterText || chapterText.trim().length === 0) {
+          throw new Error(`Chapter ${i} is empty`);
+        }
         const chapterType = MYSTERY_CHAPTER_TYPES[i % MYSTERY_CHAPTER_TYPES.length];
         sections.push({
           id: `chapter-${i}`,
@@ -252,14 +270,18 @@ export async function generateScript(projectId: string, project: MysteryProject)
         });
         sectionIndex++;
       }
-    } catch (err) {
-      console.warn(`[mystery] 챕터 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Chapter generation failed: ${err?.message}`);
     }
 
-    // 결말
+    // 결말 - 필수
     console.log(`[mystery] 결말 생성...`);
+    let endingText = "";
     try {
-      const endingText = await generateEnding(topic, researchText, endingStyle, endingMinutes);
+      endingText = await generateEnding(topic, researchText, endingStyle, endingMinutes);
+      if (!endingText || endingText.trim().length === 0) {
+        throw new Error("Ending text is empty");
+      }
       sections.push({
         id: `ending-${sectionIndex}`,
         kind: "summary",
@@ -269,8 +291,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         status: "done",
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
-    } catch (err) {
-      console.warn(`[mystery] 결말 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Ending generation failed: ${err?.message}`);
     }
   } catch (llmErr: any) {
     console.error(`[mystery] LLM 스크립트 생성 실패:`, llmErr?.message);
@@ -282,7 +304,20 @@ export async function generateScript(projectId: string, project: MysteryProject)
   }
 
   const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
-  const estimatedMinutes = totalChars / CHARS_PER_MINUTE / 60;
+  const estimatedMinutes = totalChars / CHARS_PER_MINUTE;
+
+  // 목표 길이 검증
+  const minAllowedMinutes = targetMinutes * 0.9;
+  const maxAllowedMinutes = targetMinutes * 1.1;
+
+  if (estimatedMinutes < minAllowedMinutes || estimatedMinutes > maxAllowedMinutes) {
+    throw new Error(
+      `[CRITICAL] Script length validation failed: ` +
+      `target=${targetMinutes.toFixed(1)}min, ` +
+      `actual=${estimatedMinutes.toFixed(1)}min, ` +
+      `allowed=${minAllowedMinutes.toFixed(1)}-${maxAllowedMinutes.toFixed(1)}min`
+    );
+  }
 
   // 섹션 메타데이터 보강 (visualOrigin, factStatus 추론)
   const enrichedSections = enrichSectionsWithMetadata(sections);
