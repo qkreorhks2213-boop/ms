@@ -209,16 +209,22 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
 
   console.log(`[render] Generating MP4 with ${sections.length} sections...`);
 
-  // Calculate total duration
-  let totalDuration = 0;
+  // Calculate total duration: Use TARGET duration (targetMinutes), not narration duration
+  const targetMinutes = project.input.targetMinutes || 15;
+  const targetSeconds = targetMinutes * 60;
+
+  // Actual narration duration
+  let narrationDuration = 0;
   if (project.narrationSegments && project.narrationSegments.length > 0) {
-    totalDuration = project.narrationSegments.reduce((sum: number, seg: any) => sum + (seg.durationSeconds || 0), 0);
-  } else {
-    const totalChars = sections.reduce((sum, s) => sum + s.charCount, 0);
-    totalDuration = Math.ceil(totalChars / 60);
+    narrationDuration = project.narrationSegments.reduce((sum: number, seg: any) => sum + (seg.durationSeconds || 0), 0);
   }
 
-  console.log(`[render] Total duration: ${totalDuration}s`);
+  // Use target duration to ensure video meets requirement
+  const totalDuration = Math.max(targetSeconds, narrationDuration);
+
+  console.log(`[render] Target duration: ${targetSeconds}s (${targetMinutes}분)`);
+  console.log(`[render] Narration duration: ${narrationDuration}s`);
+  console.log(`[render] Final duration: ${totalDuration}s`);
 
   // Handle audio
   let hasAudio = false;
