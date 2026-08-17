@@ -438,14 +438,6 @@ export interface SubtitleTrack {
   verified?: boolean;
 }
 
-export interface NarrationSegment {
-  id: string;
-  audioPath: string;
-  narration: string;
-  startTimeSeconds: number;
-  durationSeconds: number;
-}
-
 export interface ErrorLogEntry {
   at: string;
   stage: PipelineStage;

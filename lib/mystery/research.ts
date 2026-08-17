@@ -1,7 +1,6 @@
 import { searchGoogleNewsRss } from "../common/rssNews";
 import { generateText } from "../common/localAI";
 import { updateProject } from "./store";
-import { getOfflineResearch } from "./research-offline";
 import type { MysteryProject, ResearchFinding, SourceRef, TimelineEvent, FactStatus } from "./types";
 
 /**

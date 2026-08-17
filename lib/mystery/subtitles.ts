@@ -1,7 +1,7 @@
-import type { NarrationSegment, SubtitleTrack, Subtitle } from "./types";
+import type { SubtitleTrack, Subtitle } from "./types";
 
 export function generateSubtitles(
-  narrationSegments: NarrationSegment[],
+  narrationSegments: any[],
   sceneIds: string[],
   languageCode: string = "en"
 ): SubtitleTrack {
@@ -10,22 +10,28 @@ export function generateSubtitles(
   }
 
   const subtitles: Subtitle[] = [];
+  let currentStartTime = 0;
 
   for (const segment of narrationSegments) {
     if (!segment.audioPath) {
       throw new Error(`[CRITICAL] Narration segment missing audioPath: ${segment.id}`);
     }
 
+    if (segment.durationSeconds === undefined || segment.durationSeconds <= 0) {
+      throw new Error(`[CRITICAL] Narration segment has invalid duration: ${segment.id}`);
+    }
+
     const subtitle: Subtitle = {
       id: segment.id,
-      text: segment.narration,
-      startTime: segment.startTimeSeconds,
-      endTime: segment.startTimeSeconds + segment.durationSeconds,
+      text: segment.text || "",
+      startTime: currentStartTime,
+      endTime: currentStartTime + segment.durationSeconds,
       verified: true,
       sceneId: sceneIds[Math.floor(Math.random() * sceneIds.length)] || "",
     };
 
     subtitles.push(subtitle);
+    currentStartTime += segment.durationSeconds;
   }
 
   if (subtitles.length === 0) {
