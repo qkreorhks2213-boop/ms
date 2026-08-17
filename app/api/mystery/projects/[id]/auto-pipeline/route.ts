@@ -268,8 +268,21 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         const updated = readProject(projectId);
         if (!updated || !updated.narrationSegments) throw new Error("Narration not completed");
 
+        // Build scene-to-narration mapping
+        // Each scene belongs to a script section, which has a corresponding narration segment
+        const sceneNarrationMap = new Map<string, string>();
+        if (updated.scenes && updated.script?.sections) {
+          for (const scene of updated.scenes) {
+            // Find the narration segment index that corresponds to this scene's section
+            const sectionIndex = updated.script.sections.findIndex((s) => s.id === scene.sectionId);
+            if (sectionIndex >= 0 && sectionIndex < updated.narrationSegments.length) {
+              sceneNarrationMap.set(scene.id, updated.narrationSegments[sectionIndex].id);
+            }
+          }
+        }
+
         const sceneIds = updated.scenes?.map((s) => s.id) || [];
-        const subtitleTrack = generateSubtitles(updated.narrationSegments, sceneIds, "ko-KR");
+        const subtitleTrack = generateSubtitles(updated.narrationSegments, sceneIds, "ko-KR", sceneNarrationMap);
         updateProject(projectId, (p) => {
           p.subtitleTracks = [subtitleTrack] as any;
         });
