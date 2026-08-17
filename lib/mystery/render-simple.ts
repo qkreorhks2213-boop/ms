@@ -170,9 +170,8 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
     fs.writeFileSync(outputPath, assContent);
     console.log(`[render] Asset overlay created: ${events.length} discovered real assets labeled`);
     return true;
-  } catch (err) {
-    console.warn(`[render] Asset overlay generation failed:`, err);
-    return false;
+  } catch (err: any) {
+    throw new Error(`[CRITICAL] Asset overlay generation failed: ${err?.message || String(err)}`);
   }
 }
 
