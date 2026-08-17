@@ -21,26 +21,23 @@ export const runtime = "nodejs";
 
 /**
  * Auto-pipeline for mystery documentary generation.
- * Runs all 17 steps automatically without user intervention.
+ * Runs all 14 official steps automatically without user intervention.
  *
- * Steps:
- * 1. Investigation: Research topic from web sources
- * 2. Fact-checking: Verify claims and classify by fact level
- * 3. Timeline: Organize events chronologically
- * 4. Script generation: Create narrative structure
- * 5. Scene composition: Break script into scenes
- * 6. Visual research: Search for real materials
- * 7. AI reconstruction: Generate missing visuals
- * 8. Scene optimization: Remove boring/redundant content
- * 9. Narration generation: Create voiceover
- * 10. Subtitle generation: Add captions
- * 11. BGM selection: Choose background music
- * 12. Audio mixing: Normalize levels
- * 13. Final QA: Quality assurance checks
- * 14. Video rendering: Create MP4
- * 15. Post-processing: Final adjustments
- * 16. Metadata: Add copyright/credits
- * 17. Publication: Mark as complete
+ * Official Pipeline (STEP_01 ~ STEP_14):
+ * STEP_01: Research Investigation - Web search, source collection
+ * STEP_02: Fact-Checking & Analysis - Verify claims, classify status
+ * STEP_03: Timeline Generation - Chronological event extraction
+ * STEP_04: Script Generation - Narrative structure creation
+ * STEP_05: Scene Composition - Break script into visual scenes
+ * STEP_06: Visual Discovery & Asset Integration - Real materials search
+ * STEP_07: Visual Generation (Real + AI) - Image generation per scene
+ * STEP_08: Scene Optimization - Remove boring/repetitive content
+ * STEP_09: Narration Generation - TTS audio generation with timing
+ * STEP_10: Subtitle Generation - Create subtitle tracks with timing
+ * STEP_11: Quality Verification - Comprehensive QA checks
+ * STEP_12: Video Rendering - FFMPEG MP4 generation (1920x1080)
+ * STEP_13: Final MP4 Validation - FFprobe verification
+ * STEP_14: Completion & Archival - Mark project as done
  */
 
 interface PipelineStep {
@@ -246,9 +243,14 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           throw new Error(`[CRITICAL] No scene visuals were generated successfully (0/${totalScenes})`);
         }
 
-        if (successCount < totalScenes * 0.8) {
-          console.warn(`[mystery:auto] Warning: Only ${successCount}/${totalScenes} scenes have visuals (80% target)`);
+        if (successCount < totalScenes * 0.9) {
+          throw new Error(
+            `[CRITICAL] Insufficient visual generation: Only ${successCount}/${totalScenes} scenes have visuals (need 90% minimum)`
+          );
         }
+
+        console.log(`[mystery:auto] Visual generation successful: ${successCount}/${totalScenes} scenes (${(successCount / totalScenes * 100).toFixed(0)}%)`);
+
       },
     },
     {
