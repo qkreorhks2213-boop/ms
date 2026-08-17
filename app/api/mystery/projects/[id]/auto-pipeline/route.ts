@@ -44,6 +44,7 @@ export const runtime = "nodejs";
  */
 
 interface PipelineStep {
+  stepId: string; // STEP_01, STEP_02, ..., STEP_14
   name: string;
   stage: PipelineStage;
   execute: (projectId: string, project: any) => Promise<void>;
@@ -51,26 +52,63 @@ interface PipelineStep {
 
 async function executeStep(
   projectId: string,
+  stepId: string,
   stepName: string,
   stage: PipelineStage,
   stepFn: () => Promise<void>
 ): Promise<boolean> {
+  const startTime = new Date().toISOString();
   try {
-    console.log(`[mystery:auto] ⏳ Step: ${stepName}`);
-    const startTime = Date.now();
+    // Update step status to "running"
+    updateProject(projectId, (p) => {
+      if (!p.steps) p.steps = [];
+      const stepIndex = p.steps.findIndex((s) => s.stepId === stepId);
+      if (stepIndex >= 0) {
+        p.steps[stepIndex].status = "running";
+        p.steps[stepIndex].startedAt = startTime;
+      }
+    });
+
+    console.log(`[mystery:auto] ⏳ ${stepId}: ${stepName}`);
+    const execStartTime = Date.now();
     await stepFn();
-    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[mystery:auto] ✅ Step completed in ${duration}s: ${stepName}`);
+    const duration = ((Date.now() - execStartTime) / 1000).toFixed(1);
+
+    // Update step status to "completed"
+    const completedAt = new Date().toISOString();
+    updateProject(projectId, (p) => {
+      if (!p.steps) p.steps = [];
+      const stepIndex = p.steps.findIndex((s) => s.stepId === stepId);
+      if (stepIndex >= 0) {
+        p.steps[stepIndex].status = "completed";
+        p.steps[stepIndex].completedAt = completedAt;
+      }
+    });
+
+    console.log(`[mystery:auto] ✅ ${stepId} completed in ${duration}s: ${stepName}`);
     return true;
   } catch (err: any) {
     const errorMessage = err?.message || String(err);
     const errorStack = err?.stack || "";
-    console.error(`[mystery:auto] ❌ Step failed: ${stepName}`);
+    console.error(`[mystery:auto] ❌ ${stepId} failed: ${stepName}`);
     console.error(`[mystery:auto] Error details:`, errorMessage);
+
+    // Update step status to "failed"
+    const failedAt = new Date().toISOString();
+    updateProject(projectId, (p) => {
+      if (!p.steps) p.steps = [];
+      const stepIndex = p.steps.findIndex((s) => s.stepId === stepId);
+      if (stepIndex >= 0) {
+        p.steps[stepIndex].status = "failed";
+        p.steps[stepIndex].completedAt = failedAt;
+        p.steps[stepIndex].error = errorMessage;
+        p.steps[stepIndex].retryCount = (p.steps[stepIndex].retryCount || 0) + 1;
+      }
+    });
 
     appendErrorLog(projectId, {
       stage: stage,
-      message: `Step failed: ${stepName} - ${errorMessage}${errorStack ? "\nStack: " + errorStack.split("\n").slice(0, 3).join("\n") : ""}`,
+      message: `${stepId} failed: ${stepName} - ${errorMessage}${errorStack ? "\nStack: " + errorStack.split("\n").slice(0, 3).join("\n") : ""}`,
       retryable: !errorMessage.includes("[CRITICAL]"),
     });
     return false;

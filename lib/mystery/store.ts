@@ -136,6 +136,28 @@ export function createProject(params: CreateProjectParams, userId: string): Myst
     )
   );
 
+  // Initialize all 14 steps as pending
+  const steps: any[] = [
+    "STEP_01",
+    "STEP_02",
+    "STEP_03",
+    "STEP_04",
+    "STEP_05",
+    "STEP_06",
+    "STEP_07",
+    "STEP_08",
+    "STEP_09",
+    "STEP_10",
+    "STEP_11",
+    "STEP_12",
+    "STEP_13",
+    "STEP_14",
+  ].map((stepId) => ({
+    stepId,
+    status: "pending" as const,
+    retryCount: 0,
+  }));
+
   const project: MysteryProject = {
     id: uuid(),
     name: topic.slice(0, 60),
@@ -157,6 +179,7 @@ export function createProject(params: CreateProjectParams, userId: string): Myst
     },
     stage: "research",
     render: { status: "idle" },
+    steps,
   };
   writeProject(project);
   return project;

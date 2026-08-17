@@ -409,6 +409,42 @@ export type PipelineStage =
   | "render"
   | "done";
 
+// 공식 14개 Step ID (STEP_01 ~ STEP_14)
+export type PipelineStepId =
+  | "STEP_01"  // Research Investigation
+  | "STEP_02"  // Fact-Checking & Analysis
+  | "STEP_03"  // Timeline Generation
+  | "STEP_04"  // Script Generation
+  | "STEP_05"  // Scene Composition
+  | "STEP_06"  // Visual Discovery & Asset Integration
+  | "STEP_07"  // Visual Generation (Real + AI)
+  | "STEP_08"  // Scene Optimization
+  | "STEP_09"  // Narration Generation
+  | "STEP_10"  // Subtitle Generation
+  | "STEP_11"  // Quality Verification
+  | "STEP_12"  // Video Rendering
+  | "STEP_13"  // Final MP4 Validation
+  | "STEP_14"; // Completion & Archival
+
+// Step 실행 상태
+export type StepStatus = "pending" | "running" | "completed" | "failed" | "skipped";
+
+// 각 Step의 진행 상황 기록
+export interface StepProgress {
+  stepId: PipelineStepId;
+  status: StepStatus;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  retryCount: number;
+  output?: Record<string, unknown>;
+  validation?: {
+    passed: boolean;
+    checks: string[];
+    errors: string[];
+  };
+}
+
 export interface StageProgress {
   completed: number;
   total: number;
@@ -470,4 +506,8 @@ export interface MysteryProject {
   };
   pipelineError?: string;
   errorLog: ErrorLogEntry[];
+
+  // 새로 추가: 각 Step의 상태 추적
+  steps?: StepProgress[];
+  completedAt?: string; // 최종 완료 시간 (stage = "done"일 때)
 }
