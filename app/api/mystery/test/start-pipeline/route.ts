@@ -75,33 +75,7 @@ export async function POST(req: NextRequest) {
           p.stage = "scenes";
         });
         const updated5 = readProject(projectId)!;
-        try {
-          await generateScenes(projectId, updated5);
-        } catch (err: any) {
-          console.warn(`[test] Scene composition failed, continuing:`, err?.message);
-          // Create minimal fallback scenes from script sections
-          const sections = updated5.script?.sections || [];
-          const fallbackScenes = sections.flatMap((section, sectionIdx) => {
-            const sentences = section.text.match(/[^.!?…]+(?:[.!?…]+|$)/g) || [section.text];
-            return sentences.map((sentence, sentenceIdx) => ({
-              id: `scene-${sectionIdx}-${sentenceIdx}`,
-              sectionId: section.id,
-              order: sentenceIdx,
-              text: sentence.trim(),
-              visualType: "ai_reconstruction" as const,
-              visualQuery: sentence.trim().slice(0, 120),
-              visualStatus: "pending" as const,
-              narration: [],
-              visualOrigin: section.visualOrigin,
-              factStatus: section.factStatus,
-              sources: section.sources || [],
-              aiReconstructionExplained: section.needsDisclaimer,
-            }));
-          });
-          updateProject(projectId, (p) => {
-            p.scenes = fallbackScenes;
-          });
-        }
+        await generateScenes(projectId, updated5);
 
         // 6. Asset integration
         console.log(`[test] Step 6: Real visual asset integration`);
@@ -148,22 +122,14 @@ export async function POST(req: NextRequest) {
           p.stage = "narration";
         });
         const updated9 = readProject(projectId)!;
-        try {
-          const narrationResult = await generateNarrationForScenes(projectId, updated9);
-          if (narrationResult.success) {
-            console.log(`[test] ✅ Narration generated: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
-            updateProject(projectId, (p) => {
-              p.narrationSegments = narrationResult.segments as any;
-            });
-          } else {
-            console.warn(`[test] ⚠️ Narration failed: ${narrationResult.error}`);
-            updateProject(projectId, (p) => {
-              p.narrationError = narrationResult.error;
-            });
-          }
-        } catch (err: any) {
-          console.warn(`[test] Narration generation error:`, err?.message);
+        const narrationResult = await generateNarrationForScenes(projectId, updated9);
+        if (!narrationResult.success) {
+          throw new Error(`Narration generation failed: ${narrationResult.error}`);
         }
+        console.log(`[test] ✅ Narration generated: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
+        updateProject(projectId, (p) => {
+          p.narrationSegments = narrationResult.segments as any;
+        });
 
         // 10. Subtitles
         console.log(`[test] Step 10: Subtitle generation`);

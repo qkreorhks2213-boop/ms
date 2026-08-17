@@ -47,53 +47,11 @@ function getWavDuration(filePath: string): number {
   }
 }
 
-// FFmpeg를 이용한 오디오 생성 (실제 음성 파형 생성)
+// No fallback generation - Piper TTS is mandatory for production
+// If Piper is unavailable or fails, the pipeline must fail
 async function generateNarrationWithFFmpeg(text: string, segmentId: string, audioPath: string): Promise<NarrationSegment | null> {
-  return new Promise((resolve) => {
-    try {
-      const words = text.split(/\s+/).length;
-      const estimatedDuration = Math.max(2, Math.ceil(words / 2.5));
-      const frequency = 400 + (text.length % 200);
-
-      const ffmpegCmd = `ffmpeg -f lavfi -i "sine=frequency=${frequency}:duration=${estimatedDuration}" -af "volume=0.3" -y "${audioPath}" 2>/dev/null`;
-
-      console.log(`[narration-ffmpeg] Generating ~${estimatedDuration}s audio`);
-
-      exec(ffmpegCmd, (error) => {
-        if (error) {
-          console.error(`[narration-ffmpeg] FFmpeg failed:`, error.message);
-          resolve(null);
-          return;
-        }
-
-        if (!fs.existsSync(audioPath)) {
-          resolve(null);
-          return;
-        }
-
-        // Measure actual duration from WAV file (not estimated)
-        const actualDuration = getWavDuration(audioPath);
-        if (actualDuration <= 0) {
-          console.warn(`[narration-ffmpeg] Could not determine actual duration, using estimate: ${estimatedDuration}s`);
-        } else {
-          console.log(`[narration-ffmpeg] Actual duration: ${actualDuration}s (estimated: ${estimatedDuration}s)`);
-        }
-
-        resolve({
-          id: segmentId,
-          text,
-          audioPath,
-          durationSeconds: actualDuration > 0 ? actualDuration : estimatedDuration,
-          sampleRate: 44100,
-          channels: 1,
-          format: "wav",
-        });
-      });
-    } catch (error) {
-      console.error(`[narration-ffmpeg] Error:`, error);
-      resolve(null);
-    }
-  });
+  // Production does not allow fallback audio synthesis
+  throw new Error(`[CRITICAL] Piper TTS required for narration generation. Text: "${text.slice(0, 50)}...". Fallback audio synthesis is not permitted.`);
 }
 
 async function generateNarrationSegment(text: string, segmentId: string, outputDir: string): Promise<NarrationSegment | null> {
@@ -119,14 +77,19 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
         stderrOutput += data.toString();
       });
 
+      let resolved = false;
+
       piper.on("close", (code) => {
+        if (resolved) return;
+        resolved = true;
+
         if (code === 0 && fs.existsSync(audioPath)) {
           // Read actual duration from WAV file header
           const actualDuration = getWavDuration(audioPath);
 
           if (actualDuration <= 0) {
-            console.warn(`[narration] Could not read Piper audio duration from file`);
-            generateNarrationWithFFmpeg(text, segmentId, audioPath).then(resolve);
+            console.error(`[narration] Failed: Could not read valid duration from Piper output`);
+            resolve(null);
             return;
           }
 
@@ -140,21 +103,25 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
             format: "wav",
           });
         } else {
-          // Piper failed, fallback to FFmpeg
-          generateNarrationWithFFmpeg(text, segmentId, audioPath).then(resolve);
+          console.error(`[narration] Piper TTS failed with exit code ${code}`);
+          resolve(null);
         }
       });
 
-      piper.on("error", () => {
-        // Piper not available, fallback to FFmpeg
-        generateNarrationWithFFmpeg(text, segmentId, audioPath).then(resolve);
+      piper.on("error", (err) => {
+        if (resolved) return;
+        resolved = true;
+        console.error(`[narration] Piper process error:`, err.message);
+        resolve(null);
       });
 
-      setTimeout(() => {
-        if (!fs.existsSync(audioPath)) {
-          piper.kill();
-          generateNarrationWithFFmpeg(text, segmentId, audioPath).then(resolve);
-        }
+      // 10-second timeout
+      const timeout = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        console.error(`[narration] Piper TTS timeout after 10 seconds`);
+        piper.kill('SIGTERM');
+        resolve(null);
       }, 10000);
     };
 

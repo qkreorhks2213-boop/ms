@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readProject, updateProject, appendErrorLog } from "../../../../../../lib/mystery/store";
+import path from "path";
+import { readProject, updateProject, appendErrorLog, projectDir } from "../../../../../../lib/mystery/store";
 import { checkOwnership, requireUserId } from "../../../../../../lib/economic/authGuard";
 import { researchTopic } from "../../../../../../lib/mystery/research";
 import { generateScript } from "../../../../../../lib/mystery/script";
@@ -10,6 +11,10 @@ import { generateNarrationForScenes } from "../../../../../../lib/mystery/narrat
 import { renderMysteryVideo } from "../../../../../../lib/mystery/render-simple";
 import { integrateAssetsWithScenes } from "../../../../../../lib/mystery/assets";
 import { generateSubtitles } from "../../../../../../lib/mystery/subtitles";
+import { analyzeResearchClaims } from "../../../../../../lib/mystery/factcheck";
+import { generateTimeline } from "../../../../../../lib/mystery/timeline";
+import { acquirePipelineLock, releasePipelineLock, getPipelineElapsedSeconds, isPipelineRunning } from "../../../../../../lib/mystery/pipeline-lock";
+import { validateMP4WithFFprobe, validateDuration, validateSceneCount } from "../../../../../../lib/mystery/render-validate";
 
 export const runtime = "nodejs";
 
@@ -79,11 +84,15 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         const updated = readProject(projectId);
         if (!updated || !updated.research) throw new Error("Research not completed");
 
+        const factcheckReport = analyzeResearchClaims(updated.research);
         updateProject(projectId, (p) => {
-          // Fact-check results are populated during research
-          // Here we just confirm they're ready
-          p.factcheckResults = p.factcheckResults || {};
+          p.factcheckResults = factcheckReport;
         });
+
+        console.log(
+          `[mystery:auto] Fact-check complete: ${factcheckReport.verified} verified, ` +
+          `${factcheckReport.testimonies} testimonies, ${factcheckReport.disputed} disputed`
+        );
       },
     },
     {
@@ -92,8 +101,16 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         const updated = readProject(projectId);
         if (!updated || !updated.research) throw new Error("Research not completed");
 
-        // Timeline is generated from research in scriptGenerator
-        console.log("[mystery:auto] Timeline generation embedded in script step");
+        const timeline = generateTimeline(updated.research);
+        if (timeline.length === 0) {
+          throw new Error("Failed to generate timeline from research findings");
+        }
+
+        updateProject(projectId, (p) => {
+          p.timeline = timeline;
+        });
+
+        console.log(`[mystery:auto] Timeline generated: ${timeline.length} events`);
       },
     },
     {
@@ -290,12 +307,40 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
           throw new Error(`Final verification failed: ${failed.join(", ")}`);
         }
 
+        // Comprehensive MP4 validation
+        const mp4Path = path.join(projectDir(projectId), "output.mp4");
+        const mp4Validation = await validateMP4WithFFprobe(mp4Path);
+
+        if (!mp4Validation.valid) {
+          throw new Error(
+            `MP4 validation failed: ${mp4Validation.errors.join("; ")}`
+          );
+        }
+
+        console.log(`[mystery:auto] MP4 validated: ${mp4Validation.duration}s, ${mp4Validation.resolution}, ${mp4Validation.fps}fps`);
+
+        // Validate duration (±20% tolerance)
+        const durationCheck = validateDuration(mp4Validation.duration, finalProject.input.targetMinutes, 20);
+        if (!durationCheck.valid) {
+          throw new Error(`Duration validation failed: ${durationCheck.message}`);
+        }
+        console.log(`[mystery:auto] ${durationCheck.message}`);
+
+        // Validate scene count (±20% tolerance)
+        const sceneCount = finalProject.scenes?.length || 0;
+        const sceneCheck = validateSceneCount(sceneCount, finalProject.input.sceneVisualTarget, 20);
+        if (!sceneCheck.valid) {
+          throw new Error(`Scene count validation failed: ${sceneCheck.message}`);
+        }
+        console.log(`[mystery:auto] ${sceneCheck.message}`);
+
+        // All validations passed - mark as done
         updateProject(projectId, (p) => {
           p.stage = "done";
         });
 
-        console.log("[mystery:auto] ✅ All pipeline steps completed and verified");
-        console.log(`[mystery:auto] Final output: ${finalProject.output?.mp4}`);
+        console.log("[mystery:auto] ✅ All pipeline steps completed and validated");
+        console.log(`[mystery:auto] Final output: ${finalProject.output?.mp4} (${mp4Validation.fileSize / 1024 / 1024}MB)`);
       },
     },
   ];
@@ -347,32 +392,19 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  // Check if pipeline is already running (duplicate execution prevention)
-  if (project.pipelineRunning) {
-    const startedAt = project.pipelineStartedAt ? new Date(project.pipelineStartedAt) : new Date();
-    const elapsedSeconds = (Date.now() - startedAt.getTime()) / 1000;
-
-    // If pipeline has been running for more than 30 minutes, assume it's stuck and allow restart
-    if (elapsedSeconds < 1800) {
-      return NextResponse.json(
-        {
-          error: "Pipeline already running",
-          message: `Pipeline started ${Math.round(elapsedSeconds)} seconds ago. Wait for completion or clear the lock after 30 minutes.`,
-          pipelineRunning: true,
-          elapsedSeconds: Math.round(elapsedSeconds),
-        },
-        { status: 409 }
-      );
-    } else {
-      console.warn(`[mystery:auto] Pipeline appears stuck (running for ${Math.round(elapsedSeconds)}s), allowing restart`);
-    }
+  // Check if pipeline is already running using atomic lock
+  if (!acquirePipelineLock(params.id)) {
+    const elapsedSeconds = getPipelineElapsedSeconds(params.id);
+    return NextResponse.json(
+      {
+        error: "Pipeline already running",
+        message: `Pipeline started ${Math.round(elapsedSeconds)} seconds ago. Wait for completion or wait 30 minutes for lock timeout.`,
+        pipelineRunning: true,
+        elapsedSeconds: Math.round(elapsedSeconds),
+      },
+      { status: 409 }
+    );
   }
-
-  // Mark pipeline as running
-  updateProject(params.id, (p) => {
-    p.pipelineRunning = true;
-    p.pipelineStartedAt = new Date().toISOString();
-  });
 
   // Start auto-pipeline in background
   runAutoPipeline(params.id, project)
@@ -388,10 +420,8 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
       });
     })
     .finally(() => {
-      // Clear running flag when pipeline completes (success or failure)
-      updateProject(params.id, (p) => {
-        p.pipelineRunning = false;
-      });
+      // Release lock when pipeline completes (success or failure)
+      releasePipelineLock(params.id);
     });
 
   return NextResponse.json({
