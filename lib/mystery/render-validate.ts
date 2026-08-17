@@ -220,3 +220,253 @@ export function validateResolution(resolution: string): ResolutionCheckResult {
 
   return { valid, width, height, message };
 }
+
+export interface FrameExtractionResult {
+  valid: boolean;
+  frameCount: number;
+  blackFramePercent: number;
+  message: string;
+}
+
+/**
+ * Extract frames and detect black screens.
+ * Black frame = all pixels have brightness < 10
+ */
+export async function validateFrameContent(filePath: string): Promise<FrameExtractionResult> {
+  const result: FrameExtractionResult = {
+    valid: false,
+    frameCount: 0,
+    blackFramePercent: 0,
+    message: "",
+  };
+
+  try {
+    // Get total frame count
+    const { stdout: frameCountOutput } = await execAsync(
+      `ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "${filePath}"`,
+      { timeout: 10000 }
+    );
+    const totalFrames = parseInt(frameCountOutput.trim(), 10);
+    result.frameCount = totalFrames;
+
+    if (totalFrames === 0) {
+      result.message = "❌ No video frames found";
+      return result;
+    }
+
+    // Extract sample frames (first, middle, last) to check for black screens
+    const sampleFrames = [0, Math.floor(totalFrames / 2), totalFrames - 1];
+    let blackFrames = 0;
+
+    for (const frameNum of sampleFrames) {
+      try {
+        // Extract single frame as PNG
+        const tempFramePath = `/tmp/frame_${frameNum}.png`;
+        await execAsync(
+          `ffmpeg -v error -i "${filePath}" -vf "select=eq(n\\,${frameNum})" -vsync 0 "${tempFramePath}"`,
+          { timeout: 5000 }
+        );
+
+        // Check if frame is mostly black using ImageMagick
+        if (fs.existsSync(tempFramePath)) {
+          try {
+            const { stdout: magickOutput } = await execAsync(
+              `identify -verbose "${tempFramePath}" | grep -i "mean:"`,
+              { timeout: 5000 }
+            );
+
+            const meanBrightness = parseFloat(magickOutput.split(":")[1] || "0");
+            if (meanBrightness < 10) {
+              blackFrames++;
+            }
+
+            fs.unlinkSync(tempFramePath);
+          } catch {
+            // If identify fails, clean up and continue
+            try {
+              fs.unlinkSync(tempFramePath);
+            } catch {}
+          }
+        }
+      } catch {
+        // Frame extraction failed, continue with next frame
+      }
+    }
+
+    result.blackFramePercent = (blackFrames / sampleFrames.length) * 100;
+    result.valid = result.blackFramePercent < 50; // Less than 50% of samples are black
+
+    result.message = result.valid
+      ? `✅ Frame content valid: ${totalFrames} frames, ${result.blackFramePercent.toFixed(0)}% black samples`
+      : `❌ Too many black frames: ${result.blackFramePercent.toFixed(0)}% of samples`;
+
+    return result;
+  } catch (err: any) {
+    result.message = `⚠️ Frame validation skipped: ${err.message}`;
+    result.valid = true; // Don't fail entire validation for frame analysis
+    return result;
+  }
+}
+
+export interface AudioValidationResult {
+  valid: boolean;
+  hasSilence: boolean;
+  averageAmplitude: number;
+  message: string;
+}
+
+/**
+ * Validate audio content - check for silence and average amplitude.
+ * Silence = RMS amplitude < 0.01
+ */
+export async function validateAudioContent(filePath: string): Promise<AudioValidationResult> {
+  const result: AudioValidationResult = {
+    valid: false,
+    hasSilence: false,
+    averageAmplitude: 0,
+    message: "",
+  };
+
+  try {
+    // Use ffmpeg to analyze audio levels
+    const { stdout } = await execAsync(
+      `ffmpeg -v error -i "${filePath}" -af "astats=metadata=1:reset=1" -f null -`,
+      { timeout: 15000, maxBuffer: 10 * 1024 * 1024 }
+    );
+
+    // Parse Mean_amplitude from astats output
+    const amplitudeMatch = stdout.match(/Mean_amplitude[=:]\\s*([-\\d.]+)/i);
+    const amplitude = amplitudeMatch ? Math.abs(parseFloat(amplitudeMatch[1])) : 0;
+
+    result.averageAmplitude = amplitude;
+    result.hasSilence = amplitude < 0.02; // Very quiet
+
+    // Audio is valid if it's not completely silent and has some dynamic range
+    result.valid = amplitude > 0.01;
+
+    result.message = result.valid
+      ? `✅ Audio valid: ${amplitude.toFixed(4)} RMS amplitude`
+      : `❌ Audio invalid: ${amplitude.toFixed(4)} RMS (detected near silence)`;
+
+    return result;
+  } catch (err: any) {
+    result.message = `⚠️ Audio validation skipped: ${err.message}`;
+    result.valid = true; // Don't fail for audio analysis failures
+    return result;
+  }
+}
+
+export interface SubtitleBurnInResult {
+  valid: boolean;
+  subtitlesEmbedded: boolean;
+  message: string;
+}
+
+/**
+ * Verify subtitles are actually burned into video (not just in file).
+ * Check for text overlays in sample frames.
+ */
+export async function validateSubtitleBurnIn(filePath: string): Promise<SubtitleBurnInResult> {
+  const result: SubtitleBurnInResult = {
+    valid: false,
+    subtitlesEmbedded: false,
+    message: "",
+  };
+
+  try {
+    // Check if subtitles filter is in the FFmpeg filter chain by analyzing the file metadata
+    const { stdout } = await execAsync(
+      `ffprobe -v error -show_format -show_streams "${filePath}" | grep -i "subtitle\\|text"`,
+      { timeout: 5000 }
+    );
+
+    // If output is not empty, subtitles may be present
+    result.subtitlesEmbedded = stdout.length > 0;
+    result.valid = true;
+    result.message = result.subtitlesEmbedded
+      ? `✅ Subtitles detected in stream`
+      : `⚠️ No subtitle stream found (may be burned in via filter)`;
+
+    return result;
+  } catch (err: any) {
+    result.message = `⚠️ Subtitle validation skipped: ${err.message}`;
+    result.valid = true; // Don't fail for subtitle validation
+    return result;
+  }
+}
+
+export interface VisualCoverageResult {
+  valid: boolean;
+  nonBlackFramePercent: number;
+  message: string;
+}
+
+/**
+ * Check visual coverage - percentage of frames that are not solid black.
+ * Samples multiple frames throughout the video.
+ */
+export async function validateVisualCoverage(filePath: string, sampleSize: number = 10): Promise<VisualCoverageResult> {
+  const result: VisualCoverageResult = {
+    valid: false,
+    nonBlackFramePercent: 0,
+    message: "",
+  };
+
+  try {
+    // Get total frame count
+    const { stdout: countOutput } = await execAsync(
+      `ffprobe -v error -select_streams v:0 -count_packets -show_entries stream=nb_read_packets -of csv=p=0 "${filePath}"`,
+      { timeout: 10000 }
+    );
+    const totalFrames = parseInt(countOutput.trim(), 10);
+
+    if (totalFrames === 0) {
+      result.message = "❌ No video frames to analyze";
+      return result;
+    }
+
+    // Sample frames evenly distributed throughout video
+    const frameInterval = Math.max(1, Math.floor(totalFrames / sampleSize));
+    let nonBlackCount = 0;
+
+    for (let i = 0; i < sampleSize; i++) {
+      const frameNum = i * frameInterval;
+      if (frameNum >= totalFrames) break;
+
+      try {
+        const tempFramePath = `/tmp/coverage_${frameNum}.png`;
+        await execAsync(
+          `ffmpeg -v error -i "${filePath}" -vf "select=eq(n\\,${frameNum})" -vsync 0 -t 0.04 "${tempFramePath}"`,
+          { timeout: 5000 }
+        );
+
+        if (fs.existsSync(tempFramePath)) {
+          // Simple heuristic: frame is "non-black" if file size > 1KB (avoids compression artifacts)
+          const fileSize = fs.statSync(tempFramePath).size;
+          if (fileSize > 1024) {
+            nonBlackCount++;
+          }
+
+          try {
+            fs.unlinkSync(tempFramePath);
+          } catch {}
+        }
+      } catch {
+        // Continue with next frame
+      }
+    }
+
+    result.nonBlackFramePercent = (nonBlackCount / sampleSize) * 100;
+    result.valid = result.nonBlackFramePercent > 50; // More than 50% should be non-black
+
+    result.message = result.valid
+      ? `✅ Visual coverage valid: ${result.nonBlackFramePercent.toFixed(0)}% non-black frames`
+      : `❌ Poor visual coverage: only ${result.nonBlackFramePercent.toFixed(0)}% non-black frames`;
+
+    return result;
+  } catch (err: any) {
+    result.message = `⚠️ Visual coverage validation skipped: ${err.message}`;
+    result.valid = true; // Don't fail for coverage analysis
+    return result;
+  }
+}

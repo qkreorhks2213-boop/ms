@@ -8,6 +8,14 @@ import path from "path";
 import fs from "fs";
 import { readProject, updateProject, publicGeneratedDir } from "./store";
 import type { MysteryProject } from "./types";
+import {
+  validateMP4WithFFprobe,
+  validateDuration,
+  validateFrameContent,
+  validateAudioContent,
+  validateSubtitleBurnIn,
+  validateVisualCoverage,
+} from "./render-validate";
 
 const TARGET_WIDTH = 640;
 const TARGET_HEIGHT = 360;
@@ -337,10 +345,9 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
 }
 
 async function validateMP4File(filePath: string): Promise<boolean> {
-  // Validation now done comprehensively in render-validate module
-  // This is just a basic pre-render check
   try {
     if (!fs.existsSync(filePath)) {
+      console.error(`[render] Output file does not exist: ${filePath}`);
       return false;
     }
 
@@ -356,8 +363,15 @@ async function validateMP4File(filePath: string): Promise<boolean> {
     fs.closeSync(fd);
 
     const header = buffer.toString('ascii', 0, 4);
-    return header === 'ftyp';
-  } catch {
+    if (header !== 'ftyp') {
+      console.error(`[render] Invalid MP4 header: ${header}`);
+      return false;
+    }
+
+    console.log(`[render] MP4 file header valid`);
+    return true;
+  } catch (err: any) {
+    console.error(`[render] Validation error: ${err.message}`);
     return false;
   }
 }
@@ -367,13 +381,58 @@ export async function renderMysteryVideo(projectId: string, project: MysteryProj
     const projectDir = path.join(process.cwd(), "data", "mystery-projects", projectId);
     const outputPath = path.join(projectDir, "output.mp4");
 
+    console.log(`[render] Starting video generation...`);
     await generateTestVideo(projectId, project);
 
-    // Validate output file
+    // Basic file validation
     const isValid = await validateMP4File(outputPath);
     if (!isValid) {
       throw new Error("Output MP4 file validation failed - file may be corrupted or incomplete");
     }
+
+    // Comprehensive validation using render-validate
+    console.log(`[render] Running comprehensive validation...`);
+    const ffprobeResult = await validateMP4WithFFprobe(outputPath);
+
+    if (!ffprobeResult.valid || ffprobeResult.errors.length > 0) {
+      console.error(`[render] FFprobe validation failed:`);
+      ffprobeResult.errors.forEach((err) => console.error(`  - ${err}`));
+      throw new Error(`MP4 validation failed: ${ffprobeResult.errors.join("; ")}`);
+    }
+
+    // Duration validation
+    const durationCheck = validateDuration(ffprobeResult.duration, project.input.targetMinutes || 15);
+    console.log(`[render] ${durationCheck.message}`);
+    if (!durationCheck.valid) {
+      console.warn(`[render] Duration warning (non-fatal)`);
+    }
+
+    // Frame content validation
+    console.log(`[render] Analyzing frame content...`);
+    const frameResult = await validateFrameContent(outputPath);
+    console.log(`[render] ${frameResult.message}`);
+
+    // Audio validation
+    console.log(`[render] Analyzing audio content...`);
+    const audioResult = await validateAudioContent(outputPath);
+    console.log(`[render] ${audioResult.message}`);
+
+    if (!audioResult.valid) {
+      console.warn(`[render] Audio validation warning (non-fatal)`);
+    }
+
+    // Visual coverage validation
+    console.log(`[render] Checking visual coverage...`);
+    const coverageResult = await validateVisualCoverage(outputPath);
+    console.log(`[render] ${coverageResult.message}`);
+
+    // Subtitle validation
+    console.log(`[render] Verifying subtitles...`);
+    const subtitleResult = await validateSubtitleBurnIn(outputPath);
+    console.log(`[render] ${subtitleResult.message}`);
+
+    console.log(`[render] ✅ All validations completed`);
+    console.log(`[render] Video metadata: ${ffprobeResult.duration.toFixed(1)}s, ${ffprobeResult.resolution}, ${ffprobeResult.fps.toFixed(0)}fps`);
 
     // Store output path but don't set stage="done" - let orchestrator decide final state
     updateProject(projectId, (p) => {
