@@ -302,8 +302,9 @@ export async function validateFrameContent(filePath: string): Promise<FrameExtra
 
     return result;
   } catch (err: any) {
-    result.message = `⚠️ Frame validation skipped: ${err.message}`;
-    result.valid = true; // Don't fail entire validation for frame analysis
+    result.message = `[CRITICAL] Frame validation failed: ${err.message}`;
+    result.valid = false;
+    result.errors?.push(`[CRITICAL] Frame content validation failed: ${err.message}`);
     return result;
   }
 }
@@ -350,8 +351,8 @@ export async function validateAudioContent(filePath: string): Promise<AudioValid
 
     return result;
   } catch (err: any) {
-    result.message = `⚠️ Audio validation skipped: ${err.message}`;
-    result.valid = true; // Don't fail for audio analysis failures
+    result.message = `[CRITICAL] Audio validation failed: ${err.message}`;
+    result.valid = false;
     return result;
   }
 }
@@ -382,15 +383,15 @@ export async function validateSubtitleBurnIn(filePath: string): Promise<Subtitle
 
     // If output is not empty, subtitles may be present
     result.subtitlesEmbedded = stdout.length > 0;
-    result.valid = true;
+    result.valid = result.subtitlesEmbedded;
     result.message = result.subtitlesEmbedded
       ? `✅ Subtitles detected in stream`
-      : `⚠️ No subtitle stream found (may be burned in via filter)`;
+      : `❌ No subtitle stream found`;
 
     return result;
   } catch (err: any) {
-    result.message = `⚠️ Subtitle validation skipped: ${err.message}`;
-    result.valid = true; // Don't fail for subtitle validation
+    result.message = `[CRITICAL] Subtitle validation failed: ${err.message}`;
+    result.valid = false;
     return result;
   }
 }
@@ -465,8 +466,8 @@ export async function validateVisualCoverage(filePath: string, sampleSize: numbe
 
     return result;
   } catch (err: any) {
-    result.message = `⚠️ Visual coverage validation skipped: ${err.message}`;
-    result.valid = true; // Don't fail for coverage analysis
+    result.message = `[CRITICAL] Visual coverage validation failed: ${err.message}`;
+    result.valid = false;
     return result;
   }
 }

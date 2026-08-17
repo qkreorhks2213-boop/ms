@@ -273,23 +273,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
       console.warn(`[mystery] 결말 생성 실패:`, err);
     }
   } catch (llmErr: any) {
-    console.warn(`[mystery] LLM 스크립트 생성 실패, 오프라인 데이터 사용:`, llmErr?.message);
-
-    // Use offline script as fallback
-    const offlineScript = generateOfflineScript(topic, targetMinutes);
-    if (offlineScript.length > 0) {
-      console.log(`[mystery] 오프라인 스크립트 사용: ${offlineScript.length}개 섹션`);
-      sections = offlineScript.map((section, idx) => ({
-        id: `script-${idx}`,
-        kind: section.type as any,
-        text: section.text,
-        charCount: section.text.length,
-        estimatedSeconds: section.durationSeconds || estimateSeconds(section.text.length),
-        status: "done" as const,
-        sources: research.flatMap((r) => r.sources).slice(0, 3),
-      }));
-      outlines = offlineScript.map(s => s.title);
-    }
+    console.error(`[mystery] LLM 스크립트 생성 실패:`, llmErr?.message);
+    throw new Error(`[CRITICAL] Script generation failed: ${llmErr?.message}. Cannot proceed with offline fallback.`);
   }
 
   if (sections.length === 0) {

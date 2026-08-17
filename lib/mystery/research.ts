@@ -150,17 +150,8 @@ export async function researchTopic(projectId: string, project: MysteryProject):
       try {
         articles = await searchGoogleNewsRss(`${topic} ${suffix}`, 8);
       } catch (err: any) {
-        console.warn(`[mystery] RSS 검색 실패: ${err.message}, 오프라인 데이터 확인 중...`);
-        // Check offline data as fallback
-        const offlineData = getOfflineResearch(topic);
-        if (offlineData.length > 0) {
-          console.log(`[mystery] 오프라인 데이터로 대체: ${offlineData.length}개 항목`);
-          findings.push(...offlineData);
-          updateProject(projectId, (p) => {
-            p.research = [...(p.research || []), ...offlineData];
-          });
-          continue;
-        }
+        console.error(`[mystery] RSS 검색 실패: ${err.message}`);
+        throw new Error(`[CRITICAL] Research failed for "${label}": ${err.message}. Cannot proceed with offline fallback.`);
       }
 
       const summary =

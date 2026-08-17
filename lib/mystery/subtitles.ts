@@ -21,6 +21,10 @@ export function generateSubtitles(
     throw new Error("[CRITICAL] No scenes for subtitle generation");
   }
 
+  if (!sceneNarrationMap || sceneNarrationMap.size === 0) {
+    throw new Error("[CRITICAL] Scene-to-narration mapping is required for subtitle generation");
+  }
+
   const subtitles: Subtitle[] = [];
   let currentStartTime = 0;
 
@@ -34,15 +38,12 @@ export function generateSubtitles(
     }
 
     // Map to all scenes that belong to this narration segment
-    const segmentScenes = sceneNarrationMap
-      ? Array.from(sceneNarrationMap.entries())
-          .filter(([_, narrationId]) => narrationId === segment.id)
-          .map(([sceneId, _]) => sceneId)
-      : [sceneIds[Math.floor(Math.random() * sceneIds.length)] || ""];
+    const segmentScenes = Array.from(sceneNarrationMap.entries())
+      .filter(([_, narrationId]) => narrationId === segment.id)
+      .map(([sceneId, _]) => sceneId);
 
     if (segmentScenes.length === 0) {
-      console.warn(`[subtitles] Narration segment ${segment.id} has no mapped scenes - using first scene as fallback`);
-      segmentScenes.push(sceneIds[0] || "");
+      throw new Error(`[CRITICAL] Narration segment ${segment.id} has no mapped scenes in sceneNarrationMap`);
     }
 
     const subtitle: Subtitle = {

@@ -311,8 +311,16 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
             const sectionIndex = updated.script.sections.findIndex((s) => s.id === scene.sectionId);
             if (sectionIndex >= 0 && sectionIndex < updated.narrationSegments.length) {
               sceneNarrationMap.set(scene.id, updated.narrationSegments[sectionIndex].id);
+            } else {
+              throw new Error(`[CRITICAL] Scene ${scene.id} has invalid sectionId mapping: ${scene.sectionId}`);
             }
           }
+        } else {
+          throw new Error("[CRITICAL] Missing scenes or script sections for narration mapping");
+        }
+
+        if (sceneNarrationMap.size !== updated.scenes.length) {
+          throw new Error(`[CRITICAL] Scene-narration mapping incomplete: ${sceneNarrationMap.size}/${updated.scenes.length} mapped`);
         }
 
         const sceneIds = updated.scenes?.map((s) => s.id) || [];
