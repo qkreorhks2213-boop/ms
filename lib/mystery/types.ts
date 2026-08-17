@@ -386,9 +386,10 @@ export interface Scene {
   factStatus?: FactStatus; // 이 장면이 표현하는 내용의 검증 상태
   sources?: SourceRef[]; // 이 장면이 근거로 삼은 출처들
 
-  // 내레이션
+  // 내레이션 (Script Section 기준)
   narration: NarrationChunk[];
-  durationSeconds?: number;
+  narrationSegmentId?: string; // Script Section의 narration segment ID와의 매핑
+  durationSeconds?: number; // narration segment의 실제 duration (seconds)
 
   // 메타데이터
   aiReconstructionExplained?: boolean; // "재구성하면" 같은 설명이 내레이션에 포함되었는지
