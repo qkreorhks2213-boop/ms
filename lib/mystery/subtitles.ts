@@ -1,12 +1,24 @@
 import type { SubtitleTrack, Subtitle } from "./types";
 
+/**
+ * Generate subtitles from narration segments.
+ * Now properly maps narration segments to scenes based on Script Section.
+ *
+ * Note: A narration segment (from Script Section i) maps to ALL scenes
+ * that were generated from that section.
+ */
 export function generateSubtitles(
   narrationSegments: any[],
   sceneIds: string[],
-  languageCode: string = "en"
+  languageCode: string = "en",
+  sceneNarrationMap?: Map<string, string> // sceneId -> narrationSegmentId
 ): SubtitleTrack {
   if (!narrationSegments || narrationSegments.length === 0) {
     throw new Error("[CRITICAL] No narration segments for subtitle generation");
+  }
+
+  if (!sceneIds || sceneIds.length === 0) {
+    throw new Error("[CRITICAL] No scenes for subtitle generation");
   }
 
   const subtitles: Subtitle[] = [];
@@ -21,13 +33,25 @@ export function generateSubtitles(
       throw new Error(`[CRITICAL] Narration segment has invalid duration: ${segment.id}`);
     }
 
+    // Map to all scenes that belong to this narration segment
+    const segmentScenes = sceneNarrationMap
+      ? Array.from(sceneNarrationMap.entries())
+          .filter(([_, narrationId]) => narrationId === segment.id)
+          .map(([sceneId, _]) => sceneId)
+      : [sceneIds[Math.floor(Math.random() * sceneIds.length)] || ""];
+
+    if (segmentScenes.length === 0) {
+      console.warn(`[subtitles] Narration segment ${segment.id} has no mapped scenes - using first scene as fallback`);
+      segmentScenes.push(sceneIds[0] || "");
+    }
+
     const subtitle: Subtitle = {
       id: segment.id,
       text: segment.text || "",
       startTime: currentStartTime,
       endTime: currentStartTime + segment.durationSeconds,
       verified: true,
-      sceneId: sceneIds[Math.floor(Math.random() * sceneIds.length)] || "",
+      sceneId: segmentScenes[0], // Primary scene (first one from this segment)
     };
 
     subtitles.push(subtitle);
