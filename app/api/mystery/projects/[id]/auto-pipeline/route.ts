@@ -56,15 +56,22 @@ async function executeStep(
   stepFn: () => Promise<void>
 ): Promise<boolean> {
   try {
-    console.log(`[mystery:auto] Step: ${stepName}`);
+    console.log(`[mystery:auto] ⏳ Step: ${stepName}`);
+    const startTime = Date.now();
     await stepFn();
+    const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[mystery:auto] ✅ Step completed in ${duration}s: ${stepName}`);
     return true;
   } catch (err: any) {
-    console.error(`[mystery:auto] Step failed: ${stepName}`, err);
+    const errorMessage = err?.message || String(err);
+    const errorStack = err?.stack || "";
+    console.error(`[mystery:auto] ❌ Step failed: ${stepName}`);
+    console.error(`[mystery:auto] Error details:`, errorMessage);
+
     appendErrorLog(projectId, {
       stage: stage,
-      message: `Auto-pipeline failed at step: ${stepName} - ${err?.message || String(err)}`,
-      retryable: true,
+      message: `Step failed: ${stepName} - ${errorMessage}${errorStack ? "\nStack: " + errorStack.split("\n").slice(0, 3).join("\n") : ""}`,
+      retryable: !errorMessage.includes("[CRITICAL]"),
     });
     return false;
   }
@@ -440,20 +447,23 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
 
     if (!success) {
       // Critical failure - stop pipeline and mark as failed
-      console.error(`[mystery:auto] ❌ Pipeline stopped at step ${stepIndex}: ${step.name}`);
+      console.error(`[mystery:auto] ❌ Pipeline failed at step ${stepIndex + 1}/${steps.length}: ${step.name}`);
 
       // Get detailed error info
       const project = readProject(projectId);
       const errorLog = project?.errorLog || [];
-      const lastError = errorLog[errorLog.length - 1];
+      const recentErrors = errorLog.slice(-3);
 
-      const detailedErrorMsg = lastError?.message
-        ? `${step.name}: ${lastError.message}`
-        : `Failed at step: ${step.name}. Check logs for details.`;
+      const errorSummary = recentErrors
+        .map((e) => `[${e.stage}] ${e.message}`)
+        .join(" → ");
+
+      const detailedErrorMsg = errorSummary || `Failed at step: ${step.name}. Check error log for details.`;
 
       updateProject(projectId, (p) => {
         p.stage = "failed";
         p.pipelineError = detailedErrorMsg;
+        console.log(`[mystery:auto] Pipeline state updated to "failed". Error: ${detailedErrorMsg.split("\n")[0]}`);
       });
 
       return; // Stop execution
@@ -462,12 +472,15 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     lastSuccessfulStep = stepIndex;
   }
 
-  console.log(`[mystery:auto] ✅ Auto-pipeline completed (${lastSuccessfulStep + 1}/${steps.length} steps)`);
+  console.log(`[mystery:auto] ✅ All pipeline steps completed successfully (${lastSuccessfulStep + 1}/${steps.length})`);
 
   // Final verification
   const finalProject = readProject(projectId);
   if (finalProject?.output?.mp4) {
-    console.log(`[mystery:auto] ✅ Final output: ${finalProject.output.mp4}`);
+    const fileSize = finalProject.output?.fileSize ? `${(finalProject.output.fileSize / 1024 / 1024).toFixed(1)}MB` : "unknown";
+    console.log(`[mystery:auto] 🎬 Final output ready: ${finalProject.output.mp4} (${fileSize})`);
+  } else {
+    console.warn(`[mystery:auto] ⚠️ Pipeline completed but output file not found`);
   }
 }
 
