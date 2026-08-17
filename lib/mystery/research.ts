@@ -149,25 +149,34 @@ export async function researchTopic(projectId: string, project: MysteryProject):
     console.log(`[mystery:research] ${label} 시작`);
 
     let articles: any[] = [];
+    let rssFailureReason: string | null = null;
     try {
-      // RSS 검색에 8초 timeout 적용 (너무 오래 걸리면 fallback 사용)
+      // RSS 검색에 8초 timeout 적용
       articles = await withTimeout(
         searchGoogleNewsRss(`${topic} ${suffix}`, 8),
         8000,
         `RSS search: ${label}`
       );
     } catch (err: any) {
-      // RSS 실패 시 fallback data 사용
-      console.warn(`[mystery:research] ${label} RSS 검색 실패, fallback 데이터 사용:`, err.message);
+      rssFailureReason = err.message;
+      console.warn(`[mystery:research] ${label} RSS 검색 실패:`, err.message);
       rssAccessFailed = true;
     }
 
-    // LLM으로 요약 (timeout 포함)
+    // LLM으로 요약 (실제 articles가 있을 때만)
     let summary: string;
-    try {
-      if (articles.length === 0) {
-        summary = `이 관점("${suffix}")으로는 관련 자료를 찾지 못했습니다.`;
-      } else {
+    let llmFailureReason: string | null = null;
+    let isRealSummary = true;
+
+    if (articles.length === 0) {
+      // RSS 실패 → fallback 데이터만 사용
+      console.warn(`[mystery:research] ${label}: 실제 자료 없음, fallback 사용`);
+      summary = generateFallbackResearchData(topic, label, suffix);
+      isRealSummary = false;
+      llmFailureReason = "No real articles found";
+    } else {
+      // 실제 articles 있음 → LLM 요약 시도
+      try {
         summary = await withTimeout(
           generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 }),
           5000,
@@ -177,11 +186,13 @@ export async function researchTopic(projectId: string, project: MysteryProject):
         if (!summary || summary.length < 10) {
           throw new Error("Summary generation produced empty or too short result");
         }
+        isRealSummary = true;
+      } catch (err: any) {
+        llmFailureReason = err.message;
+        console.warn(`[mystery:research] ${label} LLM 요약 실패, fallback 사용:`, err.message);
+        summary = generateFallbackResearchData(topic, label, suffix);
+        isRealSummary = false;
       }
-    } catch (err: any) {
-      // LLM 실패 시 fallback 데이터 사용
-      console.warn(`[mystery:research] ${label} LLM 요약 실패, fallback 요약 사용:`, err.message);
-      summary = generateFallbackResearchData(topic, label, suffix);
     }
 
     const sources: SourceRef[] = articles.map((a) => ({
@@ -199,13 +210,17 @@ export async function researchTopic(projectId: string, project: MysteryProject):
       query: label,
       sources,
       summary,
+      isReal: isRealSummary && articles.length > 0,
+      failureReason: !isRealSummary ? (rssFailureReason || llmFailureReason || "Unknown failure") : undefined,
     };
     findings.push(finding);
 
     updateProject(projectId, (p) => {
       p.research = [...(p.research || []).filter((f) => f.id !== finding.id), finding];
     });
-    console.log(`[mystery:research] ✅ ${label} 완료`);
+
+    const status = finding.isReal ? "✅" : "⚠️ (fallback)";
+    console.log(`[mystery:research] ${status} ${label} 완료`);
   }
 
   if (findings.length === 0) {

@@ -161,6 +161,8 @@ export interface ResearchFinding {
   query: string;
   sources: SourceRef[];
   summary: string; // 종합한 사실관계 요약
+  isReal?: boolean; // true = 실제 자료 기반, false = fallback 데이터
+  failureReason?: string; // fallback인 경우 실패 이유
 }
 
 /**
