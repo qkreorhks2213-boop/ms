@@ -123,9 +123,14 @@ export async function generateScenes(projectId: string, project: MysteryProject)
 
   console.log(`[mystery] 장면 분할 시작: ${script.sections.length}개 섹션, 목표: ${targetSceneCount}개`);
 
-  // Generate all script text
+  // 전체 스크립트 텍스트로부터 목표 문자 수 계산
   const fullScriptText = script.sections.map((s) => s.text).join(" ");
-  let targetChars = Math.round((targetSceneCount * CHARS_PER_MINUTE) / 60);
+  const totalScriptChars = fullScriptText.length;
+
+  // 목표 장면 수를 기반으로 장면당 평균 문자 수 계산
+  let targetChars = Math.round(totalScriptChars / targetSceneCount);
+  if (targetChars < 100) targetChars = 100; // 최소값
+  if (targetChars > 3000) targetChars = 3000; // 최대값
 
   // Ensure minimum scene count by adjusting targetChars
   let allSceneTexts: string[] = [];
@@ -220,7 +225,11 @@ export async function generateScenes(projectId: string, project: MysteryProject)
     orderedScenes.splice(longestIdx + 1, 0, { sectionId: longestScene.sectionId, text: secondHalf });
   }
 
-  // Create Scene objects with accurate section mapping
+  // 가져오기: CHARS_PER_MINUTE
+  const { CHARS_PER_MINUTE } = require("./types");
+
+  // Create Scene objects with accurate section mapping and timing
+  let cumulativeSeconds = 0;
   for (const { sectionId, text: sceneText } of orderedScenes) {
     const sectionMetadata = script.sections.find((s) => s.id === sectionId) || script.sections[0];
 
@@ -228,6 +237,11 @@ export async function generateScenes(projectId: string, project: MysteryProject)
       visualType: "ai_reconstruction" as SceneVisualType,
       visualQuery: sceneText,
     };
+
+    // 장면 duration 계산 (정확한 문자 기반)
+    const sceneDurationSeconds = Math.round((sceneText.length / CHARS_PER_MINUTE) * 60);
+    const startTime = cumulativeSeconds;
+    const endTime = cumulativeSeconds + sceneDurationSeconds;
 
     const scene: Scene = {
       id: `scene-${sceneOrder}`,
@@ -244,9 +258,43 @@ export async function generateScenes(projectId: string, project: MysteryProject)
       factStatus: sectionMetadata.factStatus,
       sources: sectionMetadata.sources,
       aiReconstructionExplained: sectionMetadata.needsDisclaimer,
+      startTime,
+      endTime,
+      duration: sceneDurationSeconds,
     };
     scenes.push(scene);
+    cumulativeSeconds = endTime;
     sceneOrder++;
+  }
+
+  // 장면 개수 검증
+  if (scenes.length === 0) {
+    throw new Error("[CRITICAL] No scenes generated");
+  }
+
+  if (scenes.length < targetSceneCount) {
+    throw new Error(
+      `[CRITICAL] Scene count validation failed: ` +
+      `target=${targetSceneCount}, actual=${scenes.length}, ` +
+      `minimum required scenes not met`
+    );
+  }
+
+  // 모든 scene에 필수 정보가 있는지 검증
+  for (let i = 0; i < scenes.length; i++) {
+    const scene = scenes[i];
+    if (!scene.id || !scene.text || scene.text.trim().length === 0) {
+      throw new Error(
+        `[CRITICAL] Scene ${i} missing required fields: ` +
+        `id=${scene.id}, text length=${scene.text?.length || 0}`
+      );
+    }
+    if (!scene.visualType || !scene.visualQuery) {
+      throw new Error(
+        `[CRITICAL] Scene ${i} (${scene.id}) missing visual plan: ` +
+        `visualType=${scene.visualType}, visualQuery=${scene.visualQuery}`
+      );
+    }
   }
 
   updateProject(projectId, (p) => {
@@ -254,8 +302,9 @@ export async function generateScenes(projectId: string, project: MysteryProject)
     p.stage = "scenes";
   });
 
-  console.log(`[mystery] 장면 생성 완료: ${scenes.length}개 (목표: ${targetSceneCount}개)`);
+  console.log(
+    `[mystery] ✅ 장면 생성 완료: ${scenes.length}개 (목표: ${targetSceneCount}개), ` +
+    `평균 ${(scenes.reduce((s, sc) => s + sc.text.length, 0) / scenes.length).toFixed(0)}자/장면`
+  );
 }
 
-// 문자 기준 TTS 길이 추정
-const CHARS_PER_MINUTE = 268;

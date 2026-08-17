@@ -388,6 +388,11 @@ export interface Scene {
   narration: NarrationChunk[];
   durationSeconds?: number;
 
+  // 타이밍 정보 (누적 시간)
+  startTime?: number; // 영상에서의 시작 시간 (초)
+  endTime?: number;   // 영상에서의 종료 시간 (초)
+  duration?: number;  // 이 장면의 duration (초)
+
   // 메타데이터
   aiReconstructionExplained?: boolean; // "재구성하면" 같은 설명이 내레이션에 포함되었는지
 }

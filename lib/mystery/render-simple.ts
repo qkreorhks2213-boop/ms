@@ -1,6 +1,9 @@
 /**
  * Rendering with narration, subtitles, and scene composition
  * Creates a real MP4 file with audio, subtitles, and text overlay
+ *
+ * PRODUCTION RENDERER: Used by auto-pipeline, manual render, and E2E tests
+ * All must produce 1920x1080 H.264/AAC output
  */
 
 import { spawn } from "child_process";
@@ -8,6 +11,7 @@ import path from "path";
 import fs from "fs";
 import { readProject, updateProject, publicGeneratedDir } from "./store";
 import type { MysteryProject } from "./types";
+import { TARGET_WIDTH, TARGET_HEIGHT, TARGET_FPS, TARGET_SAMPLE_RATE } from "./constants";
 import {
   validateMP4WithFFprobe,
   validateDuration,
@@ -16,10 +20,6 @@ import {
   validateSubtitleBurnIn,
   validateVisualCoverage,
 } from "./render-validate";
-
-const TARGET_WIDTH = 640;
-const TARGET_HEIGHT = 360;
-const TARGET_FPS = 24;
 
 async function concatenateAudioSegments(narrationSegments: any[], outputPath: string): Promise<boolean> {
   if (!narrationSegments || narrationSegments.length === 0) {

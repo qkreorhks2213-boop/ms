@@ -1,14 +1,17 @@
 /**
  * 실제 TTS 나레이션 생성
- * Piper 우선 → FFmpeg 음성 합성 폴백
- * 모든 경우에 실제 오디오 파일 생성 (placeholder 아님)
+ * Piper 우선 → 실패하면 CRITICAL error (no fallback)
+ * 모든 경우에 실제 오디오 파일 생성 + FFprobe로 정확한 duration 검증
  */
 
 import { spawn, exec } from "child_process";
+import { promisify } from "util";
 import fs from "fs";
 import path from "path";
 import { updateProject } from "./store";
 import type { MysteryProject, Scene } from "./types";
+
+const execAsync = promisify(exec);
 
 export interface NarrationSegment {
   id: string;
@@ -28,6 +31,24 @@ const PIPER_CONFIG = {
   noiseW: 0.8,
 };
 
+/**
+ * Get actual audio duration using FFprobe (not file size estimation)
+ */
+async function getAudioDuration(audioPath: string): Promise<number> {
+  try {
+    const { stdout } = await execAsync(
+      `ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1:noprint_wrappers=1 "${audioPath}"`,
+      { timeout: 5000 }
+    );
+    const duration = parseFloat(stdout.trim());
+    if (duration > 0) {
+      return Math.round(duration);
+    }
+  } catch (err: any) {
+    throw new Error(`[CRITICAL] Cannot get audio duration via FFprobe: ${err.message}`);
+  }
+  throw new Error(`[CRITICAL] Invalid audio duration: ${audioPath}`);
+}
 
 async function generateNarrationSegment(text: string, segmentId: string, outputDir: string): Promise<NarrationSegment> {
   return new Promise((resolve, reject) => {
@@ -52,20 +73,24 @@ async function generateNarrationSegment(text: string, segmentId: string, outputD
         stderrOutput += data.toString();
       });
 
-      piper.on("close", (code) => {
+      piper.on("close", async (code) => {
         if (code === 0 && fs.existsSync(audioPath)) {
-          const stats = fs.statSync(audioPath);
-          const durationSeconds = Math.ceil(stats.size / (16000 * 2));
+          try {
+            // Get ACTUAL duration from audio file, not file size estimation
+            const durationSeconds = await getAudioDuration(audioPath);
 
-          resolve({
-            id: segmentId,
-            text,
-            audioPath,
-            durationSeconds,
-            sampleRate: 16000,
-            channels: 1,
-            format: "wav",
-          });
+            resolve({
+              id: segmentId,
+              text,
+              audioPath,
+              durationSeconds,
+              sampleRate: 16000,
+              channels: 1,
+              format: "wav",
+            });
+          } catch (err: any) {
+            reject(new Error(`[CRITICAL] Failed to validate audio duration: ${err.message}`));
+          }
         } else {
           reject(new Error(`[CRITICAL] Piper TTS failed for segment ${segmentId}: ${stderrOutput || "Unknown error"}`));
         }

@@ -59,11 +59,11 @@ export async function validateMP4WithFFprobe(filePath: string): Promise<MP4Valid
     return result;
   }
 
-  // Run ffprobe - NO FALLBACK
+  // Run ffprobe - NO FALLBACK (correct syntax: -print_format json)
   let ffprobeOutput: string;
   try {
     const { stdout } = await execAsync(
-      `ffprobe -v error -select_streams v:0 -select_streams a:0 -show_format -show_streams -print_json "${filePath}"`,
+      `ffprobe -v error -print_format json -show_format -show_streams "${filePath}"`,
       { timeout: 10000, maxBuffer: 10 * 1024 * 1024 }
     );
     ffprobeOutput = stdout;
@@ -206,17 +206,17 @@ export interface ResolutionCheckResult {
 }
 
 /**
- * Production validation: minimum 1280x720 (HD)
+ * Production validation: MUST be 1920x1080 (Full HD) for all output
  */
 export function validateResolution(resolution: string): ResolutionCheckResult {
   const [widthStr, heightStr] = resolution.split("x");
   const width = parseInt(widthStr, 10);
   const height = parseInt(heightStr, 10);
 
-  const valid = width >= 1280 && height >= 720;
+  const valid = width === 1920 && height === 1080;
   const message = valid
-    ? `✅ Resolution valid: ${resolution} (minimum HD: 1280x720)`
-    : `❌ Resolution too low: ${resolution} (minimum HD: 1280x720)`;
+    ? `✅ Resolution valid: ${resolution} (production standard: 1920x1080)`
+    : `❌ Resolution invalid: ${resolution} (MUST be 1920x1080, got ${width}x${height})`;
 
   return { valid, width, height, message };
 }
