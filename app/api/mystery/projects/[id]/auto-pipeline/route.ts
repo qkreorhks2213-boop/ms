@@ -186,6 +186,37 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
+      name: "7️⃣.5️⃣ Generate Individual Scene Visuals",
+      stage: "visuals",
+      execute: async () => {
+        const updated = readProject(projectId);
+        if (!updated || !updated.scenes) throw new Error("Scenes not built");
+
+        console.log("[mystery:auto] Generating individual scene visuals (실제 이미지 생성)...");
+
+        // Import visual generation
+        const { generateAllSceneVisuals } = await import("../../../../../../lib/mystery/visuals");
+
+        // Generate visuals for all scenes (real images, graphics, or text cards)
+        await generateAllSceneVisuals(projectId, updated, updated.input);
+
+        // Verify results
+        const finalProject = readProject(projectId);
+        const successCount = (finalProject?.scenes || []).filter((s) => s.visualStatus === "done").length;
+        const totalScenes = finalProject?.scenes?.length || 0;
+
+        console.log(`[mystery:auto] Scene visuals generated: ${successCount}/${totalScenes} 장면 완료`);
+
+        if (successCount === 0) {
+          throw new Error(`[CRITICAL] No scene visuals were generated successfully (0/${totalScenes})`);
+        }
+
+        if (successCount < totalScenes * 0.8) {
+          console.warn(`[mystery:auto] Warning: Only ${successCount}/${totalScenes} scenes have visuals (80% target)`);
+        }
+      },
+    },
+    {
       name: "8️⃣ Scene Optimization (Boredom Detection)",
       stage: "scenes",
       execute: async () => {
