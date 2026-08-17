@@ -119,54 +119,103 @@ export async function generateScenes(projectId: string, project: MysteryProject)
 
   const research = project.research || [];
   const researchText = formatResearchForPrompt(research);
-  const targetChars = Math.round((project.input.sceneVisualTarget * CHARS_PER_MINUTE) / 60);
+  const targetSceneCount = project.input.sceneVisualTarget || 50;
 
-  console.log(`[mystery] 장면 분할 시작: ${script.sections.length}개 섹션`);
+  console.log(`[mystery] 장면 분할 시작: ${script.sections.length}개 섹션, 목표: ${targetSceneCount}개`);
 
-  const allSceneTexts: string[] = [];
-  const scenes: Scene[] = [];
-  let sceneOrder = 0;
+  // Generate all script text
+  const fullScriptText = script.sections.map((s) => s.text).join(" ");
+  let targetChars = Math.round((targetSceneCount * CHARS_PER_MINUTE) / 60);
 
-  for (const section of script.sections) {
-    const sceneTexts = groupIntoSceneTexts(section.text, targetChars);
-    allSceneTexts.push(...sceneTexts);
+  // Ensure minimum scene count by adjusting targetChars
+  let allSceneTexts: string[] = [];
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  while (allSceneTexts.length < targetSceneCount && attempts < maxAttempts) {
+    allSceneTexts = [];
+    for (const section of script.sections) {
+      const sceneTexts = groupIntoSceneTexts(section.text, targetChars);
+      allSceneTexts.push(...sceneTexts);
+    }
+
+    // If still below target, reduce targetChars to create more scenes
+    if (allSceneTexts.length < targetSceneCount) {
+      targetChars = Math.max(100, Math.floor(targetChars * 0.85));
+      attempts++;
+    }
   }
 
-  console.log(`[mystery] 시각자료 계획: ${allSceneTexts.length}개 장면`);
+  // If still below target after reduction, split longest scenes
+  while (allSceneTexts.length < targetSceneCount) {
+    let longestIdx = 0;
+    let longestLength = allSceneTexts[0].length;
+
+    for (let i = 1; i < allSceneTexts.length; i++) {
+      if (allSceneTexts[i].length > longestLength) {
+        longestLength = allSceneTexts[i].length;
+        longestIdx = i;
+      }
+    }
+
+    const longestScene = allSceneTexts[longestIdx];
+    const sentences = splitIntoSentences(longestScene);
+
+    if (sentences.length < 2) break; // Can't split further
+
+    // Split at midpoint
+    const midpoint = Math.ceil(sentences.length / 2);
+    const firstHalf = sentences.slice(0, midpoint).join(" ");
+    const secondHalf = sentences.slice(midpoint).join(" ");
+
+    allSceneTexts[longestIdx] = firstHalf;
+    allSceneTexts.splice(longestIdx + 1, 0, secondHalf);
+  }
+
+  console.log(`[mystery] 시각자료 계획: ${allSceneTexts.length}개 장면 (목표: ${targetSceneCount}개)`);
   const visualPlans = await planAllScenesVisuals(allSceneTexts, researchText);
 
   console.log(`[mystery] 장면 생성: ${visualPlans.length}개 시각자료`);
-  for (let i = 0; i < script.sections.length; i++) {
-    const section = script.sections[i];
-    const sectionSceneTexts = groupIntoSceneTexts(section.text, targetChars);
-    const sectionStartIdx = allSceneTexts.slice(0, sceneOrder).filter((t) => sectionSceneTexts.includes(t)).length;
+  const scenes: Scene[] = [];
+  let sceneOrder = 0;
 
-    for (let j = 0; j < sectionSceneTexts.length; j++) {
-      const visualPlan = visualPlans[sceneOrder + j] || {
-        visualType: "ai_reconstruction" as SceneVisualType,
-        visualQuery: sectionSceneTexts[j],
-      };
+  // Map each scene to its original section for metadata inheritance
+  for (const sceneText of allSceneTexts) {
+    // Find which section this scene came from
+    let sectionId = script.sections[0].id;
+    let sectionMetadata = script.sections[0];
 
-      const scene: Scene = {
-        id: `scene-${sceneOrder}`,
-        sectionId: section.id,
-        order: j,
-        text: sectionSceneTexts[j],
-        visualType: visualPlan.visualType,
-        visualQuery: visualPlan.visualQuery,
-        visualHeadline: visualPlan.visualHeadline,
-        visualLabel: visualPlan.visualLabel,
-        visualStatus: "pending",
-        narration: [],
-        // 섹션에서 메타데이터 상속
-        visualOrigin: section.visualOrigin,
-        factStatus: section.factStatus,
-        sources: section.sources,
-        aiReconstructionExplained: section.needsDisclaimer,
-      };
-      scenes.push(scene);
-      sceneOrder++;
+    for (const section of script.sections) {
+      if (section.text.includes(sceneText) || sceneText.includes(section.text.slice(0, 50))) {
+        sectionId = section.id;
+        sectionMetadata = section;
+        break;
+      }
     }
+
+    const visualPlan = visualPlans[sceneOrder] || {
+      visualType: "ai_reconstruction" as SceneVisualType,
+      visualQuery: sceneText,
+    };
+
+    const scene: Scene = {
+      id: `scene-${sceneOrder}`,
+      sectionId,
+      order: sceneOrder,
+      text: sceneText,
+      visualType: visualPlan.visualType,
+      visualQuery: visualPlan.visualQuery,
+      visualHeadline: visualPlan.visualHeadline,
+      visualLabel: visualPlan.visualLabel,
+      visualStatus: "pending",
+      narration: [],
+      visualOrigin: sectionMetadata.visualOrigin,
+      factStatus: sectionMetadata.factStatus,
+      sources: sectionMetadata.sources,
+      aiReconstructionExplained: sectionMetadata.needsDisclaimer,
+    };
+    scenes.push(scene);
+    sceneOrder++;
   }
 
   updateProject(projectId, (p) => {
@@ -174,7 +223,7 @@ export async function generateScenes(projectId: string, project: MysteryProject)
     p.stage = "scenes";
   });
 
-  console.log(`[mystery] 장면 생성 완료: ${scenes.length}개`);
+  console.log(`[mystery] 장면 생성 완료: ${scenes.length}개 (목표: ${targetSceneCount}개)`);
 }
 
 // 문자 기준 TTS 길이 추정
