@@ -1,0 +1,14 @@
+{
+  "timestamp": "2026-08-10T01:24:46.064Z",
+  "generated": true,
+  "videoPath": "/home/user/-12/diagnostics/test-mystery-video.mp4",
+  "verification": {
+    "fileExists": true,
+    "fileSize": 110808,
+    "duration": 50,
+    "resolution": "1920x1080",
+    "codec": "h264",
+    "quality": "pass"
+  },
+  "errors": []
+}

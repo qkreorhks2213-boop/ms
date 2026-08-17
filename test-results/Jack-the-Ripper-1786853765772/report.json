@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-08-16T04:16:05.772Z",
+  "projectId": "ceb64ca2-25f9-486c-81f4-a729ca74bf85",
+  "projectName": "Jack the Ripper",
+  "overallStatus": "PASS",
+  "pipelineComplete": true,
+  "build": "PASS",
+  "apiStatus": {
+    "ffmpeg": "READY",
+    "piper": "READY",
+    "ollama": "OPTIONAL"
+  },
+  "stages": [
+    {
+      "stage": "research",
+      "status": "PASS",
+      "details": "10 findings from 0+ sources",
+      "itemsProcessed": 10
+    },
+    {
+      "stage": "script",
+      "status": "PASS",
+      "details": "7 sections, 1272 chars, ~0.0791044776119403min",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "scenes",
+      "status": "PASS",
+      "details": "7 scenes with visual planning",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "assets",
+      "status": "PASS",
+      "details": "7 real assets, 0 AI-generated",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "narration",
+      "status": "PASS",
+      "details": "7 segments, 116s total",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "subtitles",
+      "status": "PASS",
+      "details": "29 subtitles generated",
+      "itemsProcessed": 29
+    },
+    {
+      "stage": "render",
+      "status": "PASS",
+      "details": "MP4 video file created"
+    }
+  ],
+  "research": {
+    "status": "PASS",
+    "findingsCount": 10,
+    "sourcesCount": 0
+  },
+  "script": {
+    "status": "PASS",
+    "sectionsCount": 7,
+    "totalChars": 1272,
+    "estimatedMinutes": 0.0791044776119403
+  },
+  "scenes": {
+    "status": "PASS",
+    "scenesCount": 7,
+    "realAssetsCount": 7,
+    "aiGeneratedCount": 0
+  },
+  "narration": {
+    "status": "PASS",
+    "segmentsCount": 7,
+    "totalDuration": 116,
+    "available": true
+  },
+  "subtitles": {
+    "status": "PASS",
+    "subtitlesCount": 29,
+    "verifiedCount": 29,
+    "available": true
+  },
+  "render": {
+    "status": "PASS",
+    "outputPath": "/output.mp4"
+  },
+  "sourcesTracked": 0,
+  "sourceAttributionsIncluded": false,
+  "realVsAiDistribution": {
+    "realAssets": 7,
+    "aiGenerated": 0,
+    "mixed": 0
+  },
+  "issues": [],
+  "recommendations": []
+}

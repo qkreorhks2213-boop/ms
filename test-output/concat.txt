@@ -1,0 +1,3 @@
+file '/home/user/-12/test-output/scene-0.mp4'
+file '/home/user/-12/test-output/scene-1.mp4'
+file '/home/user/-12/test-output/scene-2.mp4'

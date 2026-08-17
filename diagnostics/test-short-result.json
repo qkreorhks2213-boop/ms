@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-08-09T16:17:44.497Z",
+  "project": {
+    "topic": "칸다하르의 거인",
+    "targetMinutes": 3,
+    "scenes": 3
+  },
+  "stages": {
+    "scene_processing": {
+      "status": "PASS",
+      "timestamp": "2026-08-09T16:18:11.003Z",
+      "scenes": 3
+    },
+    "video_concat": {
+      "status": "PASS",
+      "timestamp": "2026-08-09T16:18:11.067Z",
+      "path": "/home/user/-12/test-output/test-short-video.mp4",
+      "size": 386764,
+      "duration": 140
+    }
+  },
+  "errors": [],
+  "output": "/home/user/-12/test-output/test-short-video.mp4",
+  "overallStatus": "PASS"
+}

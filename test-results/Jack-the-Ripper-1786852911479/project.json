@@ -1,0 +1,86 @@
+{
+  "id": "fc100dee-f9fe-4794-8afa-163832101bd9",
+  "name": "Jack the Ripper",
+  "userId": "test-user",
+  "createdAt": "2026-08-16T04:01:51.278Z",
+  "updatedAt": "2026-08-16T04:01:51.322Z",
+  "errorLog": [],
+  "input": {
+    "topic": "Jack the Ripper",
+    "caseType": "crime",
+    "targetMinutes": 10,
+    "angles": [],
+    "endingStyle": "unsolved",
+    "useRealPhotos": true,
+    "useAiReconstruction": true,
+    "voiceName": "default",
+    "useBgm": true,
+    "sceneVisualTarget": 40
+  },
+  "stage": "done",
+  "render": {
+    "status": "idle"
+  },
+  "research": [
+    {
+      "id": "research-overview",
+      "query": "사건 개요",
+      "sources": [],
+      "summary": "이 관점(\"사건 개요 배경\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-official",
+      "query": "공식 기록",
+      "sources": [],
+      "summary": "이 관점(\"공식 기록 정부 군\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-persons",
+      "query": "관련 인물",
+      "sources": [],
+      "summary": "이 관점(\"주요 인물 등장인물\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-timeline",
+      "query": "사건 기록",
+      "sources": [],
+      "summary": "이 관점(\"사건 시간순서 연대기\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-testimony",
+      "query": "증언",
+      "sources": [],
+      "summary": "이 관점(\"증언 목격자 진술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-evidence",
+      "query": "증거 자료",
+      "sources": [],
+      "summary": "이 관점(\"증거 사진 영상 기록\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-investigation",
+      "query": "조사 결과",
+      "sources": [],
+      "summary": "이 관점(\"조사 결과 보고서\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-controversy",
+      "query": "논쟁",
+      "sources": [],
+      "summary": "이 관점(\"논쟁 의문 반박\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-research",
+      "query": "연구",
+      "sources": [],
+      "summary": "이 관점(\"연구 분석 학술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-theories",
+      "query": "미스터리 주장",
+      "sources": [],
+      "summary": "이 관점(\"미스터리 설명 가설\")으로는 관련 자료를 찾지 못했습니다."
+    }
+  ]
+}
