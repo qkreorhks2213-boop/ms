@@ -262,7 +262,34 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "9️⃣.5️⃣ Subtitle Generation",
+      name: "9️⃣.5️⃣ Update Scenes with Narration Metadata",
+      stage: "narration",
+      execute: async () => {
+        const updated = readProject(projectId);
+        if (!updated || !updated.narrationSegments || !updated.scenes) throw new Error("Narration or scenes not found");
+
+        // Update each scene with its narration segment ID and duration
+        const sceneNarrationMap = new Map<string, string>();
+        updateProject(projectId, (p) => {
+          if (!p.scenes || !p.script?.sections) return;
+
+          for (const scene of p.scenes) {
+            // Find the narration segment index that corresponds to this scene's section
+            const sectionIndex = p.script.sections.findIndex((s) => s.id === scene.sectionId);
+            if (sectionIndex >= 0 && sectionIndex < p.narrationSegments.length) {
+              const narrationSegment = p.narrationSegments[sectionIndex];
+              scene.narrationSegmentId = narrationSegment.id;
+              scene.durationSeconds = narrationSegment.durationSeconds;
+              sceneNarrationMap.set(scene.id, narrationSegment.id);
+            }
+          }
+        });
+
+        console.log(`[mystery:auto] Scene narration metadata updated: ${updated.scenes.length} scenes linked to narration`);
+      },
+    },
+    {
+      name: "1️⃣0️⃣ Subtitle Generation",
       stage: "narration",
       execute: async () => {
         const updated = readProject(projectId);
@@ -290,7 +317,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "🔟 Final Quality Assurance",
+      name: "1️⃣1️⃣ Final Quality Assurance",
       stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
@@ -318,7 +345,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "1️⃣1️⃣ Video Rendering",
+      name: "1️⃣2️⃣ Video Rendering",
       stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
@@ -342,7 +369,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       },
     },
     {
-      name: "1️⃣2️⃣ Final Verification & Complete",
+      name: "1️⃣3️⃣ Final Verification & Complete",
       stage: "render",
       execute: async () => {
         const finalProject = readProject(projectId);
