@@ -58,18 +58,18 @@ export async function checkPiper(): Promise<ServiceCheckResult> {
   const available = await checkCommand("piper", ["--help"]);
   return {
     name: "Piper TTS",
-    status: available ? "🟢 READY" : "🟡 OPTIONAL",
+    status: available ? "🟢 READY" : "🔴 REQUIRED",
     available,
     message: available
       ? "Piper TTS is installed and working"
-      : "Piper TTS is not installed. Narration generation will be skipped, video will use text overlay only.",
+      : "Piper TTS is required for narration generation. Without it, the pipeline cannot generate voice narration.",
     setupInstructions: available
       ? undefined
       : `Install Piper TTS:
   pip install piper-tts
 
-  Download voice models (optional, automates on first use):
-  piper --voice en_US-hfc_female-medium --download-dir ~/.piper/models`,
+  Download Korean voice model:
+  piper --voice ko_KR-narae-medium --download-dir ~/.piper/models`,
   };
 }
 
@@ -85,11 +85,11 @@ export async function checkOllama(): Promise<ServiceCheckResult> {
       status: available ? "🟢 READY" : "🟡 OPTIONAL",
       available,
       message: available
-        ? "Ollama is running and accessible"
-        : "Ollama is not running. Script generation will use pre-written fallback content.",
+        ? "Ollama is running and accessible (improves script quality)"
+        : "Ollama is not running. Script generation will use Google search results and local LLM fallback only.",
       setupInstructions: available
         ? undefined
-        : `Start Ollama:
+        : `Start Ollama (optional for enhanced script generation):
   ollama serve
 
   Or install from: https://ollama.ai`,
@@ -99,8 +99,8 @@ export async function checkOllama(): Promise<ServiceCheckResult> {
       name: "Ollama (Local LLM)",
       status: "🟡 OPTIONAL",
       available: false,
-      message: "Ollama is not running. Script generation will use pre-written fallback content.",
-      setupInstructions: `Start Ollama:
+      message: "Ollama is not running. Script generation will use Google search results and local LLM fallback only.",
+      setupInstructions: `Start Ollama (optional for enhanced script generation):
   ollama serve
 
 Or install from: https://ollama.ai`,
