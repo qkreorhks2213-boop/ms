@@ -1,27 +1,25 @@
-/**
- * Comprehensive MP4 validation using ffprobe.
- * Validates duration, video stream, audio stream, codec, resolution, fps, etc.
- */
-
-import { spawn } from "child_process";
+import { exec } from "child_process";
+import { promisify } from "util";
 import fs from "fs";
+
+const execAsync = promisify(exec);
 
 export interface MP4ValidationResult {
   valid: boolean;
-  duration: number; // seconds
+  duration: number;
   videoStream: boolean;
   audioStream: boolean;
   codec: string;
-  resolution: string; // e.g., "1920x1080"
+  resolution: string;
   fps: number;
   bitrate: string;
-  fileSize: number; // bytes
+  fileSize: number;
   errors: string[];
 }
 
 /**
- * Validate MP4 file using ffprobe.
- * Returns comprehensive metadata and validation results.
+ * Comprehensive MP4 validation using ffprobe.
+ * NO FALLBACK: If ffprobe fails, validation fails (not silent success).
  */
 export async function validateMP4WithFFprobe(filePath: string): Promise<MP4ValidationResult> {
   const result: MP4ValidationResult = {
@@ -32,7 +30,7 @@ export async function validateMP4WithFFprobe(filePath: string): Promise<MP4Valid
     codec: "unknown",
     resolution: "unknown",
     fps: 0,
-    bitrate: "unknown",
+    bitrate: "0k",
     fileSize: 0,
     errors: [],
   };
@@ -44,203 +42,181 @@ export async function validateMP4WithFFprobe(filePath: string): Promise<MP4Valid
   }
 
   // Check file size
-  const stats = fs.statSync(filePath);
-  result.fileSize = stats.size;
+  const fileSize = fs.statSync(filePath).size;
+  result.fileSize = fileSize;
+  if (fileSize < 5 * 1024 * 1024) {
+    // Less than 5MB is suspicious for a 15-minute video
+    result.errors.push(`File size too small: ${(fileSize / 1024 / 1024).toFixed(1)}MB`);
+  }
 
-  if (stats.size < 1024) {
-    result.errors.push(`File too small: ${stats.size} bytes (expected >1KB)`);
+  // Check MP4 header
+  const header = Buffer.alloc(4);
+  const fd = fs.openSync(filePath, "r");
+  fs.readSync(fd, header, 0, 4, 4);
+  fs.closeSync(fd);
+  if (header.toString("ascii") !== "ftyp") {
+    result.errors.push("Missing MP4 ftyp header - not a valid MP4 file");
     return result;
   }
 
-  // Check file header
+  // Run ffprobe - NO FALLBACK
+  let ffprobeOutput: string;
   try {
-    const buffer = Buffer.alloc(12);
-    const fd = fs.openSync(filePath, "r");
-    fs.readSync(fd, buffer, 0, 12, 4);
-    fs.closeSync(fd);
-
-    const header = buffer.toString("ascii", 0, 4);
-    if (header !== "ftyp") {
-      result.errors.push(`Invalid MP4 header: expected 'ftyp' but got '${header}'`);
-      return result;
-    }
+    const { stdout } = await execAsync(
+      `ffprobe -v error -select_streams v:0 -select_streams a:0 -show_format -show_streams -print_json "${filePath}"`,
+      { timeout: 10000, maxBuffer: 10 * 1024 * 1024 }
+    );
+    ffprobeOutput = stdout;
   } catch (err: any) {
-    result.errors.push(`Failed to read file header: ${err.message}`);
+    result.errors.push(`[CRITICAL] ffprobe execution failed: ${err.message}. No fallback validation available.`);
     return result;
   }
 
-  // Try to use ffprobe for comprehensive validation
+  // Parse ffprobe output
+  let parsed: any;
   try {
-    const probeData = await ffprobe(filePath);
-
-    // Extract duration
-    if (probeData.format && probeData.format.duration) {
-      result.duration = Math.round(parseFloat(probeData.format.duration));
-    }
-
-    if (probeData.format && probeData.format.bit_rate) {
-      result.bitrate = formatBitrate(parseInt(probeData.format.bit_rate));
-    }
-
-    // Analyze streams
-    if (probeData.streams) {
-      for (const stream of probeData.streams) {
-        if (stream.codec_type === "video") {
-          result.videoStream = true;
-          result.codec = stream.codec_name || "unknown";
-
-          if (stream.width && stream.height) {
-            result.resolution = `${stream.width}x${stream.height}`;
-          }
-
-          if (stream.r_frame_rate) {
-            const [num, den] = stream.r_frame_rate.split("/").map(Number);
-            result.fps = Math.round(num / (den || 1));
-          }
-        } else if (stream.codec_type === "audio") {
-          result.audioStream = true;
-        }
-      }
-    }
-
-    // Validate requirements
-    if (!result.videoStream) {
-      result.errors.push("No video stream found");
-    }
-
-    if (!result.audioStream) {
-      result.errors.push("No audio stream found");
-    }
-
-    if (result.duration <= 0) {
-      result.errors.push("Invalid duration: must be > 0 seconds");
-    }
-
-    // If all streams exist and duration valid, mark as valid
-    result.valid = result.videoStream && result.audioStream && result.duration > 0 && result.errors.length === 0;
-
-    return result;
+    parsed = JSON.parse(ffprobeOutput);
   } catch (err: any) {
-    // If ffprobe fails, fall back to basic validation
-    console.warn(`[render-validate] ffprobe unavailable, using basic validation:`, err.message);
-
-    // At minimum, header check passed
-    result.valid = true;
+    result.errors.push(`[CRITICAL] ffprobe output parsing failed: ${err.message}`);
     return result;
   }
-}
 
-/**
- * Call ffprobe to get file metadata.
- */
-function ffprobe(filePath: string): Promise<any> {
-  return new Promise((resolve, reject) => {
-    const ffprobe = spawn("ffprobe", [
-      "-v",
-      "quiet",
-      "-print_format",
-      "json",
-      "-show_format",
-      "-show_streams",
-      filePath,
-    ]);
-
-    let output = "";
-    let error = "";
-
-    ffprobe.stdout.on("data", (data) => {
-      output += data.toString();
-    });
-
-    ffprobe.stderr.on("data", (data) => {
-      error += data.toString();
-    });
-
-    ffprobe.on("close", (code) => {
-      if (code !== 0) {
-        reject(new Error(`ffprobe failed with code ${code}: ${error}`));
-        return;
-      }
-
-      try {
-        const data = JSON.parse(output);
-        resolve(data);
-      } catch (err: any) {
-        reject(new Error(`Failed to parse ffprobe output: ${err?.message || String(err)}`));
-      }
-    });
-
-    ffprobe.on("error", (err) => {
-      reject(err);
-    });
-
-    // 10 second timeout
-    setTimeout(() => {
-      ffprobe.kill();
-      reject(new Error("ffprobe timeout"));
-    }, 10000);
-  });
-}
-
-function formatBitrate(bits: number): string {
-  if (bits >= 1000000) {
-    return `${(bits / 1000000).toFixed(1)} Mbps`;
-  } else if (bits >= 1000) {
-    return `${(bits / 1000).toFixed(1)} Kbps`;
+  if (!parsed.format) {
+    result.errors.push("[CRITICAL] ffprobe format data missing");
+    return result;
   }
-  return `${bits} bps`;
+
+  // Duration validation
+  const duration = parseFloat(parsed.format.duration) || 0;
+  if (duration <= 0) {
+    result.errors.push("[CRITICAL] Invalid or missing duration");
+  } else if (duration < 10) {
+    result.errors.push(`[CRITICAL] Video too short: ${duration.toFixed(1)}s (expected ~900s for 15min)`);
+  }
+  result.duration = duration;
+
+  // Video stream validation
+  const videoStream = (parsed.streams || []).find((s: any) => s.codec_type === "video");
+  if (!videoStream) {
+    result.errors.push("[CRITICAL] No video stream found");
+  } else {
+    result.videoStream = true;
+    result.codec = videoStream.codec_name || "unknown";
+    result.resolution = `${videoStream.width}x${videoStream.height}`;
+    result.fps = parseFloat(videoStream.r_frame_rate || "0") || 0;
+
+    if (!videoStream.width || !videoStream.height) {
+      result.errors.push("[CRITICAL] Video dimensions missing");
+    }
+    if (result.fps <= 0) {
+      result.errors.push("[CRITICAL] Invalid or missing FPS");
+    }
+  }
+
+  // Audio stream validation
+  const audioStream = (parsed.streams || []).find((s: any) => s.codec_type === "audio");
+  if (!audioStream) {
+    result.errors.push("[CRITICAL] No audio stream found");
+  } else {
+    result.audioStream = true;
+    result.bitrate = audioStream.bit_rate || "unknown";
+
+    if (!audioStream.sample_rate) {
+      result.errors.push("[CRITICAL] Audio sample rate missing");
+    }
+  }
+
+  // Final verdict
+  result.valid = result.errors.length === 0 && result.videoStream && result.audioStream && duration > 60;
+
+  return result;
 }
 
-/**
- * Validate MP4 duration against target duration.
- */
-export function validateDuration(actualSeconds: number, targetMinutes: number, tolerancePercent: number = 20): {
+export interface DurationCheckResult {
   valid: boolean;
   difference: number;
+  percentDiff: number;
   message: string;
-} {
+}
+
+/**
+ * Validate duration within tolerance.
+ * targetMinutes=15 means 900 seconds. Tolerance=20% allows 720-1080 seconds.
+ */
+export function validateDuration(
+  actualSeconds: number,
+  targetMinutes: number,
+  tolerancePercent: number = 20
+): DurationCheckResult {
   const targetSeconds = targetMinutes * 60;
-  const toleranceSeconds = (targetSeconds * tolerancePercent) / 100;
+  const tolerance = (targetSeconds * tolerancePercent) / 100;
   const difference = actualSeconds - targetSeconds;
+  const percentDiff = (difference / targetSeconds) * 100;
+  const valid = Math.abs(difference) <= tolerance;
 
-  if (Math.abs(difference) <= toleranceSeconds) {
-    return {
-      valid: true,
-      difference,
-      message: `Duration valid: ${actualSeconds}s (target: ${targetSeconds}s ±${toleranceSeconds}s)`,
-    };
-  }
+  const message = valid
+    ? `✅ Duration valid: ${actualSeconds}s (target: ${targetSeconds}s, tolerance: ±${tolerance}s)`
+    : `❌ Duration invalid: ${actualSeconds}s (target: ${targetSeconds}s ±${tolerance}s, got ${percentDiff.toFixed(1)}%)`;
 
-  return {
-    valid: false,
-    difference,
-    message: `Duration mismatch: ${actualSeconds}s (target: ${targetSeconds}s ±${toleranceSeconds}s)`,
-  };
+  return { valid, difference, percentDiff, message };
+}
+
+export interface SceneCountCheckResult {
+  valid: boolean;
+  difference: number;
+  percentDiff: number;
+  message: string;
 }
 
 /**
- * Validate scene count against target.
+ * Validate scene count within tolerance.
+ * targetCount=50 scenes. Tolerance=20% allows 40-60 scenes.
  */
-export function validateSceneCount(actualCount: number, targetCount: number, tolerancePercent: number = 20): {
-  valid: boolean;
-  difference: number;
-  message: string;
-} {
-  const minCount = Math.floor((targetCount * (100 - tolerancePercent)) / 100);
-  const maxCount = Math.ceil((targetCount * (100 + tolerancePercent)) / 100);
-  const difference = actualCount - targetCount;
-
-  if (actualCount >= minCount && actualCount <= maxCount) {
+export function validateSceneCount(
+  actualCount: number,
+  targetCount: number,
+  tolerancePercent: number = 20
+): SceneCountCheckResult {
+  if (targetCount === 0) {
     return {
-      valid: true,
-      difference,
-      message: `Scene count valid: ${actualCount} (target: ${targetCount} ±${tolerancePercent}%)`,
+      valid: false,
+      difference: 0,
+      percentDiff: 0,
+      message: "❌ Target scene count is zero",
     };
   }
 
-  return {
-    valid: false,
-    difference,
-    message: `Scene count out of range: ${actualCount} (expected: ${minCount}-${maxCount})`,
-  };
+  const tolerance = (targetCount * tolerancePercent) / 100;
+  const difference = actualCount - targetCount;
+  const percentDiff = (difference / targetCount) * 100;
+  const valid = Math.abs(difference) <= tolerance;
+
+  const message = valid
+    ? `✅ Scene count valid: ${actualCount} (target: ${targetCount}, tolerance: ±${tolerance.toFixed(0)})`
+    : `❌ Scene count invalid: ${actualCount} (target: ${targetCount} ±${tolerance.toFixed(0)}, got ${percentDiff.toFixed(1)}%)`;
+
+  return { valid, difference, percentDiff, message };
+}
+
+export interface ResolutionCheckResult {
+  valid: boolean;
+  width: number;
+  height: number;
+  message: string;
+}
+
+/**
+ * Production validation: minimum 1280x720 (HD)
+ */
+export function validateResolution(resolution: string): ResolutionCheckResult {
+  const [widthStr, heightStr] = resolution.split("x");
+  const width = parseInt(widthStr, 10);
+  const height = parseInt(heightStr, 10);
+
+  const valid = width >= 1280 && height >= 720;
+  const message = valid
+    ? `✅ Resolution valid: ${resolution} (minimum HD: 1280x720)`
+    : `❌ Resolution too low: ${resolution} (minimum HD: 1280x720)`;
+
+  return { valid, width, height, message };
 }

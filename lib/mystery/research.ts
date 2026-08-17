@@ -6,19 +6,7 @@ import type { MysteryProject, ResearchFinding, SourceRef, TimelineEvent, FactSta
 
 /**
  * 미스터리 사건 조사 단계.
- *
- * 경제 뉴스와 달리 미스터리는 최신 뉴스만으로는 부족하다.
- * 다음 관점으로 나눠 검색한다:
- * 1. 사건 개요
- * 2. 공식 기록
- * 3. 관련 인물
- * 4. 시간순 기록
- * 5. 증언
- * 6. 사진/영상 자료
- * 7. 공식 조사 결과
- * 8. 반론/반박
- * 9. 현재 연구
- * 10. 미스터리 주장
+ * 모든 10개 리서치 요청은 타임아웃 적용, fallback 없음, 실패 시 즉시 throw
  */
 const RESEARCH_QUERY_SUFFIXES = [
   { key: "overview", label: "사건 개요", suffix: "사건 개요 배경" },
@@ -32,6 +20,13 @@ const RESEARCH_QUERY_SUFFIXES = [
   { key: "research", label: "연구", suffix: "연구 분석 학술" },
   { key: "theories", label: "미스터리 주장", suffix: "미스터리 설명 가설" },
 ] as const;
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number, name: string): Promise<T> {
+  const timeoutPromise = new Promise<T>((_, reject) =>
+    setTimeout(() => reject(new Error(`[TIMEOUT] ${name} exceeded ${timeoutMs}ms`)), timeoutMs)
+  );
+  return Promise.race([promise, timeoutPromise]);
+}
 
 function synthesisPrompt(
   topic: string,
@@ -80,7 +75,7 @@ ${researchBlock}
 - 불명확한 날짜는 "YYYY-?" 형식으로 표기하세요.
 - status: FACT(공식 기록), TESTIMONY(증언만), CLAIM(주장), DISPUTED(의견 상충), UNVERIFIED(미확인)
 - 연대순으로 정렬하세요.
-- 최대 20개 이벤트.`;
+- 최소 5개, 최대 20개 이벤트.`;
 }
 
 function factcheckPrompt(topic: string, research: ResearchFinding[]): string {
@@ -119,7 +114,7 @@ ${researchBlock}
 
 [규칙]
 - 리서치에 명시된 사실만 평가하세요.
-- 최대 10개 주요 주장.`;
+- 최소 3개, 최대 10개 주요 주장.`;
 }
 
 export async function researchTopic(projectId: string, project: MysteryProject): Promise<void> {
@@ -129,78 +124,91 @@ export async function researchTopic(projectId: string, project: MysteryProject):
 
   const findings: ResearchFinding[] = [...existing];
 
-  // Try offline research first for known cases
-  const offlineFindings = getOfflineResearch(topic);
-  if (offlineFindings.length > 0) {
-    console.log(`[mystery] 오프라인 리서치 데이터 사용: ${topic} (${offlineFindings.length}개 찾음)`);
-    findings.push(...offlineFindings);
+  // 각 관점별로 리서치 실행 (timeout 포함, fallback 없음)
+  for (const { key, label, suffix } of RESEARCH_QUERY_SUFFIXES) {
+    if (doneKeys.has(label)) continue;
 
-    // Update project with offline findings
-    updateProject(projectId, (p) => {
-      p.research = [...(p.research || []), ...offlineFindings];
-    });
-  } else {
-    // 각 관점별로 리서치 실행
-    for (const { key, label, suffix } of RESEARCH_QUERY_SUFFIXES) {
-      if (doneKeys.has(label)) continue;
+    console.log(`[mystery:research] ${label} 시작`);
 
-      console.log(`[mystery] 리서칭: ${topic} - ${label}`);
+    let articles: any[] = [];
+    try {
+      // RSS 검색에 25초 timeout 적용
+      articles = await withTimeout(
+        searchGoogleNewsRss(`${topic} ${suffix}`, 8),
+        25000,
+        `RSS search: ${label}`
+      );
+    } catch (err: any) {
+      // RSS 실패는 fatal - offline fallback 제거
+      throw new Error(`[CRITICAL] ${label} 검색 실패: ${err.message}`);
+    }
 
-      let articles: any[] = [];
-      try {
-        articles = await searchGoogleNewsRss(`${topic} ${suffix}`, 8);
-      } catch (err: any) {
-        console.warn(`[mystery] RSS 검색 실패: ${err.message}, 오프라인 데이터 확인 중...`);
-        // Check offline data as fallback
-        const offlineData = getOfflineResearch(topic);
-        if (offlineData.length > 0) {
-          console.log(`[mystery] 오프라인 데이터로 대체: ${offlineData.length}개 항목`);
-          findings.push(...offlineData);
-          updateProject(projectId, (p) => {
-            p.research = [...(p.research || []), ...offlineData];
-          });
-          continue;
+    // LLM으로 요약 (timeout 포함)
+    let summary: string;
+    try {
+      if (articles.length === 0) {
+        summary = `이 관점("${suffix}")으로는 관련 자료를 찾지 못했습니다.`;
+      } else {
+        summary = await withTimeout(
+          generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 }),
+          20000,
+          `LLM synthesis: ${label}`
+        );
+        summary = summary.trim();
+        if (!summary || summary.length < 10) {
+          throw new Error("Summary generation produced empty or too short result");
         }
       }
-
-      const summary =
-        articles.length === 0
-          ? `이 관점("${suffix}")으로는 관련 자료를 찾지 못했습니다.`
-          : (await generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 })).trim();
-
-      const sources: SourceRef[] = articles.map((a) => ({
-        title: a.title,
-        publisher: a.source,
-        publishedAt: a.pubDate,
-        url: a.link,
-        sourceType: "major_media",
-        reliability: "medium",
-        factUsed: a.snippet.slice(0, 200),
-      }));
-
-      const finding: ResearchFinding = {
-        id: `research-${key}`,
-        query: label,
-        sources,
-        summary,
-      };
-      findings.push(finding);
-
-      updateProject(projectId, (p) => {
-        p.research = [...(p.research || []).filter((f) => f.id !== finding.id), finding];
-      });
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] ${label} 요약 실패: ${err.message}`);
     }
+
+    const sources: SourceRef[] = articles.map((a) => ({
+      title: a.title,
+      publisher: a.source,
+      publishedAt: a.pubDate,
+      url: a.link,
+      sourceType: "major_media",
+      reliability: "medium",
+      factUsed: a.snippet.slice(0, 200),
+    }));
+
+    const finding: ResearchFinding = {
+      id: `research-${key}`,
+      query: label,
+      sources,
+      summary,
+    };
+    findings.push(finding);
+
+    updateProject(projectId, (p) => {
+      p.research = [...(p.research || []).filter((f) => f.id !== finding.id), finding];
+    });
+    console.log(`[mystery:research] ✅ ${label} 완료`);
   }
 
-  // 타임라인 생성
-  console.log(`[mystery] 타임라인 생성: ${topic}`);
+  if (findings.length === 0) {
+    throw new Error("[CRITICAL] Research produced no findings");
+  }
+
+  // Timeline 생성 - 실패하면 fatal
+  console.log(`[mystery:research] 타임라인 생성...`);
   try {
-    const timelineJson = await generateText({
-      prompt: timelinePrompt(topic, findings),
-      temperature: 0.2,
-    });
+    const timelineJson = await withTimeout(
+      generateText({
+        prompt: timelinePrompt(topic, findings),
+        temperature: 0.2,
+      }),
+      20000,
+      "Timeline generation"
+    );
+
     const parsed = JSON.parse(timelineJson);
-    const timeline: TimelineEvent[] = (parsed.events || []).map((e: any, i: number) => ({
+    if (!parsed.events || !Array.isArray(parsed.events) || parsed.events.length === 0) {
+      throw new Error("Timeline invalid: empty or malformed events array");
+    }
+
+    const timeline: TimelineEvent[] = parsed.events.map((e: any, i: number) => ({
       id: `event-${i}`,
       date: e.date || "",
       title: e.title || "",
@@ -212,20 +220,30 @@ export async function researchTopic(projectId: string, project: MysteryProject):
     updateProject(projectId, (p) => {
       p.timeline = timeline;
     });
-  } catch (err) {
-    console.warn(`[mystery] 타임라인 생성 실패:`, err);
+    console.log(`[mystery:research] ✅ 타임라인: ${timeline.length}개 이벤트`);
+  } catch (err: any) {
+    throw new Error(`[CRITICAL] 타임라인 실패: ${err.message}`);
   }
 
-  // 팩트체크 실행
-  console.log(`[mystery] 팩트체크: ${topic}`);
+  // Fact-check - 실패하면 fatal
+  console.log(`[mystery:research] 팩트체크...`);
   try {
-    const factcheckJson = await generateText({
-      prompt: factcheckPrompt(topic, findings),
-      temperature: 0.2,
-    });
+    const factcheckJson = await withTimeout(
+      generateText({
+        prompt: factcheckPrompt(topic, findings),
+        temperature: 0.2,
+      }),
+      20000,
+      "Factcheck generation"
+    );
+
     const parsed = JSON.parse(factcheckJson);
+    if (!parsed.claims || !Array.isArray(parsed.claims) || parsed.claims.length === 0) {
+      throw new Error("Factcheck invalid: empty or malformed claims array");
+    }
+
     const factcheckResults: Record<string, FactStatus> = {};
-    (parsed.claims || []).forEach((c: any) => {
+    parsed.claims.forEach((c: any) => {
       if (c.claim) {
         factcheckResults[c.claim] = c.status || "UNVERIFIED";
       }
@@ -234,13 +252,16 @@ export async function researchTopic(projectId: string, project: MysteryProject):
     updateProject(projectId, (p) => {
       p.factcheckResults = factcheckResults;
     });
-  } catch (err) {
-    console.warn(`[mystery] 팩트체크 실패:`, err);
+    console.log(`[mystery:research] ✅ 팩트체크: ${Object.keys(factcheckResults).length}개 주장`);
+  } catch (err: any) {
+    throw new Error(`[CRITICAL] 팩트체크 실패: ${err.message}`);
   }
 
+  // 모든 단계 성공 - stage 변경
   updateProject(projectId, (p) => {
     p.stage = "factcheck";
   });
+  console.log(`[mystery:research] ✅ 조사 단계 완료`);
 }
 
 export function formatResearchForPrompt(research: ResearchFinding[]): string {

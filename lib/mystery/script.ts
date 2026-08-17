@@ -227,8 +227,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
       sectionIndex++;
-    } catch (err) {
-      console.warn(`[mystery] 훅 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Hook generation failed: ${err?.message || String(err)}`);
     }
 
     // 챕터
@@ -252,8 +252,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         });
         sectionIndex++;
       }
-    } catch (err) {
-      console.warn(`[mystery] 챕터 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Chapter generation failed: ${err?.message || String(err)}`);
     }
 
     // 결말
@@ -269,8 +269,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         status: "done",
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
-    } catch (err) {
-      console.warn(`[mystery] 결말 생성 실패:`, err);
+    } catch (err: any) {
+      throw new Error(`[CRITICAL] Ending generation failed: ${err?.message || String(err)}`);
     }
   } catch (llmErr: any) {
     console.error(`[mystery] LLM 스크립트 생성 실패:`, llmErr?.message);

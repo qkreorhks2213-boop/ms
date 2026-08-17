@@ -28,7 +28,7 @@ async function concatenateAudioSegments(narrationSegments: any[], outputPath: st
     );
   }
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     // Create concat demuxer file
     const concatFile = outputPath + ".txt";
     const concatContent = validSegments
@@ -57,8 +57,7 @@ async function concatenateAudioSegments(narrationSegments: any[], outputPath: st
         console.log(`[render] Audio concatenated: ${outputPath}`);
         resolve(true);
       } else {
-        console.warn(`[render] Audio concatenation failed: ${stderr.slice(-300)}`);
-        resolve(false);
+        reject(new Error(`[CRITICAL] Audio concatenation failed: ${stderr.slice(-300)}`));
       }
     });
   });
@@ -66,7 +65,7 @@ async function concatenateAudioSegments(narrationSegments: any[], outputPath: st
 
 async function generateSubtitleFile(subtitleTrack: any, outputPath: string): Promise<boolean> {
   if (!subtitleTrack || !subtitleTrack.subtitles || subtitleTrack.subtitles.length === 0) {
-    return false;
+    throw new Error("[CRITICAL] Subtitle track missing or empty");
   }
 
   try {
@@ -81,9 +80,8 @@ async function generateSubtitleFile(subtitleTrack: any, outputPath: string): Pro
     }
     console.log(`[render] Subtitle file created: ${outputPath}`);
     return true;
-  } catch (err) {
-    console.warn(`[render] Subtitle generation failed:`, err);
-    return false;
+  } catch (err: any) {
+    throw new Error(`[CRITICAL] Subtitle generation failed: ${err?.message || String(err)}`);
   }
 }
 
