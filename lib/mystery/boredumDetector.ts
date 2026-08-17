@@ -223,7 +223,7 @@ export function optimizeBoringScenes(scenes: Scene[], analyses: BoringAnalysis[]
     if (analysis.suggestedAction === "replace_visual") {
       const scene = optimized.find((s) => s.id === analysis.sceneId);
       if (scene) {
-        // 다양한 시각자료로 변경 시도
+        // 다양한 시각자료로 변경 시도 (deterministic: scene ID 기반)
         const alternativeVisuals: typeof scene.visualType[] = [
           "diagram",
           "data_card",
@@ -231,8 +231,10 @@ export function optimizeBoringScenes(scenes: Scene[], analyses: BoringAnalysis[]
           "evidence",
           "ai_reconstruction",
         ];
-        const randomAlt = alternativeVisuals[Math.floor(Math.random() * alternativeVisuals.length)];
-        scene.visualType = randomAlt;
+        // Use scene id hash for deterministic selection (not random)
+        const sceneIdHash = Array.from(scene.id).reduce((hash, char) => hash + char.charCodeAt(0), 0);
+        const altIndex = sceneIdHash % alternativeVisuals.length;
+        scene.visualType = alternativeVisuals[altIndex];
       }
     }
   }
