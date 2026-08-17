@@ -179,19 +179,50 @@ export async function generateScenes(projectId: string, project: MysteryProject)
   const scenes: Scene[] = [];
   let sceneOrder = 0;
 
-  // Map each scene to its original section for metadata inheritance
-  for (const sceneText of allSceneTexts) {
-    // Find which section this scene came from
-    let sectionId = script.sections[0].id;
-    let sectionMetadata = script.sections[0];
+  // Build accurate section-to-sceneText mapping during grouping
+  const sectionSceneMap = new Map<string, string[]>();
+  for (const section of script.sections) {
+    const sectionScenes = groupIntoSceneTexts(section.text, targetChars);
+    sectionSceneMap.set(section.id, sectionScenes);
+  }
 
-    for (const section of script.sections) {
-      if (section.text.includes(sceneText) || sceneText.includes(section.text.slice(0, 50))) {
-        sectionId = section.id;
-        sectionMetadata = section;
-        break;
+  // Rebuild sceneTexts in order with section tracking
+  const orderedScenes: Array<{ sectionId: string; text: string }> = [];
+  for (const section of script.sections) {
+    const sectionScenes = sectionSceneMap.get(section.id) || [];
+    for (const sceneText of sectionScenes) {
+      orderedScenes.push({ sectionId: section.id, text: sceneText });
+    }
+  }
+
+  // Apply splitting logic if needed to reach target
+  while (orderedScenes.length < targetSceneCount) {
+    let longestIdx = 0;
+    let longestLength = orderedScenes[0].text.length;
+
+    for (let i = 1; i < orderedScenes.length; i++) {
+      if (orderedScenes[i].text.length > longestLength) {
+        longestLength = orderedScenes[i].text.length;
+        longestIdx = i;
       }
     }
+
+    const longestScene = orderedScenes[longestIdx];
+    const sentences = splitIntoSentences(longestScene.text);
+
+    if (sentences.length < 2) break;
+
+    const midpoint = Math.ceil(sentences.length / 2);
+    const firstHalf = sentences.slice(0, midpoint).join(" ");
+    const secondHalf = sentences.slice(midpoint).join(" ");
+
+    orderedScenes[longestIdx] = { sectionId: longestScene.sectionId, text: firstHalf };
+    orderedScenes.splice(longestIdx + 1, 0, { sectionId: longestScene.sectionId, text: secondHalf });
+  }
+
+  // Create Scene objects with accurate section mapping
+  for (const { sectionId, text: sceneText } of orderedScenes) {
+    const sectionMetadata = script.sections.find((s) => s.id === sectionId) || script.sections[0];
 
     const visualPlan = visualPlans[sceneOrder] || {
       visualType: "ai_reconstruction" as SceneVisualType,
