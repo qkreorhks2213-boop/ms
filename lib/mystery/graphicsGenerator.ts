@@ -15,26 +15,14 @@
 let createCanvas: any = null;
 try {
   createCanvas = require("canvas").createCanvas;
-} catch {
-  // canvas not installed, will use fallback
+} catch (err: any) {
+  console.error("[graphicsGenerator] CRITICAL: Canvas module not available");
+  console.error("[graphicsGenerator] Install with: npm install canvas");
+  console.error(`[graphicsGenerator] Error: ${err.message}`);
+  // Don't set createCanvas to allow functions to fail with clear error messages
 }
 
 import { TimelineEvent } from "./types";
-
-/**
- * Canvas 사용 불가능시 사용할 플레이스홀더 Buffer 생성.
- */
-function createPlaceholderBuffer(title: string): Buffer {
-  // PNG 헤더 + 1x1 투명 픽셀
-  const pngHeader = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
-    0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
-    0x42, 0x60, 0x82,
-  ]);
-  return pngHeader;
-}
 
 /**
  * 타임라인 그래픽 생성.
@@ -49,9 +37,8 @@ export async function generateTimeline(
     height?: number;
   }
 ): Promise<Buffer> {
-  // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Timeline");
+    throw new Error("[CRITICAL] Canvas module required for timeline generation. Install with: npm install canvas");
   }
 
   const width = options?.width ?? 1920;
@@ -142,7 +129,7 @@ export async function generateDataCard(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(data.title);
+    throw new Error("[CRITICAL] Canvas module required for graphics generation. Install with: npm install canvas");
   }
 
   const width = options?.width ?? 1920;
@@ -209,7 +196,7 @@ export async function generateDiagram(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Diagram");
+    throw new Error("[CRITICAL] Canvas module required for graphics generation. Install with: npm install canvas");
   }
 
   const width = options?.width ?? 1920;
@@ -358,7 +345,7 @@ export async function generateMapBackground(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Map");
+    throw new Error("[CRITICAL] Canvas module required for graphics generation. Install with: npm install canvas");
   }
 
   const width = options?.width ?? 1920;
@@ -425,7 +412,7 @@ export async function generateEvidenceCard(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(evidence.title);
+    throw new Error("[CRITICAL] Canvas module required for graphics generation. Install with: npm install canvas");
   }
 
   const width = options?.width ?? 1920;

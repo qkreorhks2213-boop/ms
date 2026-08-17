@@ -110,8 +110,9 @@ async function generateOneSceneVisual(
         // 다중 소스에서 검색
         const searchResults = await searchRealAssets(scene.visualQuery);
         realAssets.push(...searchResults.map(convertSearchResultToVisual));
-      } catch {
-        // 검색 실패해도 계속 진행
+      } catch (err: any) {
+        // 실제 자료 검색 실패는 로그하지만 그래픽/AI 재현으로 계속 진행
+        console.warn(`[visuals] Real asset search failed for scene ${scene.id}: ${err?.message}`);
       }
     }
 
@@ -294,6 +295,10 @@ export async function generateAllSceneVisuals(
   userInput?: MysteryInput
 ): Promise<void> {
   const scenes = project.scenes || [];
+  if (scenes.length === 0) {
+    throw new Error("[CRITICAL] No scenes to generate visuals for");
+  }
+
   const targets = scenes.filter((s) => s.visualStatus === "pending" || s.visualStatus === "error");
   await runWithConcurrency(
     targets.map((scene) => () => generateOneSceneVisual(projectId, scene, userInput)),
@@ -301,12 +306,25 @@ export async function generateAllSceneVisuals(
   );
 
   const finalProject = readProject(projectId);
-  const allDone = (finalProject?.scenes || []).every((s) => s.visualStatus === "done");
-  if (allDone) {
-    updateProject(projectId, (p) => {
-      p.stage = "narration";
-    });
+  const finalScenes = finalProject?.scenes || [];
+
+  if (finalScenes.length === 0) {
+    throw new Error("[CRITICAL] Scenes lost after visual generation");
   }
+
+  // Check that ALL scenes have visuals
+  const failedScenes = finalScenes.filter((s) => s.visualStatus !== "done");
+  if (failedScenes.length > 0) {
+    const failedIds = failedScenes.map((s) => `${s.id}(${s.visualError || "unknown error"})`).join(", ");
+    throw new Error(`[CRITICAL] ${failedScenes.length}/${finalScenes.length} scenes failed visual generation: ${failedIds}`);
+  }
+
+  const allDone = finalScenes.every((s) => s.visualStatus === "done");
+  if (!allDone) {
+    throw new Error("[CRITICAL] Not all scenes have completed visual generation");
+  }
+
+  console.log(`[visuals] ✅ All ${finalScenes.length} scene visuals generated successfully`);
 }
 
 export async function regenerateSceneVisual(projectId: string, sceneId: string): Promise<void> {

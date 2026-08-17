@@ -404,32 +404,40 @@ export async function renderMysteryVideo(projectId: string, project: MysteryProj
     const durationCheck = validateDuration(ffprobeResult.duration, project.input.targetMinutes || 15);
     console.log(`[render] ${durationCheck.message}`);
     if (!durationCheck.valid) {
-      console.warn(`[render] Duration warning (non-fatal)`);
+      throw new Error(`[CRITICAL] Duration validation failed: ${durationCheck.message}`);
     }
 
     // Frame content validation
     console.log(`[render] Analyzing frame content...`);
     const frameResult = await validateFrameContent(outputPath);
     console.log(`[render] ${frameResult.message}`);
+    if (!frameResult.valid) {
+      throw new Error(`[CRITICAL] Frame validation failed: ${frameResult.message}`);
+    }
 
     // Audio validation
     console.log(`[render] Analyzing audio content...`);
     const audioResult = await validateAudioContent(outputPath);
     console.log(`[render] ${audioResult.message}`);
-
     if (!audioResult.valid) {
-      console.warn(`[render] Audio validation warning (non-fatal)`);
+      throw new Error(`[CRITICAL] Audio validation failed: ${audioResult.message}`);
     }
 
     // Visual coverage validation
     console.log(`[render] Checking visual coverage...`);
     const coverageResult = await validateVisualCoverage(outputPath);
     console.log(`[render] ${coverageResult.message}`);
+    if (!coverageResult.valid) {
+      throw new Error(`[CRITICAL] Visual coverage validation failed: ${coverageResult.message}`);
+    }
 
     // Subtitle validation
     console.log(`[render] Verifying subtitles...`);
     const subtitleResult = await validateSubtitleBurnIn(outputPath);
     console.log(`[render] ${subtitleResult.message}`);
+    if (!subtitleResult.valid) {
+      throw new Error(`[CRITICAL] Subtitle validation failed: ${subtitleResult.message}`);
+    }
 
     console.log(`[render] ✅ All validations completed`);
     console.log(`[render] Video metadata: ${ffprobeResult.duration.toFixed(1)}s, ${ffprobeResult.resolution}, ${ffprobeResult.fps.toFixed(0)}fps`);
