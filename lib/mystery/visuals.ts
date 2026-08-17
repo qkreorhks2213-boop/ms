@@ -140,30 +140,11 @@ async function generateOneSceneVisual(
       ["ai_reconstruction", "atmosphere", "location"].includes(scene.visualType)
     ) {
       // 3단계: AI 재현
-      const prompt = aiPrompts.generateSceneReconstructionPrompt(scene);
-
-      // TODO: 실제 AI 이미지 생성 (Claude Vision, DALL-E, 등)
-      // 지금은 데이터 카드로 대체
-      const aiCard = await renderDataCardCompat({
-        headline: scene.visualHeadline || scene.visualLabel || "AI 재현",
-        label: "AI 재현 이미지",
-        accentColor: "a87c5c",
-      });
-      buffer = aiCard;
-
-      sceneVisual = {
-        id: `ai_${scene.id}`,
-        type: scene.visualType as any,
-        origin: "AI_RECONSTRUCTION",
-        aiGeneration: {
-          model: "claude-3.5-sonnet",
-          prompt,
-          generatedAt: new Date().toISOString(),
-          displayDisclaimer: true,
-          disclaimerText: aiPrompts.generateReconstructionDisclaimer(scene),
-        },
-      };
-      sourceLabel = "AI 재현";
+      // AI 이미지 생성 구현이 필수
+      throw new Error(
+        `[CRITICAL] AI reconstruction requested for scene ${scene.id} but image generation is not implemented. ` +
+        `Implement actual AI image generation (Claude Vision, DALL-E, etc.) or set useAiReconstruction=false.`
+      );
     } else {
       // 4단계: 텍스트 카드
       const textCard = await renderDataCardCompat({
