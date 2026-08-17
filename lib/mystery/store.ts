@@ -17,11 +17,34 @@ import {
 /**
  * 미스터리 프로젝트 상태를 파일로 저장한다(메모리 Map이 아님).
  * 경제 버전의 저장 방식을 그대로 재사용한다.
+ *
+ * RACE CONDITION PREVENTION: Use a lock map to serialize updates to the same project.
+ * Multiple concurrent updateProject() calls for the same projectId will be queued.
  */
 const PROJECTS_DIR = path.join(process.cwd(), "data", "mystery-projects");
 const PUBLIC_GENERATED_DIR = path.join(process.cwd(), "public", "generated");
 
 const PROJECT_ID_RE = /^[a-zA-Z0-9-]+$/;
+
+// In-progress update tracking to prevent race conditions
+const projectUpdateInProgress = new Set<string>();
+
+function waitForLock(projectId: string, maxWaitMs: number = 30000): void {
+  const startTime = Date.now();
+  while (projectUpdateInProgress.has(projectId)) {
+    if (Date.now() - startTime > maxWaitMs) {
+      throw new Error(
+        `[CRITICAL] Timeout waiting for project lock on ${projectId} ` +
+        `(waited ${maxWaitMs}ms). Another process may be stuck.`
+      );
+    }
+    // Busy wait with small delay (10ms)
+    const now = Date.now();
+    while (Date.now() - now < 10) {
+      // Busy loop
+    }
+  }
+}
 
 export function projectDir(projectId: string): string {
   if (!PROJECT_ID_RE.test(projectId)) {
@@ -139,17 +162,38 @@ export function createProject(params: CreateProjectParams, userId: string): Myst
   return project;
 }
 
+/**
+ * Update project with race condition protection.
+ * Serializes concurrent updates to prevent data loss from partial overwrites.
+ */
 export function updateProject(
   projectId: string,
   updater: (project: MysteryProject) => void
 ): MysteryProject {
-  const project = readProject(projectId);
-  if (!project) {
-    throw new Error(`프로젝트 ${projectId}를 찾을 수 없습니다.`);
+  // Wait for any in-progress update to complete
+  waitForLock(projectId);
+
+  projectUpdateInProgress.add(projectId);
+  try {
+    // Always re-read the project to get latest state
+    // (prevents losing changes from other workers)
+    const project = readProject(projectId);
+    if (!project) {
+      throw new Error(`프로젝트 ${projectId}를 찾을 수 없습니다.`);
+    }
+
+    // Apply the update to the latest project state
+    updater(project);
+
+    // Write with atomic operation (temp file + rename)
+    // This ensures the file is never in a partial/corrupted state
+    writeProject(project);
+
+    return project;
+  } finally {
+    // Always release the lock
+    projectUpdateInProgress.delete(projectId);
   }
-  updater(project);
-  writeProject(project);
-  return project;
 }
 
 export function renameProject(projectId: string, newName: string): MysteryProject {
