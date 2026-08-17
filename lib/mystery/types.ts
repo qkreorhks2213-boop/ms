@@ -421,6 +421,31 @@ export interface RenderState {
   warning?: string;
 }
 
+export interface Subtitle {
+  id: string;
+  text: string;
+  startTime: number; // seconds
+  endTime: number; // seconds
+  verified?: boolean;
+  sceneId?: string;
+}
+
+export interface SubtitleTrack {
+  id: string;
+  format: "srt" | "ass";
+  languageCode?: string;
+  subtitles: Subtitle[];
+  verified?: boolean;
+}
+
+export interface NarrationSegment {
+  id: string;
+  audioPath: string;
+  narration: string;
+  startTimeSeconds: number;
+  durationSeconds: number;
+}
+
 export interface ErrorLogEntry {
   at: string;
   stage: PipelineStage;

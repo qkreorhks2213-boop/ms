@@ -14,17 +14,20 @@ const TARGET_HEIGHT = 360;
 const TARGET_FPS = 24;
 
 async function concatenateAudioSegments(narrationSegments: any[], outputPath: string): Promise<boolean> {
+  if (!narrationSegments || narrationSegments.length === 0) {
+    throw new Error("[CRITICAL] No narration segments provided for audio concatenation");
+  }
+
   // Check if all audio files exist
   const validSegments = narrationSegments.filter((seg) => seg.audioPath && fs.existsSync(seg.audioPath));
 
   if (validSegments.length === 0) {
-    console.log("[render] No audio segments found, skipping audio concatenation");
-    return false;
+    throw new Error("[CRITICAL] No audio files found in narration segments");
   }
 
   if (validSegments.length !== narrationSegments.length) {
-    console.warn(
-      `[render] Warning: Only ${validSegments.length}/${narrationSegments.length} audio segments exist`
+    throw new Error(
+      `[CRITICAL] Only ${validSegments.length}/${narrationSegments.length} audio segments exist`
     );
   }
 

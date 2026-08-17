@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { readProject, updateProject, appendErrorLog, projectDir } from "../../../../../../lib/mystery/store";
 import { checkOwnership, requireUserId } from "../../../../../../lib/economic/authGuard";
+import type { PipelineStage } from "../../../../../../lib/mystery/types";
 import { researchTopic } from "../../../../../../lib/mystery/research";
 import { generateScript } from "../../../../../../lib/mystery/script";
 import { generateScenes } from "../../../../../../lib/mystery/scenes";
@@ -44,12 +45,14 @@ export const runtime = "nodejs";
 
 interface PipelineStep {
   name: string;
+  stage: PipelineStage;
   execute: (projectId: string, project: any) => Promise<void>;
 }
 
 async function executeStep(
   projectId: string,
   stepName: string,
+  stage: PipelineStage,
   stepFn: () => Promise<void>
 ): Promise<boolean> {
   try {
@@ -59,7 +62,7 @@ async function executeStep(
   } catch (err: any) {
     console.error(`[mystery:auto] Step failed: ${stepName}`, err);
     appendErrorLog(projectId, {
-      stage: "research", // Treat as research stage for now
+      stage: stage,
       message: `Auto-pipeline failed at step: ${stepName} - ${err?.message || String(err)}`,
       retryable: true,
     });
@@ -71,6 +74,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   const steps: PipelineStep[] = [
     {
       name: "1️⃣ Investigation",
+      stage: "research",
       execute: async () => {
         updateProject(projectId, (p) => {
           p.stage = "research";
@@ -80,6 +84,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "2️⃣ Fact-Checking",
+      stage: "research",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.research) throw new Error("Research not completed");
@@ -97,6 +102,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "3️⃣ Timeline",
+      stage: "research",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.research) throw new Error("Research not completed");
@@ -115,6 +121,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "4️⃣ Script Generation",
+      stage: "script",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.research) throw new Error("Research not completed");
@@ -128,6 +135,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "5️⃣ Visual Asset Discovery",
+      stage: "visuals",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.script) throw new Error("Script not generated");
@@ -148,6 +156,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "6️⃣ Scene Composition",
+      stage: "scenes",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.script) throw new Error("Script not generated");
@@ -161,6 +170,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "7️⃣ Visual Assets Integration",
+      stage: "visuals",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -177,6 +187,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "8️⃣ Scene Optimization (Boredom Detection)",
+      stage: "scenes",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -199,6 +210,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "9️⃣ Narration Generation & Audio",
+      stage: "narration",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.scenes) throw new Error("Scenes not built");
@@ -220,6 +232,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "9️⃣.5️⃣ Subtitle Generation",
+      stage: "narration",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated || !updated.narrationSegments) throw new Error("Narration not completed");
@@ -234,6 +247,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "🔟 Final Quality Assurance",
+      stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
@@ -261,6 +275,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "1️⃣1️⃣ Video Rendering",
+      stage: "render",
       execute: async () => {
         const updated = readProject(projectId);
         if (!updated) throw new Error("Project not found");
@@ -284,6 +299,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     },
     {
       name: "1️⃣2️⃣ Final Verification & Complete",
+      stage: "render",
       execute: async () => {
         const finalProject = readProject(projectId);
         if (!finalProject) throw new Error("Project not found");
@@ -349,7 +365,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   let lastSuccessfulStep = -1;
   for (let stepIndex = 0; stepIndex < steps.length; stepIndex++) {
     const step = steps[stepIndex];
-    const success = await executeStep(projectId, step.name, () => step.execute(projectId, project));
+    const success = await executeStep(projectId, step.name, step.stage, () => step.execute(projectId, project));
 
     if (!success) {
       // Critical failure - stop pipeline
@@ -357,12 +373,6 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
 
       updateProject(projectId, (p) => {
         p.pipelineError = `Failed at step: ${step.name}`;
-      });
-
-      appendErrorLog(projectId, {
-        stage: "research",
-        message: `Pipeline failed at step ${stepIndex}: ${step.name}`,
-        retryable: true,
       });
 
       return; // Stop execution
@@ -410,11 +420,6 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   runAutoPipeline(params.id, project)
     .catch((err) => {
       console.error(`[mystery:auto] Pipeline error:`, err);
-      appendErrorLog(params.id, {
-        stage: "research",
-        message: `Auto-pipeline failed: ${err?.message || String(err)}`,
-        retryable: false,
-      });
       updateProject(params.id, (p) => {
         p.pipelineError = err?.message || String(err);
       });
