@@ -150,10 +150,10 @@ export async function researchTopic(projectId: string, project: MysteryProject):
 
     let articles: any[] = [];
     try {
-      // RSS 검색에 25초 timeout 적용
+      // RSS 검색에 8초 timeout 적용 (너무 오래 걸리면 fallback 사용)
       articles = await withTimeout(
         searchGoogleNewsRss(`${topic} ${suffix}`, 8),
-        25000,
+        8000,
         `RSS search: ${label}`
       );
     } catch (err: any) {
@@ -170,7 +170,7 @@ export async function researchTopic(projectId: string, project: MysteryProject):
       } else {
         summary = await withTimeout(
           generateText({ prompt: synthesisPrompt(topic, suffix, articles), temperature: 0.3 }),
-          20000,
+          5000,
           `LLM synthesis: ${label}`
         );
         summary = summary.trim();
@@ -221,7 +221,7 @@ export async function researchTopic(projectId: string, project: MysteryProject):
         prompt: timelinePrompt(topic, findings),
         temperature: 0.2,
       }),
-      20000,
+      5000,
       "Timeline generation"
     );
 
@@ -275,7 +275,7 @@ export async function researchTopic(projectId: string, project: MysteryProject):
         prompt: factcheckPrompt(topic, findings),
         temperature: 0.2,
       }),
-      20000,
+      5000,
       "Factcheck generation"
     );
 

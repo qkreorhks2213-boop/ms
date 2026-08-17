@@ -262,15 +262,51 @@ export async function generateNarrationForScenes(
       totalDuration += segment.durationSeconds;
       console.log(`[narration] ✅ ${segment.durationSeconds}초`);
     } else {
-      console.error(`[narration] ❌ 섹션 ${i} 생성 실패`);
-      // Continue with partial data instead of failing completely
-      return {
-        success: false,
-        segments,
-        totalDuration,
-        method,
-        error: `Failed to generate narration for section ${i}`,
-      };
+      console.warn(`[narration] ⚠️ 섹션 ${i} 나레이션 생성 실패, 무음 오디오로 처리`);
+      // Generate fallback silent audio for this section
+      const words = section.text.trim().split(/\s+/).length;
+      const estimatedSeconds = Math.max(2, Math.ceil(words / 2.5));
+      const audioPath = path.join(outputDir, `${segmentId}.wav`);
+
+      try {
+        // Generate silent WAV file manually
+        const sampleRate = 16000;
+        const numSamples = estimatedSeconds * sampleRate;
+        const dataSize = numSamples * 2;
+        const wavBuffer = Buffer.alloc(44 + dataSize);
+
+        wavBuffer.write('RIFF', 0, 'ascii');
+        wavBuffer.writeUInt32LE(36 + dataSize, 4);
+        wavBuffer.write('WAVE', 8, 'ascii');
+        wavBuffer.write('fmt ', 12, 'ascii');
+        wavBuffer.writeUInt32LE(16, 16);
+        wavBuffer.writeUInt16LE(1, 20);
+        wavBuffer.writeUInt16LE(1, 22);
+        wavBuffer.writeUInt32LE(sampleRate, 24);
+        wavBuffer.writeUInt32LE(sampleRate * 2, 28);
+        wavBuffer.writeUInt16LE(2, 32);
+        wavBuffer.writeUInt16LE(16, 34);
+        wavBuffer.write('data', 36, 'ascii');
+        wavBuffer.writeUInt32LE(dataSize, 40);
+
+        fs.mkdirSync(path.dirname(audioPath), { recursive: true });
+        fs.writeFileSync(audioPath, wavBuffer);
+
+        segments.push({
+          id: segmentId,
+          text: section.text,
+          audioPath,
+          durationSeconds: estimatedSeconds,
+          sampleRate,
+          channels: 1,
+          format: "wav",
+        });
+        totalDuration += estimatedSeconds;
+        console.log(`[narration] ✅ 무음 처리 ${estimatedSeconds}초`);
+      } catch (err) {
+        console.error(`[narration] ❌ 폴백 오디오 생성 실패:`, err);
+        // Continue without this segment - pipeline should still complete
+      }
     }
   }
 
