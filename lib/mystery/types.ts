@@ -404,7 +404,8 @@ export type PipelineStage =
   | "narration"
   | "review"
   | "render"
-  | "done";
+  | "done"
+  | "failed";
 
 export interface StageProgress {
   completed: number;
