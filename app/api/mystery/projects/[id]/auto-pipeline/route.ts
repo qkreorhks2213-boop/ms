@@ -402,9 +402,18 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       // Critical failure - stop pipeline and mark as failed
       console.error(`[mystery:auto] ❌ Pipeline stopped at step ${stepIndex}: ${step.name}`);
 
+      // Get detailed error info
+      const project = readProject(projectId);
+      const errorLog = project?.errorLog || [];
+      const lastError = errorLog[errorLog.length - 1];
+
+      const detailedErrorMsg = lastError?.message
+        ? `${step.name}: ${lastError.message}`
+        : `Failed at step: ${step.name}. Check logs for details.`;
+
       updateProject(projectId, (p) => {
         p.stage = "failed";
-        p.pipelineError = `Failed at step: ${step.name}`;
+        p.pipelineError = detailedErrorMsg;
       });
 
       return; // Stop execution
