@@ -165,8 +165,8 @@ function ffprobe(filePath: string): Promise<any> {
       try {
         const data = JSON.parse(output);
         resolve(data);
-      } catch (err) {
-        reject(new Error(`Failed to parse ffprobe output: ${err.message}`));
+      } catch (err: any) {
+        reject(new Error(`Failed to parse ffprobe output: ${err?.message || String(err)}`));
       }
     });
 

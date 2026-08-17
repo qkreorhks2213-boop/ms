@@ -444,7 +444,7 @@ export interface MysteryProject {
   // 각 단계의 산출물
   case?: MysteryCase;
   research?: ResearchFinding[];
-  factcheckResults?: Record<string, FactStatus>; // 주요 주장 -> 팩트체크 상태
+  factcheckResults?: any; // FactCheckReport with detailed fact-checking results
   timeline?: TimelineEvent[];
   script?: MysteryScript;
   scenes?: Scene[];
