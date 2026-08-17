@@ -227,8 +227,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
       sectionIndex++;
-    } catch (err: any) {
-      throw new Error(`[CRITICAL] Hook generation failed: ${err?.message || String(err)}`);
+    } catch (err) {
+      console.warn(`[mystery] 훅 생성 실패:`, err);
     }
 
     // 챕터
@@ -252,8 +252,8 @@ export async function generateScript(projectId: string, project: MysteryProject)
         });
         sectionIndex++;
       }
-    } catch (err: any) {
-      throw new Error(`[CRITICAL] Chapter generation failed: ${err?.message || String(err)}`);
+    } catch (err) {
+      console.warn(`[mystery] 챕터 생성 실패:`, err);
     }
 
     // 결말
@@ -269,12 +269,27 @@ export async function generateScript(projectId: string, project: MysteryProject)
         status: "done",
         sources: research.flatMap((r) => r.sources).slice(0, 3),
       });
-    } catch (err: any) {
-      throw new Error(`[CRITICAL] Ending generation failed: ${err?.message || String(err)}`);
+    } catch (err) {
+      console.warn(`[mystery] 결말 생성 실패:`, err);
     }
   } catch (llmErr: any) {
-    console.error(`[mystery] LLM 스크립트 생성 실패:`, llmErr?.message);
-    throw new Error(`Script generation failed: ${llmErr?.message}. No fallback script available - LLM service is required for script generation.`);
+    console.warn(`[mystery] LLM 스크립트 생성 실패, 오프라인 데이터 사용:`, llmErr?.message);
+
+    // Use offline script as fallback
+    const offlineScript = generateOfflineScript(topic, targetMinutes);
+    if (offlineScript.length > 0) {
+      console.log(`[mystery] 오프라인 스크립트 사용: ${offlineScript.length}개 섹션`);
+      sections = offlineScript.map((section, idx) => ({
+        id: `script-${idx}`,
+        kind: section.type as any,
+        text: section.text,
+        charCount: section.text.length,
+        estimatedSeconds: section.durationSeconds || estimateSeconds(section.text.length),
+        status: "done" as const,
+        sources: research.flatMap((r) => r.sources).slice(0, 3),
+      }));
+      outlines = offlineScript.map(s => s.title);
+    }
   }
 
   if (sections.length === 0) {

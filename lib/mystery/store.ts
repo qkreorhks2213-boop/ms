@@ -134,7 +134,6 @@ export function createProject(params: CreateProjectParams, userId: string): Myst
     },
     stage: "research",
     render: { status: "idle" },
-    pipelineRunning: false,
   };
   writeProject(project);
   return project;

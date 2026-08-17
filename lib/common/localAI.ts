@@ -100,66 +100,35 @@ async function callOllama(params: {
   return text;
 }
 
-/** 순수 텍스트 생성(대본 등) — Ollama 버전. Ollama 실패 시 기본 텍스트 반환. */
+/** 순수 텍스트 생성(대본 등) — Ollama 버전. */
 export async function generateText(params: {
   prompt: string;
   temperature?: number;
   maxOutputTokens?: number;
 }): Promise<string> {
-  try {
-    return await callOllama({ ...params, json: false });
-  } catch (err: any) {
-    console.warn(`[localAI] Ollama 호출 실패, 기본 텍스트 반환:`, err.message);
-    // Fallback: Generate basic text based on prompt keywords
-    if (params.prompt.includes("대본")) {
-      return "이것은 미스터리 사건의 다큐멘터리 대본입니다. 사건의 배경부터 현재까지의 진행 상황을 순서대로 설명합니다.";
-    }
-    if (params.prompt.includes("장면")) {
-      return "주요 사건의 한 장면입니다.";
-    }
-    if (params.prompt.includes("타임라인") || params.prompt.includes("timeline")) {
-      return JSON.stringify({ events: [{ date: "시작", title: "사건 발생", status: "FACT" }] });
-    }
-    if (params.prompt.includes("팩트체크") || params.prompt.includes("factcheck")) {
-      return JSON.stringify({ claims: [{ claim: "주요 사실", status: "UNVERIFIED" }] });
-    }
-    return "자동 생성된 기본 텍스트입니다.";
-  }
+  return callOllama({ ...params, json: false });
 }
 
-/** JSON 응답 생성 + 파싱 — Ollama 버전. Ollama 실패 시 기본 JSON 반환. */
+/** JSON 응답 생성 + 파싱 — Ollama 버전. 로컬 모델은 Gemini보다 JSON 형식을 안 지킬 때가
+ * 많아서, 코드펜스/설명 문구가 섞여 와도 본문 중 JSON처럼 보이는 부분을 추출하는 방어 로직을
+ * gemini.ts보다 조금 더 관대하게 유지한다. */
 export async function generateJson<T>(params: {
   prompt: string;
   temperature?: number;
   maxOutputTokens?: number;
 }): Promise<T> {
+  const output = await callOllama({ ...params, json: true });
   try {
-    const output = await callOllama({ ...params, json: true });
-    try {
-      return JSON.parse(output) as T;
-    } catch {
-      const match = output.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-      if (!match) {
-        throw new Error(
-          `로컬 LLM(${OLLAMA_MODEL})이 JSON 형식으로 응답하지 않았습니다. 이 모델이 지시를 잘 못 ` +
-            `따르는 경우일 수 있습니다 — OLLAMA_MODEL을 더 큰/지시 이행에 강한 모델로 바꿔보세요.\n\n원본 응답:\n${output.slice(0, 1000)}`
-        );
-      }
-      return JSON.parse(match[0]) as T;
+    return JSON.parse(output) as T;
+  } catch {
+    const match = output.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    if (!match) {
+      throw new Error(
+        `로컬 LLM(${OLLAMA_MODEL})이 JSON 형식으로 응답하지 않았습니다. 이 모델이 지시를 잘 못 ` +
+          `따르는 경우일 수 있습니다 — OLLAMA_MODEL을 더 큰/지시 이행에 강한 모델로 바꿔보세요.\n\n원본 응답:\n${output.slice(0, 1000)}`
+      );
     }
-  } catch (err: any) {
-    console.warn(`[localAI] Ollama JSON 호출 실패, 기본 JSON 반환:`, err.message);
-    // Fallback: Generate basic JSON based on prompt
-    if (params.prompt.includes("타임라인") || params.prompt.includes("timeline")) {
-      return { events: [{ date: "발생", title: "사건 발생", status: "FACT" }] } as any;
-    }
-    if (params.prompt.includes("팩트체크") || params.prompt.includes("factcheck")) {
-      return { claims: [{ claim: "주요 사실", status: "UNVERIFIED" }] } as any;
-    }
-    if (params.prompt.includes("장면")) {
-      return { sections: [{ id: "1", scenes: [{ id: "scene-1", text: "주요 사건 장면" }] }] } as any;
-    }
-    return {} as T;
+    return JSON.parse(match[0]) as T;
   }
 }
 

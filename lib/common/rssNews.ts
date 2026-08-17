@@ -61,60 +61,17 @@ function parseRssItems(xml: string): RssArticle[] {
     .filter((a) => a.link);
 }
 
-const USER_AGENTS = [
-  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-  "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
-];
-
 /**
  * 구글 뉴스 RSS 검색. hl/gl/ceid를 한국어·한국으로 고정해 한국어 기사를 우선 받는다.
  * 링크는 news.google.com을 경유하는 리디렉션 URL이다(원문 URL이 아님) — 다만 실제로 원문
  * 기사로 이동은 되고, 이건 RSS 기반 무료 검색이 갖는 알려진 제약이다(README에 명시).
- * 403 응답이 오면 더 현실적인 User-Agent로 재시도한다.
  */
 export async function searchGoogleNewsRss(query: string, max = 8): Promise<RssArticle[]> {
   const url = `https://news.google.com/rss/search?q=${encodeURIComponent(query)}&hl=ko&gl=KR&ceid=KR:ko`;
-
-  // Try with rotating User-Agents
-  for (let attempt = 0; attempt < USER_AGENTS.length; attempt++) {
-    try {
-      const res = await fetch(url, {
-        headers: {
-          "User-Agent": USER_AGENTS[attempt],
-          "Accept": "application/rss+xml, application/xml;q=0.9, */*;q=0.8",
-          "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8",
-          "Cache-Control": "no-cache",
-        }
-      });
-
-      if (res.ok) {
-        const xml = await res.text();
-        const items = parseRssItems(xml).slice(0, max);
-        if (items.length > 0) {
-          return items;
-        }
-      }
-
-      if (res.status === 403 && attempt < USER_AGENTS.length - 1) {
-        // 403 Forbidden - try next User-Agent after small delay
-        await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-        continue;
-      }
-
-      if (!res.ok) {
-        throw new Error(`뉴스 RSS 검색 실패(HTTP ${res.status}): ${url}`);
-      }
-    } catch (err) {
-      if (attempt === USER_AGENTS.length - 1) {
-        throw err;
-      }
-      // Try next User-Agent
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 1000));
-    }
+  const res = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0 (compatible; EconomicDocuStudio/1.0)" } });
+  if (!res.ok) {
+    throw new Error(`뉴스 RSS 검색 실패(HTTP ${res.status}): ${url}`);
   }
-
-  // If all User-Agents failed, throw error
-  throw new Error(`뉴스 RSS 검색 실패(모든 시도 실패): ${url}`);
+  const xml = await res.text();
+  return parseRssItems(xml).slice(0, max);
 }

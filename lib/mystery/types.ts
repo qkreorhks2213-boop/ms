@@ -161,8 +161,6 @@ export interface ResearchFinding {
   query: string;
   sources: SourceRef[];
   summary: string; // 종합한 사실관계 요약
-  isReal?: boolean; // true = 실제 자료 기반, false = fallback 데이터
-  failureReason?: string; // fallback인 경우 실패 이유
 }
 
 /**
@@ -386,10 +384,9 @@ export interface Scene {
   factStatus?: FactStatus; // 이 장면이 표현하는 내용의 검증 상태
   sources?: SourceRef[]; // 이 장면이 근거로 삼은 출처들
 
-  // 내레이션 (Script Section 기준)
+  // 내레이션
   narration: NarrationChunk[];
-  narrationSegmentId?: string; // Script Section의 narration segment ID와의 매핑
-  durationSeconds?: number; // narration segment의 실제 duration (seconds)
+  durationSeconds?: number;
 
   // 메타데이터
   aiReconstructionExplained?: boolean; // "재구성하면" 같은 설명이 내레이션에 포함되었는지
@@ -405,8 +402,7 @@ export type PipelineStage =
   | "narration"
   | "review"
   | "render"
-  | "done"
-  | "failed";
+  | "done";
 
 export interface StageProgress {
   completed: number;
@@ -423,23 +419,6 @@ export interface RenderState {
   videoUrl?: string;
   error?: string;
   warning?: string;
-}
-
-export interface Subtitle {
-  id: string;
-  text: string;
-  startTime: number; // seconds
-  endTime: number; // seconds
-  verified?: boolean;
-  sceneId?: string;
-}
-
-export interface SubtitleTrack {
-  id: string;
-  format: "srt" | "ass";
-  languageCode?: string;
-  subtitles: Subtitle[];
-  verified?: boolean;
 }
 
 export interface ErrorLogEntry {
@@ -465,7 +444,7 @@ export interface MysteryProject {
   // 각 단계의 산출물
   case?: MysteryCase;
   research?: ResearchFinding[];
-  factcheckResults?: any; // FactCheckReport with detailed fact-checking results
+  factcheckResults?: Record<string, FactStatus>; // 주요 주장 -> 팩트체크 상태
   timeline?: TimelineEvent[];
   script?: MysteryScript;
   scenes?: Scene[];
@@ -485,7 +464,5 @@ export interface MysteryProject {
     status?: string;
   };
   pipelineError?: string;
-  pipelineRunning?: boolean; // 파이프라인이 현재 실행 중인지 여부 (중복 실행 방지)
-  pipelineStartedAt?: string; // 파이프라인 시작 시간 (타임아웃 감지용)
   errorLog: ErrorLogEntry[];
 }

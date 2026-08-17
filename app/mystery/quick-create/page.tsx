@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useSession, signIn } from "next-auth/react";
+import { useSession } from "next-auth/react";
 
 export default function MysteryQuickCreate() {
   const router = useRouter();
@@ -86,35 +86,7 @@ export default function MysteryQuickCreate() {
   }
 
   if (authStatus === "unauthenticated") {
-    return (
-      <div style={{ padding: "40px", textAlign: "center" }}>
-        <div style={{ fontSize: 28, marginBottom: 10 }}>🔐</div>
-        <div style={{ fontSize: 24, marginBottom: 10 }}>로그인이 필요합니다</div>
-        <p style={{ color: "var(--text-muted)", marginBottom: 30 }}>미스터리 다큐멘터리를 만들려면 먼저 로그인하세요.</p>
-        <button
-          onClick={() => signIn("google")}
-          style={{
-            padding: "12px 32px",
-            fontSize: 16,
-            fontWeight: 600,
-            backgroundColor: "var(--primary)",
-            color: "white",
-            border: "none",
-            borderRadius: 8,
-            cursor: "pointer",
-            transition: "all 0.2s",
-          }}
-          onMouseEnter={(e) => {
-            (e.currentTarget as HTMLElement).style.opacity = "0.8";
-          }}
-          onMouseLeave={(e) => {
-            (e.currentTarget as HTMLElement).style.opacity = "1";
-          }}
-        >
-          🔑 Google로 로그인
-        </button>
-      </div>
-    );
+    return <div style={{ padding: "40px", textAlign: "center" }}>로그인이 필요합니다</div>;
   }
 
   return (
