@@ -134,24 +134,22 @@ export async function POST(req: NextRequest) {
         // 10. Subtitles
         console.log(`[test] Step 10: Subtitle generation`);
         const updated10 = readProject(projectId)!;
-        try {
-          if (updated10.narrationSegments && updated10.script?.sections) {
-            const sceneIds = updated10.scenes?.map((s) => s.id) || [];
-            const subtitleTrack = generateSubtitles(
-              updated10.narrationSegments,
-              sceneIds,
-              "ko-KR"
-            );
-            const verifiedCount = subtitleTrack.subtitles.filter((s) => s.verified).length;
-            console.log(
-              `[test] ✅ Subtitles generated: ${subtitleTrack.subtitles.length} subtitles (${verifiedCount} verified)`
-            );
-            updateProject(projectId, (p) => {
-              p.subtitleTracks = [subtitleTrack] as any;
-            });
-          }
-        } catch (err: any) {
-          console.warn(`[test] Subtitle generation error:`, err?.message);
+        if (updated10.narrationSegments && updated10.script?.sections) {
+          const sceneIds = updated10.scenes?.map((s) => s.id) || [];
+          const subtitleTrack = generateSubtitles(
+            updated10.narrationSegments,
+            sceneIds,
+            "ko-KR"
+          );
+          const verifiedCount = subtitleTrack.subtitles.filter((s) => s.verified).length;
+          console.log(
+            `[test] ✅ Subtitles generated: ${subtitleTrack.subtitles.length} subtitles (${verifiedCount} verified)`
+          );
+          updateProject(projectId, (p) => {
+            p.subtitleTracks = [subtitleTrack] as any;
+          });
+        } else {
+          throw new Error("[CRITICAL] Subtitle generation requires narration segments and script sections. Both are required for subtitle generation.");
         }
 
         // 11. QA
@@ -171,25 +169,9 @@ export async function POST(req: NextRequest) {
         updateProject(projectId, (p) => {
           p.stage = "render";
         });
-        try {
-          const updated12 = readProject(projectId)!;
-          await renderMysteryVideo(projectId, updated12);
-          console.log(`[test] Step 12 complete: MP4 rendered`);
-        } catch (err: any) {
-          console.warn(`[test] Video rendering failed:`, err?.message);
-          // Don't fail the pipeline, just log the error
-          appendErrorLog(projectId, {
-            stage: "render",
-            message: `Rendering failed: ${err?.message}`,
-            retryable: false,
-          });
-        }
-
-        // 13. Done
-        console.log(`[test] Step 13: Complete`);
-        updateProject(projectId, (p) => {
-          p.stage = "done";
-        });
+        const updated12 = readProject(projectId)!;
+        await renderMysteryVideo(projectId, updated12);
+        console.log(`[test] Step 12 complete: MP4 rendered`);
 
         console.log(`[test:start-pipeline] ✅ Pipeline completed for project ${projectId}`);
       } catch (err: any) {

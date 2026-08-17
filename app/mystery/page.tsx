@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession, signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import type { MysteryProject } from "@/lib/mystery/types";
 import { SceneListViewer } from "@/components/SceneAssetViewer";
@@ -88,8 +88,31 @@ function MysteryStudioContent() {
   if (authStatus === "unauthenticated") {
     return (
       <div style={{ padding: "40px", textAlign: "center" }}>
-        <div style={{ fontSize: 20, marginBottom: 20 }}>로그인이 필요합니다</div>
-        <p style={{ color: "var(--text-muted)" }}>미스터리 프로젝트를 사용하려면 먼저 로그인하세요.</p>
+        <div style={{ fontSize: 28, marginBottom: 10 }}>🔐</div>
+        <div style={{ fontSize: 24, marginBottom: 10 }}>로그인이 필요합니다</div>
+        <p style={{ color: "var(--text-muted)", marginBottom: 30 }}>미스터리 프로젝트를 사용하려면 먼저 로그인하세요.</p>
+        <button
+          onClick={() => signIn("google")}
+          style={{
+            padding: "12px 32px",
+            fontSize: 16,
+            fontWeight: 600,
+            backgroundColor: "var(--primary)",
+            color: "white",
+            border: "none",
+            borderRadius: 8,
+            cursor: "pointer",
+            transition: "all 0.2s",
+          }}
+          onMouseEnter={(e) => {
+            (e.currentTarget as HTMLElement).style.opacity = "0.8";
+          }}
+          onMouseLeave={(e) => {
+            (e.currentTarget as HTMLElement).style.opacity = "1";
+          }}
+        >
+          🔑 Google로 로그인
+        </button>
       </div>
     );
   }
