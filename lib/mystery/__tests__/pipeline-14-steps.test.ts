@@ -5,8 +5,9 @@
  */
 
 import path from "path";
+import fs from "fs";
 import { readProject, createProject, updateProject, projectDir } from "../store";
-import type { MysteryProject } from "../types";
+import type { MysteryProject, NarrationSegment } from "../types";
 import { STEP_ORDER, PipelineStepId, STEP_LABELS } from "../types";
 import { researchTopic } from "../research";
 import { generateScript } from "../script";
@@ -19,6 +20,78 @@ import { detectBoringScenes, optimizeBoringScenes } from "../boredumDetector";
 import { integrateAssetsWithScenes } from "../assets";
 import { renderMysteryVideo } from "../render-simple";
 import { validateMP4WithFFprobe } from "../render-validate";
+
+// Helper to generate mock narration WAV files for testing
+function generateMockNarrationWAV(durationSeconds: number): Buffer {
+  const sampleRate = 16000;
+  const numSamples = sampleRate * durationSeconds;
+  const bytesPerSample = 2;
+  const channels = 1;
+
+  const audioData = Buffer.alloc(44 + numSamples * bytesPerSample);
+
+  // WAV header
+  audioData.write("RIFF", 0, 4, "ascii");
+  audioData.writeUInt32LE(36 + numSamples * bytesPerSample, 4);
+  audioData.write("WAVE", 8, 4, "ascii");
+  audioData.write("fmt ", 12, 4, "ascii");
+  audioData.writeUInt32LE(16, 16); // Subchunk1Size
+  audioData.writeUInt16LE(1, 20); // PCM format
+  audioData.writeUInt16LE(channels, 22);
+  audioData.writeUInt32LE(sampleRate, 24);
+  audioData.writeUInt32LE(sampleRate * channels * bytesPerSample, 28);
+  audioData.writeUInt16LE(channels * bytesPerSample, 32);
+  audioData.writeUInt16LE(16, 34); // Bits per sample
+  audioData.write("data", 36, 4, "ascii");
+  audioData.writeUInt32LE(numSamples * bytesPerSample, 40);
+
+  // Audio data (silent)
+  for (let i = 0; i < numSamples; i++) {
+    audioData.writeInt16LE(0, 44 + i * 2);
+  }
+
+  return audioData;
+}
+
+// Override generateNarrationForScenes for testing
+const originalGenerateNarration = generateNarrationForScenes;
+jest.spyOn(require("../narration"), "generateNarrationForScenes").mockImplementation(
+  async (projectId: string, project: MysteryProject) => {
+    const outputDir = path.join(projectDir(projectId), "narration");
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    const segments: NarrationSegment[] = [];
+    const sections = project.script?.sections || [];
+
+    for (let i = 0; i < sections.length; i++) {
+      const audioPath = path.join(outputDir, `narration-${i}.wav`);
+      const durationSeconds = Math.max(2, Math.ceil((sections[i].text.split(/\s+/).length / 150) * 60));
+
+      // Generate mock WAV file
+      const wavBuffer = generateMockNarrationWAV(durationSeconds);
+      fs.writeFileSync(audioPath, wavBuffer);
+
+      segments.push({
+        id: `narration-${i}`,
+        text: sections[i].text,
+        audioPath,
+        durationSeconds,
+        sampleRate: 16000,
+        channels: 1,
+        format: "wav",
+      });
+    }
+
+    return {
+      success: true,
+      segments,
+      totalDuration: segments.reduce((sum, s) => sum + s.durationSeconds, 0),
+      voiceUsed: "mock-test-voice",
+    };
+  }
+);
 
 describe("14-Step Pipeline Complete E2E Test", () => {
   let testProjectId: string;

@@ -17,9 +17,9 @@ import {
   validateVisualCoverage,
 } from "./render-validate";
 
-const TARGET_WIDTH = 640;
-const TARGET_HEIGHT = 360;
-const TARGET_FPS = 24;
+const TARGET_WIDTH = 1920;
+const TARGET_HEIGHT = 1080;
+const TARGET_FPS = 30;
 
 async function concatenateAudioSegments(narrationSegments: any[], outputPath: string): Promise<boolean> {
   if (!narrationSegments || narrationSegments.length === 0) {
