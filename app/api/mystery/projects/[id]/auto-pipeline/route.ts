@@ -21,26 +21,26 @@ export const runtime = "nodejs";
 
 /**
  * Auto-pipeline for mystery documentary generation.
- * Runs all 17 steps automatically without user intervention.
+ * Runs all 14 official steps automatically without user intervention.
  *
- * Steps:
- * 1. Investigation: Research topic from web sources
- * 2. Fact-checking: Verify claims and classify by fact level
- * 3. Timeline: Organize events chronologically
- * 4. Script generation: Create narrative structure
- * 5. Scene composition: Break script into scenes
- * 6. Visual research: Search for real materials
- * 7. AI reconstruction: Generate missing visuals
- * 8. Scene optimization: Remove boring/redundant content
- * 9. Narration generation: Create voiceover
- * 10. Subtitle generation: Add captions
- * 11. BGM selection: Choose background music
- * 12. Audio mixing: Normalize levels
- * 13. Final QA: Quality assurance checks
- * 14. Video rendering: Create MP4
- * 15. Post-processing: Final adjustments
- * 16. Metadata: Add copyright/credits
- * 17. Publication: Mark as complete
+ * Official 14-Step Pipeline:
+ * STEP_01: Research Investigation
+ * STEP_02: Fact-Checking & Analysis
+ * STEP_03: Timeline Generation
+ * STEP_04: Script Generation
+ * STEP_05: Scene Composition
+ * STEP_06: Visual Discovery & Asset Integration
+ * STEP_07: Visual Generation (Real+AI)
+ * STEP_08: Scene Optimization
+ * STEP_09: Narration Generation
+ * STEP_10: Subtitle Generation
+ * STEP_11: Quality Verification
+ * STEP_12: Video Rendering
+ * STEP_13: Final MP4 Validation
+ * STEP_14: Completion & Archival
+ *
+ * ⚠️  THIS FILE IS DEPRECATED - Use auto-pipeline-v2/route.ts
+ * Keeping for backward compatibility only.
  */
 
 interface PipelineStep {
@@ -484,47 +484,15 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   }
 }
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireUserId();
-  if ("error" in auth) return auth.error;
-
-  const project = readProject(params.id);
-  const ownershipError = checkOwnership(project, auth.userId);
-  if (ownershipError) return ownershipError;
-
-  if (!project) {
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  }
-
-  // Check if pipeline is already running using atomic lock
-  if (!acquirePipelineLock(params.id)) {
-    const elapsedSeconds = getPipelineElapsedSeconds(params.id);
-    return NextResponse.json(
-      {
-        error: "Pipeline already running",
-        message: `Pipeline started ${Math.round(elapsedSeconds)} seconds ago. Wait for completion or wait 30 minutes for lock timeout.`,
-        pipelineRunning: true,
-        elapsedSeconds: Math.round(elapsedSeconds),
-      },
-      { status: 409 }
-    );
-  }
-
-  // Start auto-pipeline in background
-  runAutoPipeline(params.id, project)
-    .catch((err) => {
-      console.error(`[mystery:auto] Pipeline error:`, err);
-      updateProject(params.id, (p) => {
-        p.pipelineError = err?.message || String(err);
-      });
-    })
-    .finally(() => {
-      // Release lock when pipeline completes (success or failure)
-      releasePipelineLock(params.id);
-    });
-
-  return NextResponse.json({
-    status: "pipeline-started",
-    message: "Auto-pipeline initiated - documentary will generate automatically",
+/**
+ * DEPRECATED: Forward to auto-pipeline-v2/route.ts
+ * Using v2 implementation which supports official 14-Step architecture
+ */
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+  // Forward to v2 endpoint
+  return fetch(`${req.nextUrl.origin}/api/mystery/projects/${params.id}/auto-pipeline-v2`, {
+    method: "POST",
+    headers: req.headers,
+    body: req.body,
   });
 }

@@ -107,10 +107,37 @@ async function planAllScenesVisuals(
   const all: VisualPlanItem[] = [];
   for (let i = 0; i < sceneTexts.length; i += SCENES_PER_BATCH) {
     const batch = sceneTexts.slice(i, i + SCENES_PER_BATCH);
-    const batchPlan = await planScenesVisualsBatch(batch, researchText);
-    all.push(...batchPlan);
+    try {
+      const batchPlan = await planScenesVisualsBatch(batch, researchText);
+      all.push(...batchPlan);
+    } catch (err) {
+      // Fallback to offline visual planning if LLM fails
+      console.warn(`[mystery] LLM visual planning failed, using offline fallback`);
+      const offlinePlan = generateOfflineVisualPlan(batch);
+      all.push(...offlinePlan);
+    }
   }
   return all;
+}
+
+function generateOfflineVisualPlan(sceneTexts: string[]): VisualPlanItem[] {
+  const visualTypeRotation: SceneVisualType[] = [
+    "archive_photo",
+    "official_document",
+    "newspaper",
+    "map",
+    "satellite",
+    "ai_reconstruction",
+  ];
+
+  return sceneTexts.map((text, idx) => {
+    const visualType = visualTypeRotation[idx % visualTypeRotation.length];
+    return {
+      visualType,
+      visualQuery: text.substring(0, 30) + "...",
+      visualHeadline: `Scene ${idx + 1}`,
+    };
+  });
 }
 
 export async function generateScenes(projectId: string, project: MysteryProject): Promise<void> {

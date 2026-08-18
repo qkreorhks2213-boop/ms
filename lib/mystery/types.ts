@@ -455,6 +455,79 @@ export interface ErrorLogEntry {
 }
 
 /**
+ * 공식 14-Step 정의 (Source of Truth)
+ * 모든 UI/Backend/Pipeline에서 이 정의를 사용해야 함
+ */
+export enum PipelineStepId {
+  STEP_01 = "STEP_01",
+  STEP_02 = "STEP_02",
+  STEP_03 = "STEP_03",
+  STEP_04 = "STEP_04",
+  STEP_05 = "STEP_05",
+  STEP_06 = "STEP_06",
+  STEP_07 = "STEP_07",
+  STEP_08 = "STEP_08",
+  STEP_09 = "STEP_09",
+  STEP_10 = "STEP_10",
+  STEP_11 = "STEP_11",
+  STEP_12 = "STEP_12",
+  STEP_13 = "STEP_13",
+  STEP_14 = "STEP_14",
+}
+
+export const STEP_ORDER = [
+  PipelineStepId.STEP_01,
+  PipelineStepId.STEP_02,
+  PipelineStepId.STEP_03,
+  PipelineStepId.STEP_04,
+  PipelineStepId.STEP_05,
+  PipelineStepId.STEP_06,
+  PipelineStepId.STEP_07,
+  PipelineStepId.STEP_08,
+  PipelineStepId.STEP_09,
+  PipelineStepId.STEP_10,
+  PipelineStepId.STEP_11,
+  PipelineStepId.STEP_12,
+  PipelineStepId.STEP_13,
+  PipelineStepId.STEP_14,
+] as const;
+
+export const STEP_LABELS: Record<PipelineStepId, string> = {
+  [PipelineStepId.STEP_01]: "Research Investigation",
+  [PipelineStepId.STEP_02]: "Fact-Checking & Analysis",
+  [PipelineStepId.STEP_03]: "Timeline Generation",
+  [PipelineStepId.STEP_04]: "Script Generation",
+  [PipelineStepId.STEP_05]: "Scene Composition",
+  [PipelineStepId.STEP_06]: "Visual Discovery & Asset",
+  [PipelineStepId.STEP_07]: "Visual Generation (Real+AI)",
+  [PipelineStepId.STEP_08]: "Scene Optimization",
+  [PipelineStepId.STEP_09]: "Narration Generation",
+  [PipelineStepId.STEP_10]: "Subtitle Generation",
+  [PipelineStepId.STEP_11]: "Quality Verification",
+  [PipelineStepId.STEP_12]: "Video Rendering",
+  [PipelineStepId.STEP_13]: "Final MP4 Validation",
+  [PipelineStepId.STEP_14]: "Completion & Archival",
+};
+
+export type StepStatus = "pending" | "running" | "completed" | "failed" | "skipped";
+
+export interface StepProgress {
+  stepId: PipelineStepId;
+  status: StepStatus;
+  startedAt?: string;
+  completedAt?: string;
+  error?: string;
+  retryCount: number;
+  input?: Record<string, unknown>;
+  output?: Record<string, unknown>;
+  validation?: {
+    passed: boolean;
+    checks: string[];
+    errors: string[];
+  };
+}
+
+/**
  * 미스터리 프로젝트 메인 데이터 구조.
  */
 export interface MysteryProject {
@@ -481,6 +554,9 @@ export interface MysteryProject {
   subtitleTracks?: any[]; // SubtitleTrack[]
   sceneAssets?: any[]; // SceneAsset[]
 
+  // 14-Step 상태 추적 (Source of Truth)
+  steps?: StepProgress[];
+
   // 렌더링 및 에러
   render: RenderState;
   hookMontageSceneIds?: string[];
@@ -489,6 +565,7 @@ export interface MysteryProject {
     status?: string;
     fileSize?: number;
   };
+  completedAt?: string;
   pipelineError?: string;
   errorLog: ErrorLogEntry[];
 }
