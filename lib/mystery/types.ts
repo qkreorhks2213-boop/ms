@@ -352,6 +352,29 @@ export interface SceneVisual {
 }
 
 /**
+ * 자막 (Subtitle).
+ */
+export interface Subtitle {
+  id: string;
+  text: string;
+  startTime: number;
+  endTime: number;
+  verified: boolean;
+  sceneId: string;
+}
+
+/**
+ * 자막 트랙 (SubtitleTrack).
+ */
+export interface SubtitleTrack {
+  id: string;
+  format: string;
+  languageCode: string;
+  subtitles: Subtitle[];
+  verified: boolean;
+}
+
+/**
  * 장면 (Scene).
  */
 export interface Scene {
@@ -386,6 +409,7 @@ export interface Scene {
 
   // 내레이션
   narration: NarrationChunk[];
+  narrationSegmentId?: string;
   durationSeconds?: number;
 
   // 메타데이터
@@ -402,7 +426,8 @@ export type PipelineStage =
   | "narration"
   | "review"
   | "render"
-  | "done";
+  | "done"
+  | "failed";
 
 export interface StageProgress {
   completed: number;
@@ -444,7 +469,7 @@ export interface MysteryProject {
   // 각 단계의 산출물
   case?: MysteryCase;
   research?: ResearchFinding[];
-  factcheckResults?: Record<string, FactStatus>; // 주요 주장 -> 팩트체크 상태
+  factcheckResults?: any; // FactCheckReport 호환
   timeline?: TimelineEvent[];
   script?: MysteryScript;
   scenes?: Scene[];
@@ -462,6 +487,7 @@ export interface MysteryProject {
   output?: {
     mp4?: string;
     status?: string;
+    fileSize?: number;
   };
   pipelineError?: string;
   errorLog: ErrorLogEntry[];

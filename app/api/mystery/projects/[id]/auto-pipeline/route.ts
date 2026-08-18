@@ -278,7 +278,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
         // Update each scene with its narration segment ID and duration
         const sceneNarrationMap = new Map<string, string>();
         updateProject(projectId, (p) => {
-          if (!p.scenes || !p.script?.sections) return;
+          if (!p.scenes || !p.script?.sections || !p.narrationSegments) return;
 
           for (const scene of p.scenes) {
             // Find the narration segment index that corresponds to this scene's section

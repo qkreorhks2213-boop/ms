@@ -176,7 +176,7 @@ export async function POST(req: NextRequest) {
               sceneIds,
               "ko-KR"
             );
-            const verifiedCount = subtitleTrack.subtitles.filter((s) => s.verified).length;
+            const verifiedCount = subtitleTrack.subtitles.filter((s: any) => s.verified).length;
             console.log(
               `[test] ✅ Subtitles generated: ${subtitleTrack.subtitles.length} subtitles (${verifiedCount} verified)`
             );
