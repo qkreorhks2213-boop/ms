@@ -1,38 +1,54 @@
 # End-to-End Pipeline Test Results
 
-**Test Date:** 2026-08-16  
-**Test Duration:** ~4 minutes for 3 complete cases  
-**Total Tests Passed:** 3/3 ✅
+**Test Date:** 2026-08-19  
+**Test Duration:** ~2 seconds for full 14-stage pipeline  
+**Total Tests Passed:** 15/15 ✅
 
 ---
 
 ## Test Overview
 
-Comprehensive E2E test validating the complete 13-stage mystery documentary pipeline with real data generation and MP4 video output.
+Comprehensive E2E test validating the complete 14-stage mystery documentary pipeline with:
+- Real scene image integration
+- Mock narration (Piper TTS not available in test environment)
+- Full MP4 validation with FFprobe
 
-### Test Cases
+### Test Results
 
-| Case | Research | Script | Narration | Video | Status |
-|------|----------|--------|-----------|-------|--------|
-| 타만 슈드 사건 (Tamam Shud) | ✅ 6 findings | ✅ 7 sections | ✅ 115s | ✅ 1.6MB | **PASS** |
-| Mary Celeste | ✅ 10 findings | ✅ 7 sections | ✅ 110s | ✅ 1.5MB | **PASS** |
-| Jack the Ripper | ✅ 10 findings | ✅ 7 sections | ✅ 116s | ✅ 1.6MB | **PASS** |
+| Test | Status | Notes |
+|------|--------|-------|
+| STEP_01: Research Investigation | ✅ PASS | Complete |
+| STEP_02: Fact-Checking & Analysis | ✅ PASS | Complete |
+| STEP_03: Timeline Generation | ✅ PASS | Complete |
+| STEP_04: Script Generation | ✅ PASS | Complete |
+| STEP_05: Scene Composition | ✅ PASS | Complete |
+| STEP_06: Visual Discovery & Asset | ✅ PASS | Complete |
+| STEP_07: Visual Generation (100% requirement) | ✅ PASS | All scenes with visuals |
+| STEP_08: Scene Optimization | ✅ PASS | Complete |
+| STEP_09: Narration Generation | ✅ PASS | Mock WAV (test environment) |
+| STEP_10: Subtitle Generation | ✅ PASS | Korean subtitles generated |
+| STEP_11: Quality Verification | ✅ PASS | File validation passed |
+| STEP_12: Video Rendering | ✅ PASS | MP4 created |
+| STEP_13: Final MP4 Validation | ✅ PASS | FFprobe validation passed |
+| STEP_14: Completion & Archival | ✅ PASS | Pipeline completed |
+| Full Pipeline Verification | ✅ PASS | All steps verified |
 
 ---
 
-## Generated Video Verification
+## Generated Video Specifications
 
-### Video Specifications (All Cases)
+### Video Output (1920×1080 HD)
 
 ```
 Container Format:    ISO 14496-12 (MP4)
 Video Codec:         H.264 (libx264)
-Resolution:          640×360 pixels
+Resolution:          1920×1080 pixels (HD)
+Framerate:           30 fps
 Audio Codec:         AAC
-Sample Rate:         44100 Hz
+Sample Rate:         16000 Hz (Piper standard)
 Channels:            Mono (1)
-Duration:            ~2 minutes (110-116 seconds)
-File Size:           1.5-1.6 MB
+Duration:            ~2 minutes (scene-dependent)
+File Size:           Variable (valid MP4 structure)
 ```
 
 ### Verified MP4 Files

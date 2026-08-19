@@ -65,6 +65,9 @@ async function executeStep(
 
     console.log(`[mystery:auto] ▶️ ${stepId}: ${STEP_LABELS[stepId]} starting...`);
 
+    // Capture project state before step (input)
+    const projectBefore = readProject(projectId);
+
     // Execute step
     const result = await stepFn(projectId, project);
 
@@ -72,17 +75,110 @@ async function executeStep(
       throw new Error(result.error || "Step execution failed");
     }
 
-    // Validate output
-    const updatedProject = readProject(projectId);
-    if (!updatedProject) throw new Error("Project lost during execution");
+    // Capture project state after step (output)
+    const projectAfter = readProject(projectId);
 
-    // Mark as completed
+    // Record input/output
+    let validationPassed = true;
+    const validationChecks: string[] = [];
+    const validationWarnings: string[] = [];
+
+    // Perform step-specific validation
+    if (projectAfter) {
+      if (stepId === PipelineStepId.STEP_01) {
+        validationChecks.push("research_data_exists");
+        if (projectAfter.research && projectAfter.research.length > 0) {
+          validationPassed = true;
+        } else {
+          validationPassed = false;
+          validationWarnings.push("No research data found");
+        }
+      } else if (stepId === PipelineStepId.STEP_02) {
+        validationChecks.push("factcheck_results_exist");
+        validationPassed = !!projectAfter.factcheckResults;
+        if (!validationPassed) {
+          validationWarnings.push("Factcheck results missing");
+        }
+      } else if (stepId === PipelineStepId.STEP_03) {
+        validationChecks.push("timeline_exists");
+        validationPassed = !!(projectAfter.timeline && projectAfter.timeline.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("Timeline not generated");
+        }
+      } else if (stepId === PipelineStepId.STEP_04) {
+        validationChecks.push("script_exists");
+        validationPassed = !!(projectAfter.script && projectAfter.script.sections.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("Script not generated");
+        }
+      } else if (stepId === PipelineStepId.STEP_05) {
+        validationChecks.push("scenes_exist");
+        validationPassed = !!(projectAfter.scenes && projectAfter.scenes.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("Scenes not created");
+        }
+      } else if (stepId === PipelineStepId.STEP_06) {
+        validationChecks.push("assets_found");
+        validationPassed = !!(projectAfter.sceneAssets && projectAfter.sceneAssets.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("No assets discovered");
+        }
+      } else if (stepId === PipelineStepId.STEP_07) {
+        validationChecks.push("visuals_complete");
+        const visualCount = (projectAfter.scenes || []).filter((s) => s.visualStatus === "done").length;
+        const totalScenes = projectAfter.scenes?.length || 0;
+        validationPassed = visualCount === totalScenes;
+        if (!validationPassed && totalScenes > 0) {
+          validationWarnings.push(`Only ${visualCount}/${totalScenes} scenes have visuals`);
+        }
+      } else if (stepId === PipelineStepId.STEP_08) {
+        validationChecks.push("scenes_optimized");
+        validationPassed = true;
+      } else if (stepId === PipelineStepId.STEP_09) {
+        validationChecks.push("narration_segments_exist");
+        validationPassed = !!(projectAfter.narrationSegments && projectAfter.narrationSegments.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("Narration segments not created");
+        }
+      } else if (stepId === PipelineStepId.STEP_10) {
+        validationChecks.push("subtitles_exist");
+        validationPassed = !!(projectAfter.subtitleTracks && projectAfter.subtitleTracks.length > 0);
+        if (!validationPassed) {
+          validationWarnings.push("Subtitle tracks not created");
+        }
+      } else if (stepId === PipelineStepId.STEP_11) {
+        validationChecks.push("quality_verified");
+        validationPassed = true;
+      } else if (stepId === PipelineStepId.STEP_12) {
+        validationChecks.push("mp4_created");
+        validationPassed = !!projectAfter.output?.mp4;
+        if (!validationPassed) {
+          validationWarnings.push("MP4 file not created");
+        }
+      } else if (stepId === PipelineStepId.STEP_13) {
+        validationChecks.push("mp4_validated");
+        validationPassed = true;
+      } else if (stepId === PipelineStepId.STEP_14) {
+        validationChecks.push("pipeline_complete");
+        validationPassed = projectAfter.stage === "done";
+        if (!validationPassed) {
+          validationWarnings.push("Pipeline not marked as complete");
+        }
+      }
+    }
+
+    // Mark as completed with validation data
     updateProject(projectId, (p) => {
       if (!p.steps) p.steps = [];
       const idx = p.steps.findIndex((s) => s.stepId === stepId);
       if (idx >= 0) {
         p.steps[idx].status = "completed";
         p.steps[idx].completedAt = new Date().toISOString();
+        p.steps[idx].validation = {
+          passed: validationPassed,
+          checks: validationChecks,
+          errors: validationWarnings,
+        };
       }
     });
 
@@ -317,11 +413,15 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   });
   if (!step10.success) return;
 
-  // STEP_11: Quality Verification
+  // STEP_11: Quality Verification (Real file/media validation)
   const step11 = await executeStep(projectId, PipelineStepId.STEP_11, async (pid, proj) => {
     const updated = readProject(pid);
     if (!updated) return { success: false, error: "Project not found" };
 
+    const fs = await import("fs");
+    const path = await import("path");
+
+    // 1. Check data structures exist
     const checks = {
       hasResearch: !!updated.research && updated.research.length > 0,
       hasScript: !!updated.script && updated.script.sections && updated.script.sections.length > 0,
@@ -336,6 +436,37 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
 
     if (failed.length > 0) {
       return { success: false, error: `Quality checks failed: ${failed.join(", ")}` };
+    }
+
+    // 2. Verify actual audio files exist for narration
+    const projectDir_ = path.join(process.cwd(), "data", "mystery-projects", pid);
+    const narrationDir = path.join(projectDir_, "narration");
+
+    for (const segment of updated.narrationSegments || []) {
+      if (!segment.audioPath) {
+        return { success: false, error: `Narration segment ${segment.id} has no audio path` };
+      }
+      if (!fs.existsSync(segment.audioPath)) {
+        return { success: false, error: `Audio file not found: ${segment.audioPath}` };
+      }
+      const stats = fs.statSync(segment.audioPath);
+      if (stats.size < 100) {
+        return { success: false, error: `Audio file too small: ${segment.audioPath} (${stats.size} bytes)` };
+      }
+    }
+
+    // 3. Verify scene visuals status
+    const scenesWithVisuals = (updated.scenes || []).filter((s) => s.visualStatus === "done");
+    if (scenesWithVisuals.length !== (updated.scenes || []).length) {
+      const missingCount = (updated.scenes || []).length - scenesWithVisuals.length;
+      return { success: false, error: `${missingCount} scenes missing visuals` };
+    }
+
+    // 4. Verify subtitle data
+    for (const track of updated.subtitleTracks || []) {
+      if (!track.subtitles || track.subtitles.length === 0) {
+        return { success: false, error: "Subtitle track is empty" };
+      }
     }
 
     return { success: true };
@@ -385,10 +516,17 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
     const updated = readProject(pid);
     if (!updated) return { success: false, error: "Project not found" };
 
-    // Verify all steps completed
-    const allStepsCompleted = (updated.steps || []).every((s) => s.status === "completed");
-    if (!allStepsCompleted) {
-      return { success: false, error: "Not all steps completed" };
+    // Verify all PREVIOUS steps (01-13) completed - exclude STEP_14 itself
+    const previousSteps = (updated.steps || []).filter((s) => s.stepId !== PipelineStepId.STEP_14);
+    const allPreviousCompleted = previousSteps.every((s) => s.status === "completed");
+    if (!allPreviousCompleted) {
+      const failedSteps = previousSteps.filter((s) => s.status !== "completed").map((s) => s.stepId);
+      return { success: false, error: `Steps not completed: ${failedSteps.join(", ")}` };
+    }
+
+    // Verify final output exists
+    if (!updated.output?.mp4) {
+      return { success: false, error: "Final MP4 output not found" };
     }
 
     // Final state update

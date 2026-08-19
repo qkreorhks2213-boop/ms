@@ -21,7 +21,8 @@ import { integrateAssetsWithScenes } from "../assets";
 import { renderMysteryVideo } from "../render-simple";
 import { validateMP4WithFFprobe } from "../render-validate";
 
-// Helper to generate mock narration WAV files for testing
+// P0-13: Testing Mode - Mock narration for E2E test
+// Production will use real Piper TTS; test uses generated WAV files
 function generateMockNarrationWAV(durationSeconds: number): Buffer {
   const sampleRate = 16000;
   const numSamples = sampleRate * durationSeconds;
@@ -54,7 +55,6 @@ function generateMockNarrationWAV(durationSeconds: number): Buffer {
 }
 
 // Override generateNarrationForScenes for testing
-const originalGenerateNarration = generateNarrationForScenes;
 jest.spyOn(require("../narration"), "generateNarrationForScenes").mockImplementation(
   async (projectId: string, project: MysteryProject) => {
     const outputDir = path.join(projectDir(projectId), "narration");
@@ -88,7 +88,7 @@ jest.spyOn(require("../narration"), "generateNarrationForScenes").mockImplementa
       success: true,
       segments,
       totalDuration: segments.reduce((sum, s) => sum + s.durationSeconds, 0),
-      voiceUsed: "mock-test-voice",
+      voiceUsed: "test-mock-voice",
     };
   }
 );

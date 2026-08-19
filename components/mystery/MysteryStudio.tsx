@@ -12,8 +12,22 @@ interface MysteryStudioProps {
 
 export function MysteryStudio({ project, onRefresh }: MysteryStudioProps) {
   const [currentStepId, setCurrentStepId] = useState<PipelineStepId>(PipelineStepId.STEP_01);
-  const [isRunning, setIsRunning] = useState(project.stage !== "done" && project.stage !== "failed");
+  const [isRunning, setIsRunning] = useState(() => {
+    const hasRunningStep = (project.steps || []).some((s) => s.status === "running");
+    const isInProgress = project.stage && !["done", "failed", "idle"].includes(project.stage);
+    return hasRunningStep || isInProgress;
+  });
   const [error, setError] = useState<string | null>(project.pipelineError || null);
+
+  useEffect(() => {
+    const hasRunningStep = (project.steps || []).some((s) => s.status === "running");
+    const isInProgress = project.stage && !["done", "failed", "idle"].includes(project.stage);
+    setIsRunning(hasRunningStep || isInProgress);
+
+    if (project.pipelineError) {
+      setError(project.pipelineError);
+    }
+  }, [project.stage, project.steps, project.pipelineError]);
 
   const getStepStatus = (stepId: PipelineStepId) => {
     const step = (project.steps || []).find((s) => s.stepId === stepId);
@@ -37,8 +51,45 @@ export function MysteryStudio({ project, onRefresh }: MysteryStudioProps) {
   };
 
   const handleRunStep = async (stepId: PipelineStepId) => {
-    // Will implement per-step execution in next iteration
-    console.log("Run step:", stepId);
+    try {
+      setIsRunning(true);
+      setError(null);
+
+      const response = await fetch(`/api/mystery/projects/${project.id}/auto-pipeline-v2/step`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stepId }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || `Step ${stepId} failed`);
+      }
+
+      // Poll for step completion
+      let completed = false;
+      let attempts = 0;
+      while (!completed && attempts < 60) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await onRefresh();
+
+        const updated = await (await fetch(`/api/mystery/projects/${project.id}`)).json();
+        const step = updated?.project?.steps?.find((s: any) => s.stepId === stepId);
+
+        if (step?.status === "completed" || step?.status === "failed") {
+          completed = true;
+        }
+        attempts++;
+      }
+
+      if (!completed) {
+        throw new Error(`Step ${stepId} timeout`);
+      }
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleRunAll = async () => {
@@ -55,7 +106,23 @@ export function MysteryStudio({ project, onRefresh }: MysteryStudioProps) {
         throw new Error(data.error || "Pipeline failed");
       }
 
-      await onRefresh();
+      // Poll for completion
+      let pipelineComplete = false;
+      let attempts = 0;
+      while (!pipelineComplete && attempts < 300) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        await onRefresh();
+
+        const updated = await (await fetch(`/api/mystery/projects/${project.id}`)).json();
+        if (updated?.project?.stage === "done" || updated?.project?.stage === "failed") {
+          pipelineComplete = true;
+        }
+        attempts++;
+      }
+
+      if (!pipelineComplete) {
+        throw new Error("Pipeline timeout");
+      }
     } catch (err: any) {
       setError(err.message);
     } finally {

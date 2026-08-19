@@ -8,6 +8,7 @@ import path from "path";
 import fs from "fs";
 import { readProject, updateProject, publicGeneratedDir } from "./store";
 import type { MysteryProject } from "./types";
+import { TARGET_WIDTH, TARGET_HEIGHT, TARGET_FPS } from "./constants";
 import {
   validateMP4WithFFprobe,
   validateDuration,
@@ -16,10 +17,6 @@ import {
   validateSubtitleBurnIn,
   validateVisualCoverage,
 } from "./render-validate";
-
-const TARGET_WIDTH = 1920;
-const TARGET_HEIGHT = 1080;
-const TARGET_FPS = 30;
 
 async function concatenateAudioSegments(narrationSegments: any[], outputPath: string): Promise<boolean> {
   if (!narrationSegments || narrationSegments.length === 0) {
@@ -214,25 +211,46 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
   const audioPath = path.join(projectDir, "audio.m4a");
   const subtitlePath = path.join(projectDir, "subtitles.ass");
   const assetsPath = path.join(projectDir, "assets.ass");
+  const concatFile = path.join(projectDir, "concat.txt");
 
-  console.log(`[render] Generating MP4 with ${sections.length} sections...`);
+  console.log(`[render] Generating MP4 with ${(project.scenes || []).length} scenes...`);
 
-  // Calculate total duration: Use TARGET duration (targetMinutes), not narration duration
-  const targetMinutes = project.input.targetMinutes || 15;
-  const targetSeconds = targetMinutes * 60;
+  // Get valid scenes with visuals (P0-6: Use actual scene images)
+  const validScenes = (project.scenes || []).filter(
+    (s) => s.visualStatus === "done" && s.visualUrl && (s.durationSeconds || 0) > 0
+  );
 
-  // Actual narration duration
+  if (validScenes.length === 0) {
+    throw new Error("[CRITICAL] No scenes with valid visuals to render");
+  }
+
+  console.log(`[render] Using ${validScenes.length} scenes with visuals...`);
+
+  // Create concat demuxer file for scene images
+  const concatContent = validScenes
+    .map((scene) => {
+      const imagePath = path.join(process.cwd(), "public", scene.visualUrl!.replace(/^\//, ""));
+      if (!fs.existsSync(imagePath)) {
+        throw new Error(`[CRITICAL] Scene image not found: ${imagePath}`);
+      }
+      return `file '${imagePath}'\nduration ${scene.durationSeconds || 3}`;
+    })
+    .join("\n");
+
+  fs.writeFileSync(concatFile, concatContent);
+  console.log(`[render] Created concat file with ${validScenes.length} images`);
+
+  // Calculate total duration based on scenes
+  let sceneDuration = validScenes.reduce((sum: number, s: any) => sum + (s.durationSeconds || 0), 0);
   let narrationDuration = 0;
   if (project.narrationSegments && project.narrationSegments.length > 0) {
     narrationDuration = project.narrationSegments.reduce((sum: number, seg: any) => sum + (seg.durationSeconds || 0), 0);
   }
 
-  // Use target duration to ensure video meets requirement
-  const totalDuration = Math.max(targetSeconds, narrationDuration);
+  const totalDuration = Math.max(sceneDuration, narrationDuration, 10);
 
-  console.log(`[render] Target duration: ${targetSeconds}s (${targetMinutes}분)`);
-  console.log(`[render] Narration duration: ${narrationDuration}s`);
-  console.log(`[render] Final duration: ${totalDuration}s`);
+  console.log(`[render] Scene duration: ${sceneDuration}s, Narration duration: ${narrationDuration}s`);
+  console.log(`[render] Total duration: ${totalDuration}s`);
 
   // Handle audio
   let hasAudio = false;
@@ -256,16 +274,27 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     hasAssetOverlay = await generateAssetOverlayFile(sceneAssets, project.narrationSegments || [], assetsPath);
   }
 
-  // Build FFmpeg command based on available components
-  const ffmpegArgs: string[] = ["-f", "lavfi", "-i", `color=c=black:s=${TARGET_WIDTH}x${TARGET_HEIGHT}:d=${totalDuration}`];
+  console.log(`[render] Compositing ${validScenes.length} scenes with visuals...`);
 
-  // Add audio if available
+  // Build FFmpeg command with actual scene images
+  const ffmpegArgs: string[] = [];
+
+  // Input 0: Video from concat demuxer (scene images)
+  ffmpegArgs.push("-f", "concat", "-safe", "0", "-i", concatFile);
+
+  // Input 1: Audio if available
   if (hasAudio) {
     ffmpegArgs.push("-i", audioPath);
   }
 
-  // Build video filter - simplified for reliability
+  // Build video filter - scale and apply subtitles
   const vfilters: string[] = [];
+
+  // Scale to target resolution
+  vfilters.push(
+    `scale=${TARGET_WIDTH}:${TARGET_HEIGHT}:force_original_aspect_ratio=increase`,
+    `crop=${TARGET_WIDTH}:${TARGET_HEIGHT}`
+  );
 
   // Add asset overlay if available (shows discovered real assets)
   if (hasAssetOverlay) {
@@ -279,19 +308,22 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     vfilters.push(`subtitles='${escapeForFilter(subtitlePath)}'`);
   }
 
-  let filterComplex = vfilters.length > 0 ? vfilters.join(",") : "null";
+  let filterComplex = vfilters.join(",");
 
   ffmpegArgs.push(
     "-vf", filterComplex,
+    "-r", String(TARGET_FPS),
     "-c:v", "libx264",
     "-preset", "ultrafast",
     "-pix_fmt", "yuv420p"
   );
 
-  // Map audio if available
+  // Map video from concat demuxer (input 0)
+  ffmpegArgs.push("-map", "0:v:0");
+
+  // Map audio if available (input 1)
   if (hasAudio) {
     ffmpegArgs.push("-c:a", "aac");
-    ffmpegArgs.push("-map", "0:v:0");
     ffmpegArgs.push("-map", "1:a:0");
   }
 
@@ -322,6 +354,9 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
         console.log(`[render] File size: ${(fileSize / 1024).toFixed(1)} KB`);
 
         // Clean up temporary files
+        if (fs.existsSync(concatFile)) {
+          fs.unlinkSync(concatFile);
+        }
         if (hasAudio && fs.existsSync(audioPath)) {
           fs.unlinkSync(audioPath);
         }

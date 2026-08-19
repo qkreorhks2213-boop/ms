@@ -124,61 +124,52 @@ async function generateOneSceneVisual(
       }
       sceneVisual = selectedVisual;
       sourceLabel = selectedVisual.sourceLabel;
-    } else if (visualAssetSelector.shouldMixAssets(scene) || ["timeline", "diagram", "map"].includes(scene.visualType)) {
-      // 2단계: 자체 제작 그래픽
-      buffer = await generateGraphic(scene);
-      sceneVisual = {
-        id: `graphic_${scene.id}`,
-        type: scene.visualType as any,
-        origin: "GENERATED_GRAPHIC",
-        graphicType: scene.visualType,
-      };
-      sourceLabel = `${scene.visualType}`;
-    } else if (
-      userInput?.useAiReconstruction &&
-      ["ai_reconstruction", "atmosphere", "location"].includes(scene.visualType)
-    ) {
-      // 3단계: AI 재현
-      const prompt = aiPrompts.generateSceneReconstructionPrompt(scene);
-
-      // TODO: 실제 AI 이미지 생성 (Claude Vision, DALL-E, 등)
-      // 지금은 데이터 카드로 대체
-      const aiCard = await renderDataCardCompat({
-        headline: scene.visualHeadline || scene.visualLabel || "AI 재현",
-        label: "AI 재현 이미지",
-        accentColor: "a87c5c",
-      });
-      buffer = aiCard;
-
-      sceneVisual = {
-        id: `ai_${scene.id}`,
-        type: scene.visualType as any,
-        origin: "AI_RECONSTRUCTION",
-        aiGeneration: {
-          model: "claude-3.5-sonnet",
-          prompt,
-          generatedAt: new Date().toISOString(),
-          displayDisclaimer: true,
-          disclaimerText: aiPrompts.generateReconstructionDisclaimer(scene),
-        },
-      };
-      sourceLabel = "AI 재현";
     } else {
-      // 4단계: 텍스트 카드
-      const textCard = await renderDataCardCompat({
-        headline: scene.visualQuery || "정보",
-        label: scene.visualType || "카드",
-        accentColor: "5a5a9e",
-      });
-      buffer = textCard;
+      // 2단계: 자체 제작 그래픽 (timeline, diagram, map, 및 AI Reconstruction 비활성으로 처리)
+      // P0-9: AI Reconstruction은 실제 구현 없이 그래픽 생성으로 처리
+      if (["timeline", "diagram", "map"].includes(scene.visualType)) {
+        // 데이터 타입별 그래픽 생성
+        buffer = await generateGraphic(scene);
+        sceneVisual = {
+          id: `graphic_${scene.id}`,
+          type: scene.visualType as any,
+          origin: "GENERATED_GRAPHIC",
+          graphicType: scene.visualType,
+        };
+        sourceLabel = `${scene.visualType}`;
+      } else if (["ai_reconstruction", "atmosphere", "location"].includes(scene.visualType)) {
+        // P0-9: AI Reconstruction 비활성 처리 - 그래픽으로 대체
+        const textCard = await renderDataCardCompat({
+          headline: scene.visualHeadline || scene.visualLabel || "시각 자료",
+          label: scene.visualType || "카드",
+          accentColor: "5a5a9e",
+        });
+        buffer = textCard;
 
-      sceneVisual = {
-        id: `text_${scene.id}`,
-        type: "text_card",
-        origin: "GENERATED_GRAPHIC",
-        graphicType: "text_card",
-      };
-      sourceLabel = "텍스트 카드";
+        sceneVisual = {
+          id: `card_${scene.id}`,
+          type: "text_card",
+          origin: "GENERATED_GRAPHIC",
+          graphicType: "text_card",
+        };
+        sourceLabel = "생성 카드";
+      } else {
+        // 텍스트 카드 - 그 외 모든 경우
+        const textCard = await renderDataCardCompat({
+          headline: scene.visualQuery || "정보",
+          label: scene.visualType || "카드",
+          accentColor: "5a5a9e",
+        });
+        buffer = textCard;
+
+        sceneVisual = {
+          id: `text_${scene.id}`,
+          type: "text_card",
+          origin: "GENERATED_GRAPHIC",
+          graphicType: "text_card",
+        };
+        sourceLabel = "텍스트 카드";
+      }
     }
 
     // 파일 저장
