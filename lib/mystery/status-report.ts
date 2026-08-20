@@ -19,6 +19,7 @@ export interface FinalStatusReport {
   projectName: string;
 
   // Overall status
+  currentStage?: string;
   overallStatus: "PASS" | "PARTIAL" | "FAIL";
   pipelineComplete: boolean;
 
@@ -233,6 +234,7 @@ export function generateStatusReport(project: MysteryProject, apiStatus: Record<
     projectId: project.id,
     projectName: project.name,
 
+    currentStage: project.stage,
     overallStatus,
     pipelineComplete: project.stage === "done",
 
