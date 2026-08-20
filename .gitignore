@@ -10,3 +10,9 @@ public/renders/
 public/generated/
 *.tsbuildinfo
 coverage/
+
+# Generated deliverables
+mystery-documentary-production-fixes.zip
+
+# Test output directories
+test-results/
