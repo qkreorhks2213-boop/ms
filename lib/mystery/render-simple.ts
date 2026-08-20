@@ -279,58 +279,75 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
   // Build FFmpeg command with actual scene images
   const ffmpegArgs: string[] = [];
 
-  // Input 0: Video from concat demuxer (scene images)
-  ffmpegArgs.push("-f", "concat", "-safe", "0", "-i", concatFile);
+  // Add each image as input with duration
+  let inputIndex = 0;
+  const filterInputs: string[] = [];
+  for (const scene of validScenes) {
+    const imagePath = path.join(process.cwd(), "public", scene.visualUrl!.replace(/^\//, ""));
+    const duration = scene.durationSeconds || 3;
 
-  // Input 1: Audio if available
+    ffmpegArgs.push("-loop", "1", "-t", String(duration), "-i", imagePath);
+    filterInputs.push(`[${inputIndex}:v]`);
+    inputIndex++;
+  }
+
+  // Add audio if available
+  let audioInputIndex = inputIndex;
   if (hasAudio) {
     ffmpegArgs.push("-i", audioPath);
   }
 
-  // Build video filter - scale and apply subtitles
-  const vfilters: string[] = [];
+  // Build filter graph: concat video inputs + scale + subtitles
+  let filterComplex = "";
+
+  // Concat all video inputs
+  if (filterInputs.length > 1) {
+    filterComplex += `${filterInputs.join("")}concat=n=${filterInputs.length}:v=1:a=0[v]`;
+  } else if (filterInputs.length === 1) {
+    filterComplex += `${filterInputs[0]}copy[v]`;
+  }
 
   // Scale to target resolution
-  vfilters.push(
-    `scale=${TARGET_WIDTH}:${TARGET_HEIGHT}:force_original_aspect_ratio=increase`,
-    `crop=${TARGET_WIDTH}:${TARGET_HEIGHT}`
-  );
+  filterComplex += `;[v]scale=${TARGET_WIDTH}:${TARGET_HEIGHT}:force_original_aspect_ratio=increase,crop=${TARGET_WIDTH}:${TARGET_HEIGHT}[vscaled]`;
 
   // Add asset overlay if available (shows discovered real assets)
+  let finalVideoOutput = "[vscaled]";
   if (hasAssetOverlay) {
     const escapeForFilter = (filepath: string) => filepath.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
-    vfilters.push(`subtitles='${escapeForFilter(assetsPath)}'`);
-  }
-
-  // Add subtitle filter if available
-  if (hasSubtitles) {
+    filterComplex += `;[vscaled]subtitles='${escapeForFilter(assetsPath)}'[vassets]`;
+    if (hasSubtitles) {
+      filterComplex += `;[vassets]subtitles='${escapeForFilter(subtitlePath)}'[vfinal]`;
+      finalVideoOutput = "[vfinal]";
+    } else {
+      finalVideoOutput = "[vassets]";
+    }
+  } else if (hasSubtitles) {
+    // If only subtitles (no assets), apply directly
     const escapeForFilter = (filepath: string) => filepath.replace(/\\/g, "\\\\").replace(/:/g, "\\:");
-    vfilters.push(`subtitles='${escapeForFilter(subtitlePath)}'`);
+    filterComplex += `;[vscaled]subtitles='${escapeForFilter(subtitlePath)}'[vfinal]`;
+    finalVideoOutput = "[vfinal]";
   }
-
-  let filterComplex = vfilters.join(",");
 
   ffmpegArgs.push(
-    "-vf", filterComplex,
+    "-filter_complex", filterComplex,
+    "-map", finalVideoOutput,
     "-r", String(TARGET_FPS),
     "-c:v", "libx264",
     "-preset", "ultrafast",
     "-pix_fmt", "yuv420p"
   );
 
-  // Map video from concat demuxer (input 0)
-  ffmpegArgs.push("-map", "0:v:0");
-
-  // Map audio if available (input 1)
+  // Map audio if available
   if (hasAudio) {
+    ffmpegArgs.push("-map", `${audioInputIndex}:a:0`);
     ffmpegArgs.push("-c:a", "aac");
-    ffmpegArgs.push("-map", "1:a:0");
   }
 
   ffmpegArgs.push("-y", outputPath);
 
   return new Promise((resolve, reject) => {
     console.log(`[render] Running FFmpeg...`);
+    console.log(`[render] Command: ffmpeg ${ffmpegArgs.join(" ")}`);
     const ffmpeg = spawn("ffmpeg", ffmpegArgs);
 
     let stderr = "";

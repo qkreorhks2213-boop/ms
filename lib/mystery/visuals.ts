@@ -190,6 +190,10 @@ async function generateOneSceneVisual(
         s.visualOrigin = sceneVisual.origin;
         s.realMaterialSearched = true;
         s.realMaterialFound = realAssets.length > 0;
+        // Set default duration if not already set
+        if (!s.durationSeconds || s.durationSeconds <= 0) {
+          s.durationSeconds = 3;
+        }
       }
     });
   } catch (err: any) {

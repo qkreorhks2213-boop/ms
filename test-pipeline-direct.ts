@@ -134,8 +134,23 @@ async function runFullPipeline(topic: string, caseType: string) {
     console.warn(`      ⚠ Boredom detection failed: ${err.message}`);
   }
 
-  // 6. Narration
-  console.log(`[7/13] Generating narration`);
+  // 6. Visual generation
+  console.log(`[6.5/13] Generating scene visuals`);
+  try {
+    const projectForVisuals = readProject(projectId)!;
+    if (projectForVisuals.scenes) {
+      const { generateAllSceneVisuals } = await import("@/lib/mystery/visuals");
+      await generateAllSceneVisuals(projectId, projectForVisuals, projectForVisuals.input);
+      const updated = readProject(projectId)!;
+      const visualCount = (updated.scenes || []).filter((s) => s.visualStatus === "done").length;
+      console.log(`      ✓ Visuals generated (${visualCount}/${updated.scenes?.length || 0})`);
+    }
+  } catch (err: any) {
+    console.warn(`      ⚠ Visual generation failed: ${err.message}`);
+  }
+
+  // 7. Narration
+  console.log(`[7/13] Generating narration (voice/audio)`);
   try {
     updateProject(projectId, (p) => {
       p.stage = "narration";

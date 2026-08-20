@@ -543,7 +543,7 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
   console.log(`[mystery:auto] ✅ All 14 steps completed successfully`);
 }
 
-export async function POST(_req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireUserId();
   if ("error" in auth) return auth.error;
 
@@ -555,6 +555,23 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
+  try {
+    const body = await req.json();
+    const stepId = body?.stepId as PipelineStepId | undefined;
+
+    // If stepId is specified, run only that step
+    if (stepId) {
+      if (!Object.values(PipelineStepId).includes(stepId)) {
+        return NextResponse.json({ error: `Invalid stepId: ${stepId}` }, { status: 400 });
+      }
+
+      return handleIndividualStep(params.id, stepId, project, auth.userId);
+    }
+  } catch (e) {
+    // No body or invalid JSON - proceed with full pipeline
+  }
+
+  // Full auto-pipeline (no stepId specified)
   if (!acquirePipelineLock(params.id)) {
     const elapsedSeconds = getPipelineElapsedSeconds(params.id);
     return NextResponse.json(
@@ -585,4 +602,294 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
     status: "pipeline-started",
     message: "14-Step auto-pipeline initiated",
   });
+}
+
+async function handleIndividualStep(
+  projectId: string,
+  stepId: PipelineStepId,
+  project: any,
+  userId: string
+): Promise<NextResponse> {
+  try {
+    // Initialize steps array if needed
+    if (!project.steps) {
+      updateProject(projectId, (p) => {
+        p.steps = STEP_ORDER.map((id) => ({
+          stepId: id,
+          status: "pending" as StepStatus,
+          retryCount: 0,
+        }));
+      });
+    }
+
+    // Execute the specific step
+    const result = await executeIndividualStep(projectId, stepId);
+
+    const updatedProject = readProject(projectId);
+    return NextResponse.json({
+      success: result.success,
+      projectId,
+      stepId,
+      project: updatedProject,
+    });
+  } catch (error: any) {
+    console.error(`[mystery:auto] Step error:`, error);
+    return NextResponse.json(
+      { error: error?.message || "Step execution failed" },
+      { status: 500 }
+    );
+  }
+}
+
+async function executeIndividualStep(
+  projectId: string,
+  stepId: PipelineStepId
+): Promise<{ success: boolean; error?: string }> {
+  const project = readProject(projectId);
+  if (!project) return { success: false, error: "Project not found" };
+
+  switch (stepId) {
+    case PipelineStepId.STEP_01:
+      return await executeStep(projectId, PipelineStepId.STEP_01, async (pid, proj) => {
+        await researchTopic(pid, proj);
+        const updated = readProject(pid);
+        return {
+          success: !!updated?.research && updated.research.length > 0,
+          error: updated?.research ? undefined : "No research findings",
+        };
+      });
+
+    case PipelineStepId.STEP_02:
+      return await executeStep(projectId, PipelineStepId.STEP_02, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.research) return { success: false, error: "Research missing" };
+        const factcheckReport = analyzeResearchClaims(updated.research);
+        updateProject(pid, (p) => {
+          p.factcheckResults = factcheckReport;
+        });
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_03:
+      return await executeStep(projectId, PipelineStepId.STEP_03, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.research) return { success: false, error: "Research missing" };
+        const timeline = generateTimeline(updated.research);
+        if (timeline.length === 0) return { success: false, error: "No timeline events" };
+        updateProject(pid, (p) => {
+          p.timeline = timeline;
+        });
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_04:
+      return await executeStep(projectId, PipelineStepId.STEP_04, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.research) return { success: false, error: "Research missing" };
+        await generateScript(pid, updated);
+        const final = readProject(pid);
+        return {
+          success: !!final?.script && final.script.sections.length > 0,
+          error: final?.script ? undefined : "Script generation failed",
+        };
+      });
+
+    case PipelineStepId.STEP_05:
+      return await executeStep(projectId, PipelineStepId.STEP_05, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.script) return { success: false, error: "Script missing" };
+        await generateScenes(pid, updated);
+        const final = readProject(pid);
+        return {
+          success: !!final?.scenes && final.scenes.length > 0,
+          error: final?.scenes ? undefined : "Scene generation failed",
+        };
+      });
+
+    case PipelineStepId.STEP_06:
+      return await executeStep(projectId, PipelineStepId.STEP_06, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.scenes) return { success: false, error: "Scenes missing" };
+        const topic = updated.name || "unknown";
+        const { scenes, assets } = integrateAssetsWithScenes(topic, updated.scenes);
+        updateProject(pid, (p) => {
+          p.scenes = scenes;
+          p.sceneAssets = assets as any;
+        });
+        return {
+          success: assets && assets.length > 0,
+          error: assets && assets.length > 0 ? undefined : "No assets found",
+        };
+      });
+
+    case PipelineStepId.STEP_07:
+      return await executeStep(projectId, PipelineStepId.STEP_07, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.scenes) return { success: false, error: "Scenes missing" };
+        const { generateAllSceneVisuals } = await import("../../../../../../lib/mystery/visuals");
+        await generateAllSceneVisuals(pid, updated, updated.input);
+        const final = readProject(pid);
+        const successCount = (final?.scenes || []).filter((s) => s.visualStatus === "done").length;
+        const totalScenes = final?.scenes?.length || 0;
+        if (successCount === 0) {
+          return { success: false, error: `[CRITICAL] No visuals generated (0/${totalScenes})` };
+        }
+        if (successCount < totalScenes) {
+          return {
+            success: false,
+            error: `[CRITICAL] Incomplete visuals: ${successCount}/${totalScenes} (need 100%)`,
+          };
+        }
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_08:
+      return await executeStep(projectId, PipelineStepId.STEP_08, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.scenes) return { success: false, error: "Scenes missing" };
+        const analyses = detectBoringScenes(updated.scenes);
+        if (analyses.length > 0) {
+          const optimized = optimizeBoringScenes(updated.scenes, analyses);
+          updateProject(pid, (p) => {
+            p.scenes = optimized;
+          });
+        }
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_09:
+      return await executeStep(projectId, PipelineStepId.STEP_09, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.scenes) return { success: false, error: "Scenes missing" };
+        const narrationResult = await generateNarrationForScenes(pid, updated);
+        if (!narrationResult.success) {
+          return { success: false, error: narrationResult.error || "Narration generation failed" };
+        }
+        updateProject(pid, (p) => {
+          p.narrationSegments = narrationResult.segments as any;
+          if (p.scenes && p.script?.sections && p.narrationSegments) {
+            for (const scene of p.scenes) {
+              const sectionIndex = p.script.sections.findIndex((s) => s.id === scene.sectionId);
+              if (sectionIndex >= 0 && sectionIndex < p.narrationSegments.length) {
+                const narrationSegment = p.narrationSegments[sectionIndex];
+                scene.narrationSegmentId = narrationSegment.id;
+                scene.durationSeconds = narrationSegment.durationSeconds;
+              }
+            }
+          }
+        });
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_10:
+      return await executeStep(projectId, PipelineStepId.STEP_10, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.narrationSegments) {
+          return { success: false, error: "Narration missing" };
+        }
+        const sceneNarrationMap = new Map<string, string>();
+        const sceneIds: string[] = [];
+        for (const scene of updated.scenes || []) {
+          sceneIds.push(scene.id);
+          const segment = updated.narrationSegments[0];
+          if (segment) sceneNarrationMap.set(scene.id, segment.text);
+        }
+        const subtitleTrack = generateSubtitles(
+          updated.narrationSegments,
+          sceneIds,
+          "en",
+          sceneNarrationMap
+        );
+        if (!subtitleTrack || !subtitleTrack.subtitles || subtitleTrack.subtitles.length === 0) {
+          return { success: false, error: "Subtitle generation failed" };
+        }
+        updateProject(pid, (p) => {
+          p.subtitleTracks = [subtitleTrack];
+        });
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_11:
+      return await executeStep(projectId, PipelineStepId.STEP_11, async (pid, proj) => {
+        const updated = readProject(pid);
+        const failed: string[] = [];
+        if (!updated?.research) failed.push("hasResearch");
+        if (!updated?.script) failed.push("hasScript");
+        if (!updated?.scenes) failed.push("hasScenes");
+        if (!updated?.narrationSegments) failed.push("hasNarration");
+        if (!updated?.subtitleTracks) failed.push("hasSubtitles");
+        if (failed.length > 0) {
+          return { success: false, error: `Quality checks failed: ${failed.join(", ")}` };
+        }
+        updateProject(pid, (p) => {
+          if (!p.steps) p.steps = [];
+          const idx = p.steps.findIndex((s) => s.stepId === PipelineStepId.STEP_11);
+          if (idx >= 0) {
+            p.steps[idx].validation = {
+              passed: true,
+              checks: ["all_components_present"],
+              errors: [],
+            };
+          }
+        });
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_12:
+      return await executeStep(projectId, PipelineStepId.STEP_12, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated) return { success: false, error: "Project not found" };
+        await renderMysteryVideo(pid, updated);
+        const final = readProject(pid);
+        if (!final?.output?.mp4) {
+          return { success: false, error: "MP4 file not created" };
+        }
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_13:
+      return await executeStep(projectId, PipelineStepId.STEP_13, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated?.output?.mp4) {
+          return { success: false, error: "MP4 file not found" };
+        }
+        const mp4Path = path.join(projectDir(pid), "output.mp4");
+        const validation = await validateMP4WithFFprobe(mp4Path);
+        if (!validation.valid) {
+          return { success: false, error: `MP4 validation failed: ${validation.errors.join("; ")}` };
+        }
+        console.log(
+          `[mystery:auto] MP4 validated: ${validation.duration}s, ${validation.resolution}, ${validation.fps}fps`
+        );
+        return { success: true };
+      });
+
+    case PipelineStepId.STEP_14:
+      return await executeStep(projectId, PipelineStepId.STEP_14, async (pid, proj) => {
+        const updated = readProject(pid);
+        if (!updated) return { success: false, error: "Project not found" };
+        const previousSteps = (updated.steps || []).filter((s) => s.stepId !== PipelineStepId.STEP_14);
+        const allPreviousCompleted = previousSteps.every((s) => s.status === "completed");
+        if (!allPreviousCompleted) {
+          const failedSteps = previousSteps
+            .filter((s) => s.status !== "completed")
+            .map((s) => s.stepId);
+          return {
+            success: false,
+            error: `Steps not completed: ${failedSteps.join(", ")}`,
+          };
+        }
+        if (!updated.output?.mp4) {
+          return { success: false, error: "Final MP4 output not found" };
+        }
+        updateProject(pid, (p) => {
+          p.stage = "done";
+          p.completedAt = new Date().toISOString();
+        });
+        return { success: true };
+      });
+
+    default:
+      return { success: false, error: `Unknown step: ${stepId}` };
+  }
 }

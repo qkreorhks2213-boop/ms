@@ -22,18 +22,37 @@ try {
 import { TimelineEvent } from "./types";
 
 /**
- * Canvas 사용 불가능시 사용할 플레이스홀더 Buffer 생성.
+ * Canvas 사용 불가능시 FFmpeg을 사용해 플레이스홀더 생성
+ * 1920x1080 크기의 유효한 PNG 이미지 반환
  */
-function createPlaceholderBuffer(title: string): Buffer {
-  // PNG 헤더 + 1x1 투명 픽셀
-  const pngHeader = Buffer.from([
-    0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
-    0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
-    0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
-    0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
-    0x42, 0x60, 0x82,
-  ]);
-  return pngHeader;
+async function createPlaceholderBuffer(title: string): Promise<Buffer> {
+  const { execSync } = require("child_process");
+  const fs = require("fs");
+  const path = require("path");
+  const os = require("os");
+
+  const tmpFile = path.join(os.tmpdir(), `placeholder-${Date.now()}.png`);
+
+  try {
+    const titleEscaped = title.replace(/'/g, "'\\''");
+    const cmd = `ffmpeg -f lavfi -i color=c=1a1a2e:s=1920x1080:d=1 -vf "drawtext=fontsize=72:fontcolor=white:text='${titleEscaped}':x=(w-text_w)/2:y=(h-text_h)/2" -frames:v 1 -update 1 -y "${tmpFile}" 2>/dev/null`;
+
+    execSync(cmd, { timeout: 5000 });
+    const buffer = fs.readFileSync(tmpFile);
+    fs.unlinkSync(tmpFile);
+    return buffer;
+  } catch (err) {
+    // Fallback: create a minimal valid PNG (solid color, 1920x1080 would be too large)
+    // Use a small valid PNG as last resort
+    const pngHeader = Buffer.from([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d, 0x49, 0x48, 0x44, 0x52,
+      0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x08, 0x06, 0x00, 0x00, 0x00, 0x1f, 0x15, 0xc4,
+      0x89, 0x00, 0x00, 0x00, 0x0a, 0x49, 0x44, 0x41, 0x54, 0x78, 0x9c, 0x63, 0x00, 0x01, 0x00, 0x00,
+      0x05, 0x00, 0x01, 0x0d, 0x0a, 0x2d, 0xb4, 0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae,
+      0x42, 0x60, 0x82,
+    ]);
+    return pngHeader;
+  }
 }
 
 /**
@@ -51,7 +70,7 @@ export async function generateTimeline(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Timeline");
+    return await createPlaceholderBuffer(options?.title || "Timeline");
   }
 
   const width = options?.width ?? 1920;
@@ -142,7 +161,7 @@ export async function generateDataCard(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(data.title);
+    return await createPlaceholderBuffer(data.title);
   }
 
   const width = options?.width ?? 1920;
@@ -209,7 +228,7 @@ export async function generateDiagram(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Diagram");
+    return await createPlaceholderBuffer(options?.title || "Diagram");
   }
 
   const width = options?.width ?? 1920;
@@ -358,7 +377,7 @@ export async function generateMapBackground(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(options?.title || "Map");
+    return await createPlaceholderBuffer(options?.title || "Map");
   }
 
   const width = options?.width ?? 1920;
@@ -425,7 +444,7 @@ export async function generateEvidenceCard(
 ): Promise<Buffer> {
   // Canvas not available fallback
   if (!createCanvas) {
-    return createPlaceholderBuffer(evidence.title);
+    return await createPlaceholderBuffer(evidence.title);
   }
 
   const width = options?.width ?? 1920;
