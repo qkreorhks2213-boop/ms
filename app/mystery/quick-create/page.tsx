@@ -43,8 +43,8 @@ export default function MysteryQuickCreate() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || "프로젝트 생성 실패");
 
-      // Start auto-pipeline in background
-      fetch(`/api/mystery/projects/${data.project.id}/auto-pipeline`, {
+      // Start auto-pipeline-v2 (Production 14-Step Pipeline) in background
+      fetch(`/api/mystery/projects/${data.project.id}/auto-pipeline-v2`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
       }).catch((err) => console.error("Failed to start pipeline:", err));
@@ -216,7 +216,7 @@ export default function MysteryQuickCreate() {
                   });
                   const data = await res.json();
                   if (!res.ok) throw new Error(data?.error || "프로젝트 생성 실패");
-                  fetch(`/api/mystery/projects/${data.project.id}/auto-pipeline`, {
+                  fetch(`/api/mystery/projects/${data.project.id}/auto-pipeline-v2`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                   }).catch((err) => console.error("Failed to start pipeline:", err));

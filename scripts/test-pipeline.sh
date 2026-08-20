@@ -34,9 +34,9 @@ echo "✅ Project created: $PROJECT_ID"
 echo "   Test User ID: $TEST_USER_ID"
 echo ""
 
-# Step 2: Trigger auto-pipeline
-echo "2️⃣ Triggering auto-pipeline (this runs in background)..."
-PIPELINE_RESPONSE=$(curl -s -X POST "$BASE_URL/api/mystery/projects/$PROJECT_ID/auto-pipeline" \
+# Step 2: Trigger auto-pipeline-v2
+echo "2️⃣ Triggering auto-pipeline-v2 (this runs in background)..."
+PIPELINE_RESPONSE=$(curl -s -X POST "$BASE_URL/api/mystery/projects/$PROJECT_ID/auto-pipeline-v2" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer test-token")
 
