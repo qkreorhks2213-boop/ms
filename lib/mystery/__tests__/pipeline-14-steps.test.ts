@@ -7,7 +7,8 @@
 import path from "path";
 import fs from "fs";
 import { readProject, createProject, updateProject, projectDir } from "../store";
-import type { MysteryProject, NarrationSegment } from "../types";
+import type { MysteryProject } from "../types";
+import type { NarrationSegment } from "../narration";
 import { STEP_ORDER, PipelineStepId, STEP_LABELS } from "../types";
 import { researchTopic } from "../research";
 import { generateScript } from "../script";
@@ -56,7 +57,8 @@ function generateMockNarrationWAV(durationSeconds: number): Buffer {
 
 // Override generateNarrationForScenes for testing
 jest.spyOn(require("../narration"), "generateNarrationForScenes").mockImplementation(
-  async (projectId: string, project: MysteryProject) => {
+  async (...args: any[]) => {
+    const [projectId, project] = args as [string, MysteryProject];
     const outputDir = path.join(projectDir(projectId), "narration");
     if (!fs.existsSync(outputDir)) {
       fs.mkdirSync(outputDir, { recursive: true });

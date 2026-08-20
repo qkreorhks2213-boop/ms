@@ -22,7 +22,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: ["case_focused"],
+        angles: ["case_focused"],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -40,7 +44,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 2, // Below minimum of 5
         endingStyle: "unsolved",
         sceneVisualTarget: 30,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -54,7 +62,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 150, // Above maximum of 120
         endingStyle: "unsolved",
         sceneVisualTarget: 30,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -68,7 +80,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 5, // Below minimum of 12
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -82,7 +98,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       expect(() => createProject(input, "test-user")).toThrow();
@@ -95,7 +115,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       expect(() => createProject(input, "")).toThrow();
@@ -110,7 +134,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: ["case_focused"],
+        angles: ["case_focused"],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -124,7 +152,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: ["case_focused"],
+        angles: ["case_focused"],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -151,7 +183,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: ["case_focused"],
+        angles: ["case_focused"],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -170,7 +206,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -252,7 +292,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -278,7 +322,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -320,7 +368,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -411,7 +463,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");
@@ -427,7 +483,11 @@ describe("E2E Pipeline Validation", () => {
         targetMinutes: 15,
         endingStyle: "unsolved",
         sceneVisualTarget: 50,
-        angleChoices: [],
+        angles: [],
+        useRealPhotos: true,
+        useAiReconstruction: false,
+        useBgm: true,
+        voiceName: "en-US",
       };
 
       const project = createProject(input, "test-user");

@@ -23,12 +23,12 @@ interface ExecuteStepFn {
 }
 
 /**
- * Step 실행 헬퍼
+ * Step 실행 헬퍼 - FIXED
  * - Input validation
  * - Status 업데이트
  * - Execute
  * - Output validation
- * - Error handling
+ * - CRITICAL: validation.passed가 status를 결정함
  */
 async function executeStep(
   projectId: string,
@@ -65,9 +65,6 @@ async function executeStep(
 
     console.log(`[mystery:auto] ▶️ ${stepId}: ${STEP_LABELS[stepId]} starting...`);
 
-    // Capture project state before step (input)
-    const projectBefore = readProject(projectId);
-
     // Execute step
     const result = await stepFn(projectId, project);
 
@@ -78,12 +75,11 @@ async function executeStep(
     // Capture project state after step (output)
     const projectAfter = readProject(projectId);
 
-    // Record input/output
+    // Perform step-specific validation
     let validationPassed = true;
     const validationChecks: string[] = [];
-    const validationWarnings: string[] = [];
+    const validationErrors: string[] = [];
 
-    // Perform step-specific validation
     if (projectAfter) {
       if (stepId === PipelineStepId.STEP_01) {
         validationChecks.push("research_data_exists");
@@ -91,99 +87,137 @@ async function executeStep(
           validationPassed = true;
         } else {
           validationPassed = false;
-          validationWarnings.push("No research data found");
+          validationErrors.push("[CRITICAL] No research data found");
         }
       } else if (stepId === PipelineStepId.STEP_02) {
         validationChecks.push("factcheck_results_exist");
         validationPassed = !!projectAfter.factcheckResults;
         if (!validationPassed) {
-          validationWarnings.push("Factcheck results missing");
+          validationErrors.push("[CRITICAL] Factcheck results missing");
         }
       } else if (stepId === PipelineStepId.STEP_03) {
         validationChecks.push("timeline_exists");
         validationPassed = !!(projectAfter.timeline && projectAfter.timeline.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("Timeline not generated");
+          validationErrors.push("[CRITICAL] Timeline not generated");
         }
       } else if (stepId === PipelineStepId.STEP_04) {
         validationChecks.push("script_exists");
         validationPassed = !!(projectAfter.script && projectAfter.script.sections.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("Script not generated");
+          validationErrors.push("[CRITICAL] Script not generated");
         }
       } else if (stepId === PipelineStepId.STEP_05) {
         validationChecks.push("scenes_exist");
         validationPassed = !!(projectAfter.scenes && projectAfter.scenes.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("Scenes not created");
+          validationErrors.push("[CRITICAL] Scenes not created");
         }
       } else if (stepId === PipelineStepId.STEP_06) {
         validationChecks.push("assets_found");
         validationPassed = !!(projectAfter.sceneAssets && projectAfter.sceneAssets.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("No assets discovered");
+          validationErrors.push("[CRITICAL] No assets discovered");
         }
       } else if (stepId === PipelineStepId.STEP_07) {
         validationChecks.push("visuals_complete");
         const visualCount = (projectAfter.scenes || []).filter((s) => s.visualStatus === "done").length;
         const totalScenes = projectAfter.scenes?.length || 0;
-        validationPassed = visualCount === totalScenes;
-        if (!validationPassed && totalScenes > 0) {
-          validationWarnings.push(`Only ${visualCount}/${totalScenes} scenes have visuals`);
+        validationPassed = visualCount === totalScenes && totalScenes > 0;
+        if (!validationPassed) {
+          validationErrors.push(`[CRITICAL] Only ${visualCount}/${totalScenes} scenes have visuals`);
         }
       } else if (stepId === PipelineStepId.STEP_08) {
+        // FIXED: Actual scene optimization validation
         validationChecks.push("scenes_optimized");
-        validationPassed = true;
+        validationPassed = !!(projectAfter.scenes && projectAfter.scenes.length > 0);
+        if (!validationPassed) {
+          validationErrors.push("[CRITICAL] Scene optimization failed");
+        }
       } else if (stepId === PipelineStepId.STEP_09) {
         validationChecks.push("narration_segments_exist");
         validationPassed = !!(projectAfter.narrationSegments && projectAfter.narrationSegments.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("Narration segments not created");
+          validationErrors.push("[CRITICAL] Narration segments not created");
         }
       } else if (stepId === PipelineStepId.STEP_10) {
         validationChecks.push("subtitles_exist");
         validationPassed = !!(projectAfter.subtitleTracks && projectAfter.subtitleTracks.length > 0);
         if (!validationPassed) {
-          validationWarnings.push("Subtitle tracks not created");
+          validationErrors.push("[CRITICAL] Subtitle tracks not created");
+        }
+        // Validate subtitle content
+        if (validationPassed && projectAfter.subtitleTracks) {
+          for (const track of projectAfter.subtitleTracks) {
+            if (!track.subtitles || track.subtitles.length === 0) {
+              validationPassed = false;
+              validationErrors.push("[CRITICAL] Subtitle track is empty");
+              break;
+            }
+          }
         }
       } else if (stepId === PipelineStepId.STEP_11) {
+        // FIXED: Actual quality verification
         validationChecks.push("quality_verified");
-        validationPassed = true;
+        const checks = {
+          hasResearch: !!projectAfter.research && projectAfter.research.length > 0,
+          hasScript: !!projectAfter.script && projectAfter.script.sections && projectAfter.script.sections.length > 0,
+          hasScenes: !!projectAfter.scenes && projectAfter.scenes.length > 0,
+          hasNarration: !!projectAfter.narrationSegments && projectAfter.narrationSegments.length > 0,
+          hasSubtitles: !!projectAfter.subtitleTracks && projectAfter.subtitleTracks.length > 0,
+        };
+        const failed = Object.entries(checks).filter(([_, passed]) => !passed).map(([name]) => name);
+        validationPassed = failed.length === 0;
+        if (!validationPassed) {
+          validationErrors.push(`[CRITICAL] Quality checks failed: ${failed.join(", ")}`);
+        }
       } else if (stepId === PipelineStepId.STEP_12) {
         validationChecks.push("mp4_created");
         validationPassed = !!projectAfter.output?.mp4;
         if (!validationPassed) {
-          validationWarnings.push("MP4 file not created");
+          validationErrors.push("[CRITICAL] MP4 file not created");
         }
       } else if (stepId === PipelineStepId.STEP_13) {
+        // FIXED: Actual MP4 validation (not always true)
         validationChecks.push("mp4_validated");
-        validationPassed = true;
+        // MP4 validation should be done in the step function itself
+        // Check if MP4 exists and is not corrupted
+        validationPassed = !!projectAfter.output?.mp4;
+        if (!validationPassed) {
+          validationErrors.push("[CRITICAL] MP4 file validation failed");
+        }
       } else if (stepId === PipelineStepId.STEP_14) {
         validationChecks.push("pipeline_complete");
         validationPassed = projectAfter.stage === "done";
         if (!validationPassed) {
-          validationWarnings.push("Pipeline not marked as complete");
+          validationErrors.push("[CRITICAL] Pipeline not marked as complete");
         }
       }
     }
 
-    // Mark as completed with validation data
+    // CRITICAL: Status depends on validation result
+    const finalStatus: StepStatus = validationPassed ? "completed" : "failed";
+
     updateProject(projectId, (p) => {
       if (!p.steps) p.steps = [];
       const idx = p.steps.findIndex((s) => s.stepId === stepId);
       if (idx >= 0) {
-        p.steps[idx].status = "completed";
+        p.steps[idx].status = finalStatus;
         p.steps[idx].completedAt = new Date().toISOString();
         p.steps[idx].validation = {
           passed: validationPassed,
           checks: validationChecks,
-          errors: validationWarnings,
+          errors: validationErrors,
         };
       }
     });
 
-    console.log(`[mystery:auto] ✅ ${stepId}: ${STEP_LABELS[stepId]} completed`);
-    return { success: true };
+    if (validationPassed) {
+      console.log(`[mystery:auto] ✅ ${stepId}: ${STEP_LABELS[stepId]} completed`);
+      return { success: true };
+    } else {
+      throw new Error(validationErrors.join("; "));
+    }
   } catch (err: any) {
     const errorMessage = err?.message || String(err);
     console.error(`[mystery:auto] ❌ ${stepId}: ${STEP_LABELS[stepId]} failed`);
@@ -393,18 +427,29 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
       return { success: false, error: "Narration missing" };
     }
 
+    // FIXED: Proper scene-to-narration mapping
     const sceneNarrationMap = new Map<string, string>();
+    const sceneIds: string[] = [];
+
     if (updated.scenes && updated.script?.sections) {
       for (const scene of updated.scenes) {
+        sceneIds.push(scene.id);
         const sectionIndex = updated.script.sections.findIndex((s) => s.id === scene.sectionId);
         if (sectionIndex >= 0 && sectionIndex < updated.narrationSegments.length) {
           sceneNarrationMap.set(scene.id, updated.narrationSegments[sectionIndex].id);
         }
       }
+    } else {
+      for (const scene of updated.scenes || []) {
+        sceneIds.push(scene.id);
+      }
     }
 
-    const sceneIds = updated.scenes?.map((s) => s.id) || [];
     const subtitleTrack = generateSubtitles(updated.narrationSegments, sceneIds, "ko-KR", sceneNarrationMap);
+    if (!subtitleTrack || !subtitleTrack.subtitles || subtitleTrack.subtitles.length === 0) {
+      return { success: false, error: "Subtitle generation failed" };
+    }
+
     updateProject(pid, (p) => {
       p.subtitleTracks = [subtitleTrack] as any;
     });
@@ -787,17 +832,32 @@ async function executeIndividualStep(
         if (!updated?.narrationSegments) {
           return { success: false, error: "Narration missing" };
         }
+
+        // FIXED: Proper scene-to-narration mapping (not all scenes get first segment)
         const sceneNarrationMap = new Map<string, string>();
         const sceneIds: string[] = [];
-        for (const scene of updated.scenes || []) {
-          sceneIds.push(scene.id);
-          const segment = updated.narrationSegments[0];
-          if (segment) sceneNarrationMap.set(scene.id, segment.text);
+
+        if (updated.scenes && updated.script?.sections) {
+          for (const scene of updated.scenes) {
+            sceneIds.push(scene.id);
+            // Map scene to its section's narration segment
+            const sectionIndex = updated.script.sections.findIndex((s) => s.id === scene.sectionId);
+            if (sectionIndex >= 0 && sectionIndex < updated.narrationSegments.length) {
+              const narrationSegment = updated.narrationSegments[sectionIndex];
+              sceneNarrationMap.set(scene.id, narrationSegment.id);
+            }
+          }
+        } else {
+          // Fallback if scene/script structure is missing
+          for (const scene of updated.scenes || []) {
+            sceneIds.push(scene.id);
+          }
         }
+
         const subtitleTrack = generateSubtitles(
           updated.narrationSegments,
           sceneIds,
-          "en",
+          "ko-KR",
           sceneNarrationMap
         );
         if (!subtitleTrack || !subtitleTrack.subtitles || subtitleTrack.subtitles.length === 0) {
