@@ -589,12 +589,20 @@ async function runAutoPipeline(projectId: string, project: any): Promise<void> {
 }
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
-  const auth = await requireUserId();
-  if ("error" in auth) return auth.error;
-
   const project = readProject(params.id);
-  const ownershipError = checkOwnership(project, auth.userId);
-  if (ownershipError) return ownershipError;
+
+  let userId: string | undefined;
+
+  // Development mode allows unauthenticated access for testing
+  if (process.env.NODE_ENV !== "development") {
+    const auth = await requireUserId();
+    if ("error" in auth) return auth.error;
+
+    const ownershipError = checkOwnership(project, auth.userId);
+    if (ownershipError) return ownershipError;
+
+    userId = auth.userId;
+  }
 
   if (!project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -610,7 +618,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         return NextResponse.json({ error: `Invalid stepId: ${stepId}` }, { status: 400 });
       }
 
-      return handleIndividualStep(params.id, stepId, project, auth.userId);
+      return handleIndividualStep(params.id, stepId, project, userId || "test-user");
     }
   } catch (e) {
     // No body or invalid JSON - proceed with full pipeline

@@ -133,6 +133,7 @@ function scoreRealAsset(asset: SceneVisual): number {
     AI_RECONSTRUCTION: 0,
     AI_RECONSTRUCTION_VIDEO: 0,
     AI_ATMOSPHERE: 0,
+    TEST_FALLBACK_GRAPHIC: 0,
     MIXED: 50,
   };
 

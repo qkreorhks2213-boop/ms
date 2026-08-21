@@ -41,7 +41,15 @@ export function generateSubtitles(
       : [sceneIds[Math.floor(Math.random() * sceneIds.length)] || ""];
 
     if (segmentScenes.length === 0) {
-      console.warn(`[subtitles] Narration segment ${segment.id} has no mapped scenes - using first scene as fallback`);
+      // P0-5: No mapping
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          `[CRITICAL P0-5] Narration segment ${segment.id} has no mapped scenes. ` +
+          `Production requires proper Scene↔Narration↔Subtitle mapping.`
+        );
+      }
+      // Development: allow fallback mapping
+      console.warn(`[subtitles] DEV FALLBACK: Segment ${segment.id} has no mapped scenes - using first scene`);
       segmentScenes.push(sceneIds[0] || "");
     }
 

@@ -297,18 +297,27 @@ async function generateTestVideo(projectId: string, project: MysteryProject): Pr
     ffmpegArgs.push("-i", audioPath);
   }
 
-  // Build filter graph: concat video inputs + scale + subtitles
+  // Build filter graph: scale each input first, then concat
   let filterComplex = "";
 
-  // Concat all video inputs
-  if (filterInputs.length > 1) {
-    filterComplex += `${filterInputs.join("")}concat=n=${filterInputs.length}:v=1:a=0[v]`;
-  } else if (filterInputs.length === 1) {
-    filterComplex += `${filterInputs[0]}copy[v]`;
+  // Scale each input to target resolution before concatenating
+  const scaledInputs: string[] = [];
+  for (let i = 0; i < filterInputs.length; i++) {
+    const inputLabel = filterInputs[i];
+    const outputLabel = `[scaled${i}]`;
+    if (filterComplex) filterComplex += ";";
+    filterComplex += `${inputLabel}scale=${TARGET_WIDTH}:${TARGET_HEIGHT}:force_original_aspect_ratio=increase,crop=${TARGET_WIDTH}:${TARGET_HEIGHT}${outputLabel}`;
+    scaledInputs.push(outputLabel);
   }
 
-  // Scale to target resolution
-  filterComplex += `;[v]scale=${TARGET_WIDTH}:${TARGET_HEIGHT}:force_original_aspect_ratio=increase,crop=${TARGET_WIDTH}:${TARGET_HEIGHT}[vscaled]`;
+  // Concat all scaled video inputs
+  if (scaledInputs.length > 1) {
+    if (filterComplex) filterComplex += ";";
+    filterComplex += `${scaledInputs.join("")}concat=n=${scaledInputs.length}:v=1:a=0[vscaled]`;
+  } else if (scaledInputs.length === 1) {
+    if (filterComplex) filterComplex += ";";
+    filterComplex += `${scaledInputs[0]}copy[vscaled]`;
+  }
 
   // Add asset overlay if available (shows discovered real assets)
   let finalVideoOutput = "[vscaled]";

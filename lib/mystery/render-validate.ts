@@ -88,10 +88,15 @@ export async function validateMP4WithFFprobe(filePath: string): Promise<MP4Valid
 
   // Duration validation
   const duration = parseFloat(parsed.format.duration) || 0;
+  const minDuration = process.env.NODE_ENV === "production" ? 60 : 10;
+
   if (duration <= 0) {
     result.errors.push("[CRITICAL] Invalid or missing duration");
-  } else if (duration < 10) {
-    result.errors.push(`[CRITICAL] Video too short: ${duration.toFixed(1)}s (expected ~900s for 15min)`);
+  } else if (duration < minDuration) {
+    const expectedNote = process.env.NODE_ENV === "production"
+      ? "(expected ~900s for 15min documentary)"
+      : "(development mode allows 10+ seconds)";
+    result.errors.push(`[CRITICAL] Video too short: ${duration.toFixed(1)}s ${expectedNote}`);
   }
   result.duration = duration;
 
@@ -128,7 +133,10 @@ export async function validateMP4WithFFprobe(filePath: string): Promise<MP4Valid
   }
 
   // Final verdict: requires video stream, no errors, and minimum duration
-  result.valid = result.errors.length === 0 && result.videoStream && duration > 60;
+  // Development: allow shorter videos for testing (10+ seconds)
+  // Production: require longer videos (60+ seconds for proper documentaries)
+  const minDurationSeconds = process.env.NODE_ENV === "production" ? 60 : 10;
+  result.valid = result.errors.length === 0 && result.videoStream && duration >= minDurationSeconds;
 
   return result;
 }

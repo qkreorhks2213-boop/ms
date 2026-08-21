@@ -30,6 +30,7 @@ const VISUAL_ORIGIN_LABELS: Record<VisualOrigin, string> = {
   AI_RECONSTRUCTION: "AI 재현",
   AI_RECONSTRUCTION_VIDEO: "AI 재현 영상",
   AI_ATMOSPHERE: "AI 분위기",
+  TEST_FALLBACK_GRAPHIC: "[DEV] 테스트 폴백",
   MIXED: "혼합",
 };
 
@@ -69,6 +70,7 @@ const VISUAL_ORIGIN_COLORS: Record<VisualOrigin, string> = {
   AI_RECONSTRUCTION: "bg-amber-100 text-amber-800",
   AI_RECONSTRUCTION_VIDEO: "bg-amber-100 text-amber-800",
   AI_ATMOSPHERE: "bg-amber-100 text-amber-800",
+  TEST_FALLBACK_GRAPHIC: "bg-gray-200 text-gray-700",
   MIXED: "bg-indigo-100 text-indigo-800",
 };
 

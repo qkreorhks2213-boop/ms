@@ -125,20 +125,27 @@ async function generateOneSceneVisual(
       sceneVisual = selectedVisual;
       sourceLabel = selectedVisual.sourceLabel;
     } else {
-      // 2단계: 자체 제작 그래픽 (timeline, diagram, map, 및 AI Reconstruction 비활성으로 처리)
-      // P0-9: AI Reconstruction은 실제 구현 없이 그래픽 생성으로 처리
+      // P0-4: No real visual assets found
+      // Production: must have real visual assets (fail)
+      // Development: allow fallback with TEST_FALLBACK_GRAPHIC marker
+      if (process.env.NODE_ENV === "production") {
+        throw new Error(
+          `[CRITICAL P0-4] No real visual assets found for scene ${scene.id} (${scene.visualType}). ` +
+          `Production requires real visual asset.`
+        );
+      }
+
+      // Development: create fallback graphics but mark as TEST_FALLBACK_GRAPHIC
       if (["timeline", "diagram", "map"].includes(scene.visualType)) {
-        // 데이터 타입별 그래픽 생성
         buffer = await generateGraphic(scene);
         sceneVisual = {
           id: `graphic_${scene.id}`,
           type: scene.visualType as any,
-          origin: "GENERATED_GRAPHIC",
+          origin: "TEST_FALLBACK_GRAPHIC",
           graphicType: scene.visualType,
         };
-        sourceLabel = `${scene.visualType}`;
+        sourceLabel = `[DEV FALLBACK] ${scene.visualType}`;
       } else if (["ai_reconstruction", "atmosphere", "location"].includes(scene.visualType)) {
-        // P0-9: AI Reconstruction 비활성 처리 - 그래픽으로 대체
         const textCard = await renderDataCardCompat({
           headline: scene.visualHeadline || scene.visualLabel || "시각 자료",
           label: scene.visualType || "카드",
@@ -149,12 +156,11 @@ async function generateOneSceneVisual(
         sceneVisual = {
           id: `card_${scene.id}`,
           type: "text_card",
-          origin: "GENERATED_GRAPHIC",
+          origin: "TEST_FALLBACK_GRAPHIC",
           graphicType: "text_card",
         };
-        sourceLabel = "생성 카드";
+        sourceLabel = "[DEV FALLBACK] 생성 카드";
       } else {
-        // 텍스트 카드 - 그 외 모든 경우
         const textCard = await renderDataCardCompat({
           headline: scene.visualQuery || "정보",
           label: scene.visualType || "카드",
@@ -165,10 +171,10 @@ async function generateOneSceneVisual(
         sceneVisual = {
           id: `text_${scene.id}`,
           type: "text_card",
-          origin: "GENERATED_GRAPHIC",
+          origin: "TEST_FALLBACK_GRAPHIC",
           graphicType: "text_card",
         };
-        sourceLabel = "텍스트 카드";
+        sourceLabel = "[DEV FALLBACK] 텍스트 카드";
       }
     }
 

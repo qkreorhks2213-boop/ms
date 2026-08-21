@@ -291,6 +291,7 @@ export type VisualOrigin =
   | "AI_RECONSTRUCTION"         // AI 재현 이미지
   | "AI_RECONSTRUCTION_VIDEO"   // AI 재현 영상
   | "AI_ATMOSPHERE"             // AI 분위기 이미지
+  | "TEST_FALLBACK_GRAPHIC"     // [DEV ONLY] Test fallback graphic
   | "MIXED";                    // 실제 + AI 혼합
 
 export const VISUAL_TYPE_LABEL: Record<SceneVisualType, string> = {
