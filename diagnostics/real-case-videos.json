@@ -1,0 +1,26 @@
+[
+  {
+    "caseName": "노래방 살인 사건",
+    "videoPath": "/home/user/-12/diagnostics/case-노래방-살인-사건.mp4",
+    "duration": 40,
+    "fileSize": 89028,
+    "quality": "PASS",
+    "timestamp": "2026-08-10T01:32:18.683Z"
+  },
+  {
+    "caseName": "실종 사건",
+    "videoPath": "/home/user/-12/diagnostics/case-실종-사건.mp4",
+    "duration": 30,
+    "fileSize": 67258,
+    "quality": "PASS",
+    "timestamp": "2026-08-10T01:32:25.700Z"
+  },
+  {
+    "caseName": "미제 사건",
+    "videoPath": "/home/user/-12/diagnostics/case-미제-사건.mp4",
+    "duration": 30,
+    "fileSize": 67261,
+    "quality": "PASS",
+    "timestamp": "2026-08-10T01:32:32.747Z"
+  }
+]

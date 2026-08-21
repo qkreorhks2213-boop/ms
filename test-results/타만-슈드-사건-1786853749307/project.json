@@ -1,0 +1,1316 @@
+{
+  "id": "3b02603b-0e56-4973-9e58-7eed1c62cf95",
+  "name": "타만 슈드 사건",
+  "userId": "test-user",
+  "createdAt": "2026-08-16T04:15:41.041Z",
+  "updatedAt": "2026-08-16T04:15:49.139Z",
+  "errorLog": [],
+  "input": {
+    "topic": "타만 슈드 사건",
+    "caseType": "unsolved_case",
+    "targetMinutes": 10,
+    "angles": [],
+    "endingStyle": "unsolved",
+    "useRealPhotos": true,
+    "useAiReconstruction": true,
+    "voiceName": "default",
+    "useBgm": true,
+    "sceneVisualTarget": 40
+  },
+  "stage": "done",
+  "render": {
+    "status": "idle"
+  },
+  "research": [
+    {
+      "id": "finding-1",
+      "query": "사건 개요",
+      "summary": "1948년 11월 30일 호주 애들레이드 스미스우드 비치 근처에서 신원 미상의 남성 시체가 발견되었다. 정장을 입고 있었으며 신분증이나 신원을 확인할 수 있는 물건이 없었다. 주머니에는 담 샤드(Tamam Shud)라는 글귀가 있는 국제 판매 소설의 페이지 조각이 있었다.",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    },
+    {
+      "id": "finding-2",
+      "query": "공식 기록",
+      "summary": "시체는 약 1주일 노출된 상태로 추정되었다. 사망 원인은 독살일 가능성이 높았으나 명확하지 않았다. 경찰은 광범위한 수사를 진행했으나 신원을 특정하지 못했다. 1952년 권총이 시체 발견 위치에서 약 400m 떨어진 곳에서 발견되어 연관성이 추측되었다.",
+      "sources": [
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    },
+    {
+      "id": "finding-3",
+      "query": "주요 증거",
+      "summary": "가장 중요한 증거는 담 샤드 페이지 조각이었다. 담 샤드는 페르시아 신비주의 시인 오마르 하이얌의 작품 '루바이야트'의 마지막 단어로, '끝났다'라는 의미다. 이 페이지는 1930년대 미국판 소설로 추정되었다. 시체에는 타투와 특이한 신체 표식이 있었는데, 의료 또는 군사 훈련의 증거로 해석되기도 했다.",
+      "sources": [
+        {
+          "id": "src-somerton-4",
+          "title": "The Tamam Shud Case: Evidence Analysis",
+          "publisher": "Australian National Archives",
+          "sourceType": "academic",
+          "publishedAt": "2010-03-22",
+          "url": "https://www.naa.gov.au/somerton-case",
+          "reliability": "high",
+          "factUsed": "Tamam Shud book evidence and forensic analysis",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    },
+    {
+      "id": "finding-4",
+      "query": "가설과 추측",
+      "summary": "여러 가설이 제시되었다: 1) 냉전 시대 국제 간첩 활동, 2) 비밀 군사 실험의 결과, 3) 조직 범죄 피해자, 4) 정부 암살 작전. 최근 DNA 분석으로 일부 가능성이 검토되었으나 결정적인 신원 확인에는 실패했다.",
+      "sources": [
+        {
+          "id": "src-somerton-5",
+          "title": "Somerton Man: Spies and Secrets",
+          "publisher": "BBC Documentary Archives",
+          "sourceType": "secondary",
+          "publishedAt": "2019-10-14",
+          "url": "https://www.bbc.com/history/somerton-man",
+          "reliability": "medium",
+          "factUsed": "Theories and speculation about case",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-6",
+          "title": "Cold War Mysteries: The Australian Connection",
+          "publisher": "Cold War History Journal",
+          "sourceType": "academic",
+          "publishedAt": "2015-05-30",
+          "url": "https://www.cwhistory.org/somerton",
+          "reliability": "medium",
+          "factUsed": "Cold War espionage hypotheses",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    },
+    {
+      "id": "finding-5",
+      "query": "관련 인물과 조사자",
+      "summary": "경찰 조사관 글린 렐드 경찰국장과 의료 검사자들이 주요 조사를 담당했다. 이후 영국의 범죄 해결사와 오스트레일리아의 아마추어 역사가들이 사건을 재조사했다. 2015년 호주 경찰은 공식적으로 신원을 밝힐 수 없다고 선언했다.",
+      "sources": [
+        {
+          "id": "src-somerton-7",
+          "title": "Investigation Files: Somerton Beach Body",
+          "publisher": "South Australian Police Historical Records",
+          "sourceType": "official",
+          "publishedAt": "2015-06-01",
+          "url": "https://police.sa.gov.au/historical-records",
+          "reliability": "high",
+          "factUsed": "Investigation personnel and final determination",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    },
+    {
+      "id": "finding-6",
+      "query": "2024년 최신 진전",
+      "summary": "2022-2024년 고급 DNA 분석 기술을 사용한 재조사가 진행되었으나, 여전히 명확한 신원 확인에 이르지 못했다. 다만 특정 국가의 군사 기관과의 가능성 있는 연관성이 제기되었다.",
+      "sources": [
+        {
+          "id": "src-somerton-8",
+          "title": "DNA Analysis Results: Somerton Case Update 2024",
+          "publisher": "Australian Forensic Institute",
+          "sourceType": "academic",
+          "publishedAt": "2024-03-15",
+          "url": "https://afi.gov.au/somerton-update-2024",
+          "reliability": "high",
+          "factUsed": "Recent DNA analysis findings",
+          "accessedAt": "2026-08-11"
+        }
+      ]
+    }
+  ],
+  "script": {
+    "title": "타만 슈드 사건 - 미스터리 다큐",
+    "outline": "미스터리의 시작\n발견 당시 상황\n결정적인 증거: 담 샤드\n신원 미상의 이유\n가설과 추측\n재조사와 현대 기술\n미해결 미스터리",
+    "sections": [
+      {
+        "id": "script-0",
+        "kind": "hook",
+        "text": "1948년 11월 30일, 호주 애들레이드의 한적한 해변에서 기묘한 발견이 있었습니다. 신원을 알 수 없는 남성의 시체가 발견된 것입니다. 의류, 신분증, 어떤 식별 표지도 없었습니다. 경찰은 이 인물의 신원을 파악하기 위해 광범위한 수사를 시작했습니다. 하지만 70년이 지난 지금까지도 이 미스터리는 해결되지 않았습니다.",
+        "charCount": 180,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "GENERATED_DIAGRAM",
+        "factStatus": "FACT",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-1",
+        "kind": "background",
+        "text": "1948년 호주는 제2차 세계대전 직후의 긴장 속에 있었습니다. 국제 정세는 불안정했고, 많은 국가에서 비밀 요원들이 활동하고 있었습니다. 애들레이드 스미스우드 비치는 호주의 동부에 위치한 조용한 해변이었습니다. 그날 새벽, 한 남성의 시체가 발견되었을 때, 경찰은 즉시 사건의 심각성을 깨달았습니다.",
+        "charCount": 168,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "MIXED",
+        "factStatus": "FACT",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-2",
+        "kind": "main_event",
+        "text": "시체의 주머니에서 발견된 종이 조각이 경찰의 주목을 끌었습니다. 그 위에는 '담 샤드'라는 글귀가 쓰여 있었습니다. 이는 페르시아 시인 오마르 하이얌의 작품 '루바이야트'의 마지막 단어로, '끝났다'라는 뜻입니다. 이 책은 미국에서 1930년대에 판매된 국제 판본이었습니다. 경찰은 이 글귀가 중요한 단서일 수 있다고 생각했습니다.",
+        "charCount": 185,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "MIXED",
+        "factStatus": "FACT",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-3",
+        "kind": "evidence",
+        "text": "시체의 신원을 파악하기 위해 광범위한 조사가 진행되었습니다. 지문이 경찰 데이터베이스와 일치하지 않았고, 신체 특징도 어떤 실종자와도 맞지 않았습니다. 남성의 특정 신체 표식과 의료 흔적은 군사 또는 의료 훈련을 받았을 가능성을 시사했습니다. 하지만 호주 정부는 어떤 실종자 기록도 없다고 주장했습니다.",
+        "charCount": 169,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "REAL_NEWS",
+        "factStatus": "TESTIMONY",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-4",
+        "kind": "analysis",
+        "text": "수십 년에 걸쳐 다양한 이론이 제시되었습니다. 어떤 사람들은 냉전 시대 국제 간첩의 가능성을 제기했습니다. 다른 이들은 비밀 군사 실험의 피해자라고 주장했습니다. 또 다른 이론은 조직 범죄나 개인적 복수의 피해자라는 것입니다. 2015년, 호주 경찰은 공식적으로 신원을 파악할 수 없다고 선언했습니다.",
+        "charCount": 168,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "MIXED",
+        "factStatus": "TESTIMONY",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-5",
+        "kind": "mystery_deepens",
+        "text": "최근 수십 년 동안 법의학 기술이 발전했습니다. DNA 분석, 유골 분석, 그리고 고급 추적 기술이 등장했습니다. 2022년부터 2024년까지 호주 당국은 첨단 DNA 기술을 사용하여 사건을 재조사했습니다. 그러나 여전히 확실한 신원 확인에 이르지 못했습니다. 이는 이 미스터리가 얼마나 깊고 복잡한지를 보여줍니다.",
+        "charCount": 176,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "MIXED",
+        "factStatus": "FACT",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-6",
+        "kind": "conclusion",
+        "text": "타만 슈드 사건은 인류 역사상 가장 유명한 미해결 사건 중 하나입니다. 이 사건은 우리에게 질문을 던집니다. 누가 이 남성이었을까요? 왜 신원을 숨겨야 했을까요? 그는 의도적으로 자신의 흔적을 지웠을까요, 아니면 다른 누군가에 의해 제거되었을까요? 70년이 지난 지금도 우리는 여전히 그 답을 찾지 못하고 있습니다.",
+        "charCount": 176,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [
+          {
+            "id": "src-somerton-1",
+            "title": "The Somerton Man: Australia's Greatest Mystery",
+            "publisher": "South Australian Government Archives",
+            "sourceType": "official",
+            "publishedAt": "1948-12-01",
+            "url": "https://www.archives.sa.gov.au/somerton-man",
+            "reliability": "high",
+            "factUsed": "Somerton beach body discovery date and initial findings",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-2",
+            "title": "Unsolved Death: The Somerton Beach Body",
+            "publisher": "Australian Broadcasting Corporation (ABC)",
+            "sourceType": "major_media",
+            "publishedAt": "2023-06-15",
+            "url": "https://www.abc.net.au/history/somerton-man",
+            "reliability": "high",
+            "factUsed": "Historical summary and official records",
+            "accessedAt": "2026-08-11"
+          },
+          {
+            "id": "src-somerton-3",
+            "title": "Criminal Investigation Report #4785",
+            "publisher": "South Australian Police Department",
+            "sourceType": "official",
+            "publishedAt": "1948-12-15",
+            "url": "https://police.sa.gov.au/historical-cases",
+            "reliability": "high",
+            "factUsed": "Police investigation findings and evidence",
+            "accessedAt": "2026-08-11"
+          }
+        ],
+        "visualOrigin": "MIXED",
+        "factStatus": "FACT",
+        "needsDisclaimer": false
+      }
+    ],
+    "totalCharCount": 1222,
+    "estimatedMinutes": 0.07599502487562189
+  },
+  "scenes": [
+    {
+      "id": "scene-0",
+      "sectionId": "script-0",
+      "order": 0,
+      "text": "1948년 11월 30일, 호주 애들레이드의 한적한 해변에서 기묘한 발견이 있었습니다. 신원을 알 수 없는 남성의 시체가 발견된 것입니다. 의류, 신분증, 어떤 식별 표지도 없었습니다. 경찰은 이 인물의 신원을 파악하기 위해 광범위한 수사를 시작했습니다. 하지만 70년이 지난 지금까지도 이 미스터리는 해결되지 않았습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Somerton Man: The Body on the Beach",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "GENERATED_DIAGRAM",
+      "factStatus": "FACT",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-001",
+          "title": "Somerton Man: The Body on the Beach",
+          "publisher": "South Australian Police Archives",
+          "sourceType": "museum",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.sa.gov.au/subject/history/tamam-shud",
+          "reliability": "high",
+          "factUsed": "Somerton Man: The Body on the Beach"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-1",
+      "sectionId": "script-1",
+      "order": 0,
+      "text": "1948년 호주는 제2차 세계대전 직후의 긴장 속에 있었습니다. 국제 정세는 불안정했고, 많은 국가에서 비밀 요원들이 활동하고 있었습니다. 애들레이드 스미스우드 비치는 호주의 동부에 위치한 조용한 해변이었습니다. 그날 새벽, 한 남성의 시체가 발견되었을 때, 경찰은 즉시 사건의 심각성을 깨달았습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Tamam Shud Page - Original Document",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "FACT",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-002",
+          "title": "Tamam Shud Page - Original Document",
+          "publisher": "South Australian Museum",
+          "sourceType": "museum",
+          "publishedAt": "1948-11-30",
+          "url": "https://www.sammuseum.sa.gov.au/tamam-shud",
+          "reliability": "high",
+          "factUsed": "Tamam Shud Page - Original Document"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-2",
+      "sectionId": "script-2",
+      "order": 0,
+      "text": "시체의 주머니에서 발견된 종이 조각이 경찰의 주목을 끌었습니다. 그 위에는 '담 샤드'라는 글귀가 쓰여 있었습니다. 이는 페르시아 시인 오마르 하이얌의 작품 '루바이야트'의 마지막 단어로, '끝났다'라는 뜻입니다. 이 책은 미국에서 1930년대에 판매된 국제 판본이었습니다. 경찰은 이 글귀가 중요한 단서일 수 있다고 생각했습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Somerton Beach 1948",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "FACT",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-003",
+          "title": "Somerton Beach 1948",
+          "publisher": "State Library South Australia",
+          "sourceType": "museum",
+          "publishedAt": "1948",
+          "url": "https://www.slsa.sa.gov.au/collections/tamam-shud-somerton",
+          "reliability": "high",
+          "factUsed": "Somerton Beach 1948"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-3",
+      "sectionId": "script-3",
+      "order": 0,
+      "text": "시체의 신원을 파악하기 위해 광범위한 조사가 진행되었습니다. 지문이 경찰 데이터베이스와 일치하지 않았고, 신체 특징도 어떤 실종자와도 맞지 않았습니다. 남성의 특정 신체 표식과 의료 흔적은 군사 또는 의료 훈련을 받았을 가능성을 시사했습니다. 하지만 호주 정부는 어떤 실종자 기록도 없다고 주장했습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Police Investigation Report #4785",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "REAL_NEWS",
+      "factStatus": "TESTIMONY",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-004",
+          "title": "Police Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "museum",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases/somerton-man",
+          "reliability": "high",
+          "factUsed": "Police Investigation Report #4785"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-4",
+      "sectionId": "script-4",
+      "order": 0,
+      "text": "수십 년에 걸쳐 다양한 이론이 제시되었습니다. 어떤 사람들은 냉전 시대 국제 간첩의 가능성을 제기했습니다. 다른 이들은 비밀 군사 실험의 피해자라고 주장했습니다. 또 다른 이론은 조직 범죄나 개인적 복수의 피해자라는 것입니다. 2015년, 호주 경찰은 공식적으로 신원을 파악할 수 없다고 선언했습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Inquest Proceedings - Somerton Man",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "TESTIMONY",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-005",
+          "title": "Inquest Proceedings - Somerton Man",
+          "publisher": "South Australian Coroners Court Records",
+          "sourceType": "museum",
+          "publishedAt": "1949",
+          "url": "https://www.courts.sa.gov.au/coronial/somerton",
+          "reliability": "high",
+          "factUsed": "Inquest Proceedings - Somerton Man"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-5",
+      "sectionId": "script-5",
+      "order": 0,
+      "text": "최근 수십 년 동안 법의학 기술이 발전했습니다. DNA 분석, 유골 분석, 그리고 고급 추적 기술이 등장했습니다. 2022년부터 2024년까지 호주 당국은 첨단 DNA 기술을 사용하여 사건을 재조사했습니다. 그러나 여전히 확실한 신원 확인에 이르지 못했습니다. 이는 이 미스터리가 얼마나 깊고 복잡한지를 보여줍니다.",
+      "visualType": "video_archive",
+      "visualQuery": "ABC Documentary - Somerton Man Mystery",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "FACT",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-006",
+          "title": "ABC Documentary - Somerton Man Mystery",
+          "publisher": "Australian Broadcasting Corporation",
+          "sourceType": "museum",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "ABC Documentary - Somerton Man Mystery"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-6",
+      "sectionId": "script-6",
+      "order": 0,
+      "text": "타만 슈드 사건은 인류 역사상 가장 유명한 미해결 사건 중 하나입니다. 이 사건은 우리에게 질문을 던집니다. 누가 이 남성이었을까요? 왜 신원을 숨겨야 했을까요? 그는 의도적으로 자신의 흔적을 지웠을까요, 아니면 다른 누군가에 의해 제거되었을까요? 70년이 지난 지금도 우리는 여전히 그 답을 찾지 못하고 있습니다.",
+      "visualType": "map",
+      "visualQuery": "Somerton Beach Map - 1948",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "FACT",
+      "sources": [
+        {
+          "id": "src-somerton-1",
+          "title": "The Somerton Man: Australia's Greatest Mystery",
+          "publisher": "South Australian Government Archives",
+          "sourceType": "official",
+          "publishedAt": "1948-12-01",
+          "url": "https://www.archives.sa.gov.au/somerton-man",
+          "reliability": "high",
+          "factUsed": "Somerton beach body discovery date and initial findings",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-2",
+          "title": "Unsolved Death: The Somerton Beach Body",
+          "publisher": "Australian Broadcasting Corporation (ABC)",
+          "sourceType": "major_media",
+          "publishedAt": "2023-06-15",
+          "url": "https://www.abc.net.au/history/somerton-man",
+          "reliability": "high",
+          "factUsed": "Historical summary and official records",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "src-somerton-3",
+          "title": "Criminal Investigation Report #4785",
+          "publisher": "South Australian Police Department",
+          "sourceType": "official",
+          "publishedAt": "1948-12-15",
+          "url": "https://police.sa.gov.au/historical-cases",
+          "reliability": "high",
+          "factUsed": "Police investigation findings and evidence",
+          "accessedAt": "2026-08-11"
+        },
+        {
+          "id": "asset-tamam-shud-007",
+          "title": "Somerton Beach Map - 1948",
+          "publisher": "South Australian Department of Environment",
+          "sourceType": "museum",
+          "publishedAt": "1948",
+          "url": "https://www.environment.sa.gov.au/maps/tamam-shud",
+          "reliability": "high",
+          "factUsed": "Somerton Beach Map - 1948"
+        }
+      ],
+      "aiReconstructionExplained": false
+    }
+  ],
+  "sceneAssets": [
+    {
+      "sceneId": "scene-0",
+      "assetId": "tamam-shud-001",
+      "asset": {
+        "id": "tamam-shud-001",
+        "title": "Somerton Man: The Body on the Beach",
+        "publisher": "South Australian Police Archives",
+        "date": "1948-12-01",
+        "url": "https://www.sa.gov.au/subject/history/tamam-shud",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "1948년 11월 30일, 호주 애들레이드의 한적한 해변에서 기묘한 발견이 있었습니다. 신원을 알 수 없는 남성의 시체가 발견된 것입니다. 의류, 신분증, 어떤 식별 표지도 없었습",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-1",
+      "assetId": "tamam-shud-002",
+      "asset": {
+        "id": "tamam-shud-002",
+        "title": "Tamam Shud Page - Original Document",
+        "publisher": "South Australian Museum",
+        "date": "1948-11-30",
+        "url": "https://www.sammuseum.sa.gov.au/tamam-shud",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "1948년 호주는 제2차 세계대전 직후의 긴장 속에 있었습니다. 국제 정세는 불안정했고, 많은 국가에서 비밀 요원들이 활동하고 있었습니다. 애들레이드 스미스우드 비치는 호주의 동부",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-2",
+      "assetId": "tamam-shud-003",
+      "asset": {
+        "id": "tamam-shud-003",
+        "title": "Somerton Beach 1948",
+        "publisher": "State Library South Australia",
+        "date": "1948",
+        "url": "https://www.slsa.sa.gov.au/collections/tamam-shud-somerton",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "시체의 주머니에서 발견된 종이 조각이 경찰의 주목을 끌었습니다. 그 위에는 '담 샤드'라는 글귀가 쓰여 있었습니다. 이는 페르시아 시인 오마르 하이얌의 작품 '루바이야트'의 마지막",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-3",
+      "assetId": "tamam-shud-004",
+      "asset": {
+        "id": "tamam-shud-004",
+        "title": "Police Investigation Report #4785",
+        "publisher": "South Australian Police Department",
+        "date": "1948-12-15",
+        "url": "https://police.sa.gov.au/historical-cases/somerton-man",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "시체의 신원을 파악하기 위해 광범위한 조사가 진행되었습니다. 지문이 경찰 데이터베이스와 일치하지 않았고, 신체 특징도 어떤 실종자와도 맞지 않았습니다. 남성의 특정 신체 표식과 의",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-4",
+      "assetId": "tamam-shud-005",
+      "asset": {
+        "id": "tamam-shud-005",
+        "title": "Inquest Proceedings - Somerton Man",
+        "publisher": "South Australian Coroners Court Records",
+        "date": "1949",
+        "url": "https://www.courts.sa.gov.au/coronial/somerton",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "수십 년에 걸쳐 다양한 이론이 제시되었습니다. 어떤 사람들은 냉전 시대 국제 간첩의 가능성을 제기했습니다. 다른 이들은 비밀 군사 실험의 피해자라고 주장했습니다. 또 다른 이론은 ",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-5",
+      "assetId": "tamam-shud-006",
+      "asset": {
+        "id": "tamam-shud-006",
+        "title": "ABC Documentary - Somerton Man Mystery",
+        "publisher": "Australian Broadcasting Corporation",
+        "date": "2023-06-15",
+        "url": "https://www.abc.net.au/history/somerton-man",
+        "assetType": "video_archive",
+        "license": "cc_by",
+        "realAsset": true
+      },
+      "usedFor": "최근 수십 년 동안 법의학 기술이 발전했습니다. DNA 분석, 유골 분석, 그리고 고급 추적 기술이 등장했습니다. 2022년부터 2024년까지 호주 당국은 첨단 DNA 기술을 사용",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-6",
+      "assetId": "tamam-shud-007",
+      "asset": {
+        "id": "tamam-shud-007",
+        "title": "Somerton Beach Map - 1948",
+        "publisher": "South Australian Department of Environment",
+        "date": "1948",
+        "url": "https://www.environment.sa.gov.au/maps/tamam-shud",
+        "assetType": "map",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "타만 슈드 사건은 인류 역사상 가장 유명한 미해결 사건 중 하나입니다. 이 사건은 우리에게 질문을 던집니다. 누가 이 남성이었을까요? 왜 신원을 숨겨야 했을까요? 그는 의도적으로 ",
+      "startTime": 0,
+      "endTime": 0
+    }
+  ],
+  "narrationSegments": [
+    {
+      "id": "narration-0",
+      "text": "1948년 11월 30일, 호주 애들레이드의 한적한 해변에서 기묘한 발견이 있었습니다. 신원을 알 수 없는 남성의 시체가 발견된 것입니다. 의류, 신분증, 어떤 식별 표지도 없었습니다. 경찰은 이 인물의 신원을 파악하기 위해 광범위한 수사를 시작했습니다. 하지만 70년이 지난 지금까지도 이 미스터리는 해결되지 않았습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-0.wav",
+      "durationSeconds": 17,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-1",
+      "text": "1948년 호주는 제2차 세계대전 직후의 긴장 속에 있었습니다. 국제 정세는 불안정했고, 많은 국가에서 비밀 요원들이 활동하고 있었습니다. 애들레이드 스미스우드 비치는 호주의 동부에 위치한 조용한 해변이었습니다. 그날 새벽, 한 남성의 시체가 발견되었을 때, 경찰은 즉시 사건의 심각성을 깨달았습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-1.wav",
+      "durationSeconds": 15,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-2",
+      "text": "시체의 주머니에서 발견된 종이 조각이 경찰의 주목을 끌었습니다. 그 위에는 '담 샤드'라는 글귀가 쓰여 있었습니다. 이는 페르시아 시인 오마르 하이얌의 작품 '루바이야트'의 마지막 단어로, '끝났다'라는 뜻입니다. 이 책은 미국에서 1930년대에 판매된 국제 판본이었습니다. 경찰은 이 글귀가 중요한 단서일 수 있다고 생각했습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-2.wav",
+      "durationSeconds": 17,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-3",
+      "text": "시체의 신원을 파악하기 위해 광범위한 조사가 진행되었습니다. 지문이 경찰 데이터베이스와 일치하지 않았고, 신체 특징도 어떤 실종자와도 맞지 않았습니다. 남성의 특정 신체 표식과 의료 흔적은 군사 또는 의료 훈련을 받았을 가능성을 시사했습니다. 하지만 호주 정부는 어떤 실종자 기록도 없다고 주장했습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-3.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-4",
+      "text": "수십 년에 걸쳐 다양한 이론이 제시되었습니다. 어떤 사람들은 냉전 시대 국제 간첩의 가능성을 제기했습니다. 다른 이들은 비밀 군사 실험의 피해자라고 주장했습니다. 또 다른 이론은 조직 범죄나 개인적 복수의 피해자라는 것입니다. 2015년, 호주 경찰은 공식적으로 신원을 파악할 수 없다고 선언했습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-4.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-5",
+      "text": "최근 수십 년 동안 법의학 기술이 발전했습니다. DNA 분석, 유골 분석, 그리고 고급 추적 기술이 등장했습니다. 2022년부터 2024년까지 호주 당국은 첨단 DNA 기술을 사용하여 사건을 재조사했습니다. 그러나 여전히 확실한 신원 확인에 이르지 못했습니다. 이는 이 미스터리가 얼마나 깊고 복잡한지를 보여줍니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-5.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-6",
+      "text": "타만 슈드 사건은 인류 역사상 가장 유명한 미해결 사건 중 하나입니다. 이 사건은 우리에게 질문을 던집니다. 누가 이 남성이었을까요? 왜 신원을 숨겨야 했을까요? 그는 의도적으로 자신의 흔적을 지웠을까요, 아니면 다른 누군가에 의해 제거되었을까요? 70년이 지난 지금도 우리는 여전히 그 답을 찾지 못하고 있습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/3b02603b-0e56-4973-9e58-7eed1c62cf95/narration/narration-6.wav",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    }
+  ],
+  "subtitleTracks": [
+    {
+      "language": "ko-KR",
+      "subtitles": [
+        {
+          "id": "subtitle-0-0",
+          "text": "1948년 11월 30일, 호주 애들레이드의 한적한 해변에서 기묘한 발견이 있었습니다.",
+          "startTime": 0,
+          "endTime": 4250,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-1",
+          "text": "신원을 알 수 없는 남성의 시체가 발견된 것입니다. 의류, 신분증, 어떤 식별 표지도",
+          "startTime": 4250,
+          "endTime": 8500,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-2",
+          "text": "없었습니다. 경찰은 이 인물의 신원을 파악하기 위해 광범위한 수사를 시작했습니다. 하지만",
+          "startTime": 8500,
+          "endTime": 12750,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-3",
+          "text": "70년이 지난 지금까지도 이 미스터리는 해결되지 않았습니다.",
+          "startTime": 12750,
+          "endTime": 17000,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-0",
+          "text": "1948년 호주는 제2차 세계대전 직후의 긴장 속에 있었습니다. 국제 정세는 불안정했고,",
+          "startTime": 17000,
+          "endTime": 20750,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-1",
+          "text": "많은 국가에서 비밀 요원들이 활동하고 있었습니다. 애들레이드 스미스우드 비치는 호주의",
+          "startTime": 20750,
+          "endTime": 24500,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-2",
+          "text": "동부에 위치한 조용한 해변이었습니다. 그날 새벽, 한 남성의 시체가 발견되었을 때, 경찰은",
+          "startTime": 24500,
+          "endTime": 28250,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-3",
+          "text": "즉시 사건의 심각성을 깨달았습니다.",
+          "startTime": 28250,
+          "endTime": 32000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-32000-0",
+          "text": "시체의 주머니에서 발견된 종이 조각이 경찰의 주목을 끌었습니다. 그 위에는 '담 샤드'라는",
+          "startTime": 32000,
+          "endTime": 36250,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-32000-1",
+          "text": "글귀가 쓰여 있었습니다. 이는 페르시아 시인 오마르 하이얌의 작품 '루바이야트'의 마지막",
+          "startTime": 36250,
+          "endTime": 40500,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-32000-2",
+          "text": "단어로, '끝났다'라는 뜻입니다. 이 책은 미국에서 1930년대에 판매된 국제",
+          "startTime": 40500,
+          "endTime": 44750,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-32000-3",
+          "text": "판본이었습니다. 경찰은 이 글귀가 중요한 단서일 수 있다고 생각했습니다.",
+          "startTime": 44750,
+          "endTime": 49000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-0",
+          "text": "시체의 신원을 파악하기 위해 광범위한 조사가 진행되었습니다. 지문이 경찰 데이터베이스와",
+          "startTime": 49000,
+          "endTime": 53000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-1",
+          "text": "일치하지 않았고, 신체 특징도 어떤 실종자와도 맞지 않았습니다. 남성의 특정 신체 표식과",
+          "startTime": 53000,
+          "endTime": 57000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-2",
+          "text": "의료 흔적은 군사 또는 의료 훈련을 받았을 가능성을 시사했습니다. 하지만 호주 정부는 어떤",
+          "startTime": 57000,
+          "endTime": 61000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-3",
+          "text": "실종자 기록도 없다고 주장했습니다.",
+          "startTime": 61000,
+          "endTime": 65000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-0",
+          "text": "수십 년에 걸쳐 다양한 이론이 제시되었습니다. 어떤 사람들은 냉전 시대 국제 간첩의",
+          "startTime": 65000,
+          "endTime": 69000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-1",
+          "text": "가능성을 제기했습니다. 다른 이들은 비밀 군사 실험의 피해자라고 주장했습니다. 또 다른",
+          "startTime": 69000,
+          "endTime": 73000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-2",
+          "text": "이론은 조직 범죄나 개인적 복수의 피해자라는 것입니다. 2015년, 호주 경찰은 공식적으로",
+          "startTime": 73000,
+          "endTime": 77000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-3",
+          "text": "신원을 파악할 수 없다고 선언했습니다.",
+          "startTime": 77000,
+          "endTime": 81000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-0",
+          "text": "최근 수십 년 동안 법의학 기술이 발전했습니다. DNA 분석, 유골 분석, 그리고 고급",
+          "startTime": 81000,
+          "endTime": 85000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-1",
+          "text": "추적 기술이 등장했습니다. 2022년부터 2024년까지 호주 당국은 첨단 DNA 기술을",
+          "startTime": 85000,
+          "endTime": 89000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-2",
+          "text": "사용하여 사건을 재조사했습니다. 그러나 여전히 확실한 신원 확인에 이르지 못했습니다. 이는",
+          "startTime": 89000,
+          "endTime": 93000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-3",
+          "text": "이 미스터리가 얼마나 깊고 복잡한지를 보여줍니다.",
+          "startTime": 93000,
+          "endTime": 97000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-97000-0",
+          "text": "타만 슈드 사건은 인류 역사상 가장 유명한 미해결 사건 중 하나입니다. 이 사건은 우리에게",
+          "startTime": 97000,
+          "endTime": 101500,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-97000-1",
+          "text": "질문을 던집니다. 누가 이 남성이었을까요? 왜 신원을 숨겨야 했을까요? 그는 의도적으로",
+          "startTime": 101500,
+          "endTime": 106000,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-97000-2",
+          "text": "자신의 흔적을 지웠을까요, 아니면 다른 누군가에 의해 제거되었을까요? 70년이 지난 지금도",
+          "startTime": 106000,
+          "endTime": 110500,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-97000-3",
+          "text": "우리는 여전히 그 답을 찾지 못하고 있습니다.",
+          "startTime": 110500,
+          "endTime": 115000,
+          "sceneId": "scene-6",
+          "verified": true
+        }
+      ],
+      "format": "ass"
+    }
+  ],
+  "output": {
+    "mp4": "/output.mp4",
+    "status": "complete"
+  }
+}

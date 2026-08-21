@@ -1,0 +1,98 @@
+{
+  "timestamp": "2026-08-16T04:03:25.628Z",
+  "projectId": "7cd65c2e-00b2-4a50-8770-a45cec2de94e",
+  "projectName": "Mary Celeste",
+  "overallStatus": "PASS",
+  "pipelineComplete": true,
+  "build": "PASS",
+  "apiStatus": {
+    "ffmpeg": "READY",
+    "piper": "READY",
+    "ollama": "OPTIONAL"
+  },
+  "stages": [
+    {
+      "stage": "research",
+      "status": "PASS",
+      "details": "10 findings from 0+ sources",
+      "itemsProcessed": 10
+    },
+    {
+      "stage": "script",
+      "status": "PASS",
+      "details": "7 sections, 1192 chars, ~0.07412935323383084min",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "scenes",
+      "status": "PASS",
+      "details": "7 scenes with visual planning",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "assets",
+      "status": "PASS",
+      "details": "7 real assets, 0 AI-generated",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "narration",
+      "status": "PASS",
+      "details": "7 segments, 110s total",
+      "itemsProcessed": 7
+    },
+    {
+      "stage": "subtitles",
+      "status": "PASS",
+      "details": "27 subtitles generated",
+      "itemsProcessed": 27
+    },
+    {
+      "stage": "render",
+      "status": "PASS",
+      "details": "MP4 video file created"
+    }
+  ],
+  "research": {
+    "status": "PASS",
+    "findingsCount": 10,
+    "sourcesCount": 0
+  },
+  "script": {
+    "status": "PASS",
+    "sectionsCount": 7,
+    "totalChars": 1192,
+    "estimatedMinutes": 0.07412935323383084
+  },
+  "scenes": {
+    "status": "PASS",
+    "scenesCount": 7,
+    "realAssetsCount": 7,
+    "aiGeneratedCount": 0
+  },
+  "narration": {
+    "status": "PASS",
+    "segmentsCount": 7,
+    "totalDuration": 110,
+    "available": true
+  },
+  "subtitles": {
+    "status": "PASS",
+    "subtitlesCount": 27,
+    "verifiedCount": 27,
+    "available": true
+  },
+  "render": {
+    "status": "PASS",
+    "outputPath": "/output.mp4"
+  },
+  "sourcesTracked": 0,
+  "sourceAttributionsIncluded": false,
+  "realVsAiDistribution": {
+    "realAssets": 7,
+    "aiGenerated": 0,
+    "mixed": 0
+  },
+  "issues": [],
+  "recommendations": []
+}

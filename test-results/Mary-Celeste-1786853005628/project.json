@@ -1,0 +1,769 @@
+{
+  "id": "7cd65c2e-00b2-4a50-8770-a45cec2de94e",
+  "name": "Mary Celeste",
+  "userId": "test-user",
+  "createdAt": "2026-08-16T04:03:17.887Z",
+  "updatedAt": "2026-08-16T04:03:25.483Z",
+  "errorLog": [],
+  "input": {
+    "topic": "Mary Celeste",
+    "caseType": "unsolved_case",
+    "targetMinutes": 10,
+    "angles": [],
+    "endingStyle": "unsolved",
+    "useRealPhotos": true,
+    "useAiReconstruction": true,
+    "voiceName": "default",
+    "useBgm": true,
+    "sceneVisualTarget": 40
+  },
+  "stage": "done",
+  "render": {
+    "status": "idle"
+  },
+  "research": [
+    {
+      "id": "research-overview",
+      "query": "사건 개요",
+      "sources": [],
+      "summary": "이 관점(\"사건 개요 배경\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-official",
+      "query": "공식 기록",
+      "sources": [],
+      "summary": "이 관점(\"공식 기록 정부 군\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-persons",
+      "query": "관련 인물",
+      "sources": [],
+      "summary": "이 관점(\"주요 인물 등장인물\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-timeline",
+      "query": "사건 기록",
+      "sources": [],
+      "summary": "이 관점(\"사건 시간순서 연대기\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-testimony",
+      "query": "증언",
+      "sources": [],
+      "summary": "이 관점(\"증언 목격자 진술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-evidence",
+      "query": "증거 자료",
+      "sources": [],
+      "summary": "이 관점(\"증거 사진 영상 기록\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-investigation",
+      "query": "조사 결과",
+      "sources": [],
+      "summary": "이 관점(\"조사 결과 보고서\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-controversy",
+      "query": "논쟁",
+      "sources": [],
+      "summary": "이 관점(\"논쟁 의문 반박\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-research",
+      "query": "연구",
+      "sources": [],
+      "summary": "이 관점(\"연구 분석 학술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-theories",
+      "query": "미스터리 주장",
+      "sources": [],
+      "summary": "이 관점(\"미스터리 설명 가설\")으로는 관련 자료를 찾지 못했습니다."
+    }
+  ],
+  "script": {
+    "title": "Mary Celeste - 미스터리 다큐",
+    "outline": "바다의 유령 선박\n배의 배경과 항해\n발견과 수수께끼\n조사와 발견된 증거\n제시된 이론들\n현대의 재검토\n바다의 미스터리",
+    "sections": [
+      {
+        "id": "script-0",
+        "kind": "hook",
+        "text": "1872년 12월 4일, 대서양 상에서 기이한 발견이 있었습니다. 완벽하게 항해 가능한 상태의 배 메리셀레스트호가 표류하고 있었던 것입니다. 하지만 배에는 아무도 없었습니다. 13명의 승무원과 선장의 가족 모두가 사라져 있었습니다. 이것은 해양 역사에서 가장 미스터리한 실종 사건이 되었습니다.",
+        "charCount": 164,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-1",
+        "kind": "background",
+        "text": "메리셀레스트호는 미국 뉴욕에서 이탈리아 제노바로 향하는 알코올을 실은 상선이었습니다. 선장 벤자민 브릭은 경험 많은 선원이었고, 그의 아내와 2살 딸도 함께 탔습니다. 배는 11월 7일에 출발했으며, 모두 정상적인 항해를 예상했습니다. 하지만 약 3주 후, 배는 완전히 인적이 없는 상태로 발견되었습니다.",
+        "charCount": 170,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-2",
+        "kind": "main_event",
+        "text": "포르투갈의 포 타오 노바 일호에서 배를 발견했을 때, 모든 것이 정상인 것처럼 보였습니다. 돛은 펼쳐져 있었고, 항해 도구들도 제자리에 있었습니다. 배의 식량도 충분했고, 물도 있었습니다. 하지만 선원들은 없었습니다. 보트도 하나 사라져 있었습니다. 이것은 누군가 배에서 떠나갔다는 것을 의미했지만, 왜 그래야 했는지는 아무도 알 수 없었습니다.",
+        "charCount": 193,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-3",
+        "kind": "evidence",
+        "text": "당국의 조사는 많은 의문점을 남겼습니다. 선박의 저장소에는 물이 고여 있었고, 많은 물건들이 흩어져 있었습니다. 이것은 폭풍우가 있었을 가능성을 시사했습니다. 하지만 선원들이 왜 배를 포기했는지는 설명할 수 없었습니다. 화재의 흔적도 없었고, 공격의 징후도 없었습니다. 배는 침몰 위기에 처해 있지도 않았습니다.",
+        "charCount": 174,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "GENERATED_DIAGRAM",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-4",
+        "kind": "analysis",
+        "text": "150년이 지난 지금도 여러 이론이 존재합니다. 폭풍우로 인한 공포, 음독에 의한 선원 반란, 해적의 공격, 심지어 초자연적 현상까지 제시되었습니다. 일부는 선원들이 구명보트로 떠났지만 구조되지 않았을 것이라 주장합니다. 다른 이들은 배의 이상한 구조 때문에 선원들이 배가 침몰하고 있다고 생각했을 것이라 설명합니다.",
+        "charCount": 177,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "TESTIMONY",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-5",
+        "kind": "mystery_deepens",
+        "text": "최근의 해양 전문가들은 메리셀레스트호의 사건을 재검토했습니다. 어떤 전문가는 배의 선체가 손상되어 선원들이 침몰할 위험이 있다고 잘못 생각했을 수 있다고 제안했습니다. 다른 이들은 배에서의 폭발이나 화학 반응을 제안합니다. 그러나 확실한 답은 여전히 없습니다.",
+        "charCount": 145,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-6",
+        "kind": "conclusion",
+        "text": "메리셀레스트호 사건은 대양의 신비로움을 상징합니다. 배와 선원들이 어디로 갔는지, 무슨 일이 일어났는지는 영원히 미스터리로 남을 수도 있습니다. 이 사건은 우리에게 바다의 위력과 인간이 직면할 수 있는 예측 불가능한 상황에 대해 생각하게 합니다. 150년 후에도 우리는 여전히 그 진실을 찾고 있습니다.",
+        "charCount": 169,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      }
+    ],
+    "totalCharCount": 1192,
+    "estimatedMinutes": 0.07412935323383084
+  },
+  "scenes": [
+    {
+      "id": "scene-0",
+      "sectionId": "script-0",
+      "order": 0,
+      "text": "1872년 12월 4일, 대서양 상에서 기이한 발견이 있었습니다. 완벽하게 항해 가능한 상태의 배 메리셀레스트호가 표류하고 있었던 것입니다. 하지만 배에는 아무도 없었습니다. 13명의 승무원과 선장의 가족 모두가 사라져 있었습니다. 이것은 해양 역사에서 가장 미스터리한 실종 사건이 되었습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Mary Celeste Ship Illustration",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-001",
+          "title": "Mary Celeste Ship Illustration",
+          "publisher": "National Maritime Museum",
+          "sourceType": "museum",
+          "publishedAt": "1872",
+          "url": "https://www.nmm.ac.uk/collections/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Mary Celeste Ship Illustration"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-1",
+      "sectionId": "script-1",
+      "order": 0,
+      "text": "메리셀레스트호는 미국 뉴욕에서 이탈리아 제노바로 향하는 알코올을 실은 상선이었습니다. 선장 벤자민 브릭은 경험 많은 선원이었고, 그의 아내와 2살 딸도 함께 탔습니다. 배는 11월 7일에 출발했으며, 모두 정상적인 항해를 예상했습니다. 하지만 약 3주 후, 배는 완전히 인적이 없는 상태로 발견되었습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Official Shipping Records",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-002",
+          "title": "Official Shipping Records",
+          "publisher": "Lloyd's of London",
+          "sourceType": "museum",
+          "publishedAt": "1872-12-04",
+          "url": "https://www.lloyds.com/history/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Official Shipping Records"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-2",
+      "sectionId": "script-2",
+      "order": 0,
+      "text": "포르투갈의 포 타오 노바 일호에서 배를 발견했을 때, 모든 것이 정상인 것처럼 보였습니다. 돛은 펼쳐져 있었고, 항해 도구들도 제자리에 있었습니다. 배의 식량도 충분했고, 물도 있었습니다. 하지만 선원들은 없었습니다. 보트도 하나 사라져 있었습니다. 이것은 누군가 배에서 떠나갔다는 것을 의미했지만, 왜 그래야 했는지는 아무도 알 수 없었습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Salvage Report - Mary Celeste",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-003",
+          "title": "Salvage Report - Mary Celeste",
+          "publisher": "British Board of Trade",
+          "sourceType": "museum",
+          "publishedAt": "1873",
+          "url": "https://www.gov.uk/archives/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Salvage Report - Mary Celeste"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-3",
+      "sectionId": "script-3",
+      "order": 0,
+      "text": "당국의 조사는 많은 의문점을 남겼습니다. 선박의 저장소에는 물이 고여 있었고, 많은 물건들이 흩어져 있었습니다. 이것은 폭풍우가 있었을 가능성을 시사했습니다. 하지만 선원들이 왜 배를 포기했는지는 설명할 수 없었습니다. 화재의 흔적도 없었고, 공격의 징후도 없었습니다. 배는 침몰 위기에 처해 있지도 않았습니다.",
+      "visualType": "map",
+      "visualQuery": "Atlantic Ocean Route Map - 1872",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "GENERATED_DIAGRAM",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-004",
+          "title": "Atlantic Ocean Route Map - 1872",
+          "publisher": "US Naval Archives",
+          "sourceType": "museum",
+          "publishedAt": "1872",
+          "url": "https://www.history.navy.mil/research/histories/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Atlantic Ocean Route Map - 1872"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-4",
+      "sectionId": "script-4",
+      "order": 0,
+      "text": "150년이 지난 지금도 여러 이론이 존재합니다. 폭풍우로 인한 공포, 음독에 의한 선원 반란, 해적의 공격, 심지어 초자연적 현상까지 제시되었습니다. 일부는 선원들이 구명보트로 떠났지만 구조되지 않았을 것이라 주장합니다. 다른 이들은 배의 이상한 구조 때문에 선원들이 배가 침몰하고 있다고 생각했을 것이라 설명합니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Mary Celeste Ship Illustration",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "TESTIMONY",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-001",
+          "title": "Mary Celeste Ship Illustration",
+          "publisher": "National Maritime Museum",
+          "sourceType": "museum",
+          "publishedAt": "1872",
+          "url": "https://www.nmm.ac.uk/collections/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Mary Celeste Ship Illustration"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-5",
+      "sectionId": "script-5",
+      "order": 0,
+      "text": "최근의 해양 전문가들은 메리셀레스트호의 사건을 재검토했습니다. 어떤 전문가는 배의 선체가 손상되어 선원들이 침몰할 위험이 있다고 잘못 생각했을 수 있다고 제안했습니다. 다른 이들은 배에서의 폭발이나 화학 반응을 제안합니다. 그러나 확실한 답은 여전히 없습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Official Shipping Records",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-002",
+          "title": "Official Shipping Records",
+          "publisher": "Lloyd's of London",
+          "sourceType": "museum",
+          "publishedAt": "1872-12-04",
+          "url": "https://www.lloyds.com/history/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Official Shipping Records"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-6",
+      "sectionId": "script-6",
+      "order": 0,
+      "text": "메리셀레스트호 사건은 대양의 신비로움을 상징합니다. 배와 선원들이 어디로 갔는지, 무슨 일이 일어났는지는 영원히 미스터리로 남을 수도 있습니다. 이 사건은 우리에게 바다의 위력과 인간이 직면할 수 있는 예측 불가능한 상황에 대해 생각하게 합니다. 150년 후에도 우리는 여전히 그 진실을 찾고 있습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Salvage Report - Mary Celeste",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-mary-celeste-003",
+          "title": "Salvage Report - Mary Celeste",
+          "publisher": "British Board of Trade",
+          "sourceType": "museum",
+          "publishedAt": "1873",
+          "url": "https://www.gov.uk/archives/mary-celeste",
+          "reliability": "high",
+          "factUsed": "Salvage Report - Mary Celeste"
+        }
+      ],
+      "aiReconstructionExplained": false
+    }
+  ],
+  "sceneAssets": [
+    {
+      "sceneId": "scene-0",
+      "assetId": "mary-celeste-001",
+      "asset": {
+        "id": "mary-celeste-001",
+        "title": "Mary Celeste Ship Illustration",
+        "publisher": "National Maritime Museum",
+        "date": "1872",
+        "url": "https://www.nmm.ac.uk/collections/mary-celeste",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "1872년 12월 4일, 대서양 상에서 기이한 발견이 있었습니다. 완벽하게 항해 가능한 상태의 배 메리셀레스트호가 표류하고 있었던 것입니다. 하지만 배에는 아무도 없었습니다. 13",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-1",
+      "assetId": "mary-celeste-002",
+      "asset": {
+        "id": "mary-celeste-002",
+        "title": "Official Shipping Records",
+        "publisher": "Lloyd's of London",
+        "date": "1872-12-04",
+        "url": "https://www.lloyds.com/history/mary-celeste",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "메리셀레스트호는 미국 뉴욕에서 이탈리아 제노바로 향하는 알코올을 실은 상선이었습니다. 선장 벤자민 브릭은 경험 많은 선원이었고, 그의 아내와 2살 딸도 함께 탔습니다. 배는 11월",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-2",
+      "assetId": "mary-celeste-003",
+      "asset": {
+        "id": "mary-celeste-003",
+        "title": "Salvage Report - Mary Celeste",
+        "publisher": "British Board of Trade",
+        "date": "1873",
+        "url": "https://www.gov.uk/archives/mary-celeste",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "포르투갈의 포 타오 노바 일호에서 배를 발견했을 때, 모든 것이 정상인 것처럼 보였습니다. 돛은 펼쳐져 있었고, 항해 도구들도 제자리에 있었습니다. 배의 식량도 충분했고, 물도 있",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-3",
+      "assetId": "mary-celeste-004",
+      "asset": {
+        "id": "mary-celeste-004",
+        "title": "Atlantic Ocean Route Map - 1872",
+        "publisher": "US Naval Archives",
+        "date": "1872",
+        "url": "https://www.history.navy.mil/research/histories/mary-celeste",
+        "assetType": "map",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "당국의 조사는 많은 의문점을 남겼습니다. 선박의 저장소에는 물이 고여 있었고, 많은 물건들이 흩어져 있었습니다. 이것은 폭풍우가 있었을 가능성을 시사했습니다. 하지만 선원들이 왜 ",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-4",
+      "assetId": "mary-celeste-001",
+      "asset": {
+        "id": "mary-celeste-001",
+        "title": "Mary Celeste Ship Illustration",
+        "publisher": "National Maritime Museum",
+        "date": "1872",
+        "url": "https://www.nmm.ac.uk/collections/mary-celeste",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "150년이 지난 지금도 여러 이론이 존재합니다. 폭풍우로 인한 공포, 음독에 의한 선원 반란, 해적의 공격, 심지어 초자연적 현상까지 제시되었습니다. 일부는 선원들이 구명보트로 떠",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-5",
+      "assetId": "mary-celeste-002",
+      "asset": {
+        "id": "mary-celeste-002",
+        "title": "Official Shipping Records",
+        "publisher": "Lloyd's of London",
+        "date": "1872-12-04",
+        "url": "https://www.lloyds.com/history/mary-celeste",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "최근의 해양 전문가들은 메리셀레스트호의 사건을 재검토했습니다. 어떤 전문가는 배의 선체가 손상되어 선원들이 침몰할 위험이 있다고 잘못 생각했을 수 있다고 제안했습니다. 다른 이들은",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-6",
+      "assetId": "mary-celeste-003",
+      "asset": {
+        "id": "mary-celeste-003",
+        "title": "Salvage Report - Mary Celeste",
+        "publisher": "British Board of Trade",
+        "date": "1873",
+        "url": "https://www.gov.uk/archives/mary-celeste",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "메리셀레스트호 사건은 대양의 신비로움을 상징합니다. 배와 선원들이 어디로 갔는지, 무슨 일이 일어났는지는 영원히 미스터리로 남을 수도 있습니다. 이 사건은 우리에게 바다의 위력과 ",
+      "startTime": 0,
+      "endTime": 0
+    }
+  ],
+  "narrationSegments": [
+    {
+      "id": "narration-0",
+      "text": "1872년 12월 4일, 대서양 상에서 기이한 발견이 있었습니다. 완벽하게 항해 가능한 상태의 배 메리셀레스트호가 표류하고 있었던 것입니다. 하지만 배에는 아무도 없었습니다. 13명의 승무원과 선장의 가족 모두가 사라져 있었습니다. 이것은 해양 역사에서 가장 미스터리한 실종 사건이 되었습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-0.wav",
+      "durationSeconds": 15,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-1",
+      "text": "메리셀레스트호는 미국 뉴욕에서 이탈리아 제노바로 향하는 알코올을 실은 상선이었습니다. 선장 벤자민 브릭은 경험 많은 선원이었고, 그의 아내와 2살 딸도 함께 탔습니다. 배는 11월 7일에 출발했으며, 모두 정상적인 항해를 예상했습니다. 하지만 약 3주 후, 배는 완전히 인적이 없는 상태로 발견되었습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-1.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-2",
+      "text": "포르투갈의 포 타오 노바 일호에서 배를 발견했을 때, 모든 것이 정상인 것처럼 보였습니다. 돛은 펼쳐져 있었고, 항해 도구들도 제자리에 있었습니다. 배의 식량도 충분했고, 물도 있었습니다. 하지만 선원들은 없었습니다. 보트도 하나 사라져 있었습니다. 이것은 누군가 배에서 떠나갔다는 것을 의미했지만, 왜 그래야 했는지는 아무도 알 수 없었습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-2.wav",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-3",
+      "text": "당국의 조사는 많은 의문점을 남겼습니다. 선박의 저장소에는 물이 고여 있었고, 많은 물건들이 흩어져 있었습니다. 이것은 폭풍우가 있었을 가능성을 시사했습니다. 하지만 선원들이 왜 배를 포기했는지는 설명할 수 없었습니다. 화재의 흔적도 없었고, 공격의 징후도 없었습니다. 배는 침몰 위기에 처해 있지도 않았습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-3.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-4",
+      "text": "150년이 지난 지금도 여러 이론이 존재합니다. 폭풍우로 인한 공포, 음독에 의한 선원 반란, 해적의 공격, 심지어 초자연적 현상까지 제시되었습니다. 일부는 선원들이 구명보트로 떠났지만 구조되지 않았을 것이라 주장합니다. 다른 이들은 배의 이상한 구조 때문에 선원들이 배가 침몰하고 있다고 생각했을 것이라 설명합니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-4.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-5",
+      "text": "최근의 해양 전문가들은 메리셀레스트호의 사건을 재검토했습니다. 어떤 전문가는 배의 선체가 손상되어 선원들이 침몰할 위험이 있다고 잘못 생각했을 수 있다고 제안했습니다. 다른 이들은 배에서의 폭발이나 화학 반응을 제안합니다. 그러나 확실한 답은 여전히 없습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-5.wav",
+      "durationSeconds": 13,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-6",
+      "text": "메리셀레스트호 사건은 대양의 신비로움을 상징합니다. 배와 선원들이 어디로 갔는지, 무슨 일이 일어났는지는 영원히 미스터리로 남을 수도 있습니다. 이 사건은 우리에게 바다의 위력과 인간이 직면할 수 있는 예측 불가능한 상황에 대해 생각하게 합니다. 150년 후에도 우리는 여전히 그 진실을 찾고 있습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/7cd65c2e-00b2-4a50-8770-a45cec2de94e/narration/narration-6.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    }
+  ],
+  "subtitleTracks": [
+    {
+      "language": "ko-KR",
+      "subtitles": [
+        {
+          "id": "subtitle-0-0",
+          "text": "1872년 12월 4일, 대서양 상에서 기이한 발견이 있었습니다. 완벽하게 항해 가능한",
+          "startTime": 0,
+          "endTime": 3750,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-1",
+          "text": "상태의 배 메리셀레스트호가 표류하고 있었던 것입니다. 하지만 배에는 아무도 없었습니다.",
+          "startTime": 3750,
+          "endTime": 7500,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-2",
+          "text": "13명의 승무원과 선장의 가족 모두가 사라져 있었습니다. 이것은 해양 역사에서 가장",
+          "startTime": 7500,
+          "endTime": 11250,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-3",
+          "text": "미스터리한 실종 사건이 되었습니다.",
+          "startTime": 11250,
+          "endTime": 15000,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-15000-0",
+          "text": "메리셀레스트호는 미국 뉴욕에서 이탈리아 제노바로 향하는 알코올을 실은 상선이었습니다. 선장",
+          "startTime": 15000,
+          "endTime": 19000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-15000-1",
+          "text": "벤자민 브릭은 경험 많은 선원이었고, 그의 아내와 2살 딸도 함께 탔습니다. 배는 11월",
+          "startTime": 19000,
+          "endTime": 23000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-15000-2",
+          "text": "7일에 출발했으며, 모두 정상적인 항해를 예상했습니다. 하지만 약 3주 후, 배는 완전히",
+          "startTime": 23000,
+          "endTime": 27000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-15000-3",
+          "text": "인적이 없는 상태로 발견되었습니다.",
+          "startTime": 27000,
+          "endTime": 31000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-0",
+          "text": "포르투갈의 포 타오 노바 일호에서 배를 발견했을 때, 모든 것이 정상인 것처럼 보였습니다.",
+          "startTime": 31000,
+          "endTime": 35500,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-1",
+          "text": "돛은 펼쳐져 있었고, 항해 도구들도 제자리에 있었습니다. 배의 식량도 충분했고, 물도",
+          "startTime": 35500,
+          "endTime": 40000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-2",
+          "text": "있었습니다. 하지만 선원들은 없었습니다. 보트도 하나 사라져 있었습니다. 이것은 누군가",
+          "startTime": 40000,
+          "endTime": 44500,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-3",
+          "text": "배에서 떠나갔다는 것을 의미했지만, 왜 그래야 했는지는 아무도 알 수 없었습니다.",
+          "startTime": 44500,
+          "endTime": 49000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-0",
+          "text": "당국의 조사는 많은 의문점을 남겼습니다. 선박의 저장소에는 물이 고여 있었고, 많은",
+          "startTime": 49000,
+          "endTime": 53000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-1",
+          "text": "물건들이 흩어져 있었습니다. 이것은 폭풍우가 있었을 가능성을 시사했습니다. 하지만 선원들이",
+          "startTime": 53000,
+          "endTime": 57000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-2",
+          "text": "왜 배를 포기했는지는 설명할 수 없었습니다. 화재의 흔적도 없었고, 공격의 징후도",
+          "startTime": 57000,
+          "endTime": 61000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-49000-3",
+          "text": "없었습니다. 배는 침몰 위기에 처해 있지도 않았습니다.",
+          "startTime": 61000,
+          "endTime": 65000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-0",
+          "text": "150년이 지난 지금도 여러 이론이 존재합니다. 폭풍우로 인한 공포, 음독에 의한 선원",
+          "startTime": 65000,
+          "endTime": 69000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-1",
+          "text": "반란, 해적의 공격, 심지어 초자연적 현상까지 제시되었습니다. 일부는 선원들이 구명보트로",
+          "startTime": 69000,
+          "endTime": 73000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-2",
+          "text": "떠났지만 구조되지 않았을 것이라 주장합니다. 다른 이들은 배의 이상한 구조 때문에 선원들이",
+          "startTime": 73000,
+          "endTime": 77000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-65000-3",
+          "text": "배가 침몰하고 있다고 생각했을 것이라 설명합니다.",
+          "startTime": 77000,
+          "endTime": 81000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-0",
+          "text": "최근의 해양 전문가들은 메리셀레스트호의 사건을 재검토했습니다. 어떤 전문가는 배의 선체가",
+          "startTime": 81000,
+          "endTime": 85333,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-1",
+          "text": "손상되어 선원들이 침몰할 위험이 있다고 잘못 생각했을 수 있다고 제안했습니다. 다른 이들은",
+          "startTime": 85333,
+          "endTime": 89667,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-81000-2",
+          "text": "배에서의 폭발이나 화학 반응을 제안합니다. 그러나 확실한 답은 여전히 없습니다.",
+          "startTime": 89667,
+          "endTime": 94000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-94000-0",
+          "text": "메리셀레스트호 사건은 대양의 신비로움을 상징합니다. 배와 선원들이 어디로 갔는지, 무슨",
+          "startTime": 94000,
+          "endTime": 98000,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-94000-1",
+          "text": "일이 일어났는지는 영원히 미스터리로 남을 수도 있습니다. 이 사건은 우리에게 바다의 위력과",
+          "startTime": 98000,
+          "endTime": 102000,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-94000-2",
+          "text": "인간이 직면할 수 있는 예측 불가능한 상황에 대해 생각하게 합니다. 150년 후에도 우리는",
+          "startTime": 102000,
+          "endTime": 106000,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-94000-3",
+          "text": "여전히 그 진실을 찾고 있습니다.",
+          "startTime": 106000,
+          "endTime": 110000,
+          "sceneId": "scene-6",
+          "verified": true
+        }
+      ],
+      "format": "ass"
+    }
+  ],
+  "output": {
+    "mp4": "/output.mp4",
+    "status": "complete"
+  }
+}

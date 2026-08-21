@@ -1,0 +1,117 @@
+{
+  "timestamp": "2026-08-16T04:01:51.277Z",
+  "projectId": "4d327320-e233-4b9e-965b-e3872f144c8b",
+  "projectName": "Mary Celeste",
+  "overallStatus": "FAIL",
+  "pipelineComplete": true,
+  "build": "PASS",
+  "apiStatus": {
+    "ffmpeg": "READY",
+    "piper": "READY",
+    "ollama": "OPTIONAL"
+  },
+  "stages": [
+    {
+      "stage": "research",
+      "status": "PASS",
+      "details": "10 findings from 0+ sources",
+      "itemsProcessed": 10
+    },
+    {
+      "stage": "script",
+      "status": "FAIL",
+      "details": "No script generated",
+      "itemsProcessed": 0
+    },
+    {
+      "stage": "scenes",
+      "status": "FAIL",
+      "details": "No scenes created",
+      "itemsProcessed": 0
+    },
+    {
+      "stage": "assets",
+      "status": "PARTIAL",
+      "details": "No asset integration",
+      "itemsProcessed": 0
+    },
+    {
+      "stage": "narration",
+      "status": "SKIPPED",
+      "details": "Piper TTS not available",
+      "itemsProcessed": 0
+    },
+    {
+      "stage": "subtitles",
+      "status": "SKIPPED",
+      "details": "Requires narration segments",
+      "itemsProcessed": 0
+    },
+    {
+      "stage": "render",
+      "status": "FAIL",
+      "details": "Rendering failed"
+    }
+  ],
+  "research": {
+    "status": "PASS",
+    "findingsCount": 10,
+    "sourcesCount": 0
+  },
+  "script": {
+    "status": "FAIL",
+    "sectionsCount": 0,
+    "totalChars": 0,
+    "estimatedMinutes": 0
+  },
+  "scenes": {
+    "status": "FAIL",
+    "scenesCount": 0,
+    "realAssetsCount": 0,
+    "aiGeneratedCount": 0
+  },
+  "narration": {
+    "status": "SKIPPED",
+    "segmentsCount": 0,
+    "available": false
+  },
+  "subtitles": {
+    "status": "SKIPPED",
+    "subtitlesCount": 0,
+    "verifiedCount": 0,
+    "available": false
+  },
+  "render": {
+    "status": "FAIL"
+  },
+  "sourcesTracked": 0,
+  "sourceAttributionsIncluded": false,
+  "realVsAiDistribution": {
+    "realAssets": 0,
+    "aiGenerated": 0,
+    "mixed": 0
+  },
+  "issues": [
+    {
+      "severity": "error",
+      "message": "No script sections generated",
+      "stage": "script"
+    },
+    {
+      "severity": "error",
+      "message": "No scenes created",
+      "stage": "scenes"
+    },
+    {
+      "severity": "warning",
+      "message": "No narration segments generated (audio will not be included)",
+      "stage": "narration"
+    },
+    {
+      "severity": "error",
+      "message": "No MP4 output file generated",
+      "stage": "render"
+    }
+  ],
+  "recommendations": []
+}

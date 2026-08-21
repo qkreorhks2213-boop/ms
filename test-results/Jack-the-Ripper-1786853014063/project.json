@@ -1,0 +1,785 @@
+{
+  "id": "349f5bbe-cfce-4dc6-a62b-363cc3d91e92",
+  "name": "Jack the Ripper",
+  "userId": "test-user",
+  "createdAt": "2026-08-16T04:03:25.629Z",
+  "updatedAt": "2026-08-16T04:03:33.911Z",
+  "errorLog": [],
+  "input": {
+    "topic": "Jack the Ripper",
+    "caseType": "crime",
+    "targetMinutes": 10,
+    "angles": [],
+    "endingStyle": "unsolved",
+    "useRealPhotos": true,
+    "useAiReconstruction": true,
+    "voiceName": "default",
+    "useBgm": true,
+    "sceneVisualTarget": 40
+  },
+  "stage": "done",
+  "render": {
+    "status": "idle"
+  },
+  "research": [
+    {
+      "id": "research-overview",
+      "query": "사건 개요",
+      "sources": [],
+      "summary": "이 관점(\"사건 개요 배경\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-official",
+      "query": "공식 기록",
+      "sources": [],
+      "summary": "이 관점(\"공식 기록 정부 군\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-persons",
+      "query": "관련 인물",
+      "sources": [],
+      "summary": "이 관점(\"주요 인물 등장인물\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-timeline",
+      "query": "사건 기록",
+      "sources": [],
+      "summary": "이 관점(\"사건 시간순서 연대기\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-testimony",
+      "query": "증언",
+      "sources": [],
+      "summary": "이 관점(\"증언 목격자 진술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-evidence",
+      "query": "증거 자료",
+      "sources": [],
+      "summary": "이 관점(\"증거 사진 영상 기록\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-investigation",
+      "query": "조사 결과",
+      "sources": [],
+      "summary": "이 관점(\"조사 결과 보고서\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-controversy",
+      "query": "논쟁",
+      "sources": [],
+      "summary": "이 관점(\"논쟁 의문 반박\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-research",
+      "query": "연구",
+      "sources": [],
+      "summary": "이 관점(\"연구 분석 학술\")으로는 관련 자료를 찾지 못했습니다."
+    },
+    {
+      "id": "research-theories",
+      "query": "미스터리 주장",
+      "sources": [],
+      "summary": "이 관점(\"미스터리 설명 가설\")으로는 관련 자료를 찾지 못했습니다."
+    }
+  ],
+  "script": {
+    "title": "Jack the Ripper - 미스터리 다큐",
+    "outline": "런던의 악몽\n빅토리아 시대 런던\n공포의 시작\n단서와 편지들\n범인 추적과 용의자들\n살인의 종료와 미스터리\n역사의 그림자",
+    "sections": [
+      {
+        "id": "script-0",
+        "kind": "hook",
+        "text": "1888년 8월, 런던의 이스트엔드는 공포에 휩싸였습니다. 한 명의 연쇄살인범이 거리를 배회하고 있었던 것입니다. 이 범인은 역사상 가장 악명 높은 연쇄살인범 중 한 명이 되었습니다. 잭더리퍼는 10주 동안 적어도 5명의 여성을 살해했으며, 그 이후 흔적을 감추고 사라졌습니다. 범인의 정체는 지금까지도 규명되지 않았습니다.",
+        "charCount": 181,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "GENERATED_DIAGRAM",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-1",
+        "kind": "background",
+        "text": "1880년대의 런던은 산업 혁명의 중심이었지만, 심각한 빈곤 문제를 안고 있었습니다. 이스트엔드는 노동자 계급과 가난한 사람들의 거주지였습니다. 많은 여성들이 생존을 위해 성매매에 종사했습니다. 경찰 시스템도 미약했고, 범죄 해결 기술도 부족했습니다. 이런 환경이 리퍼의 활동을 가능하게 만들었습니다.",
+        "charCount": 168,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-2",
+        "kind": "main_event",
+        "text": "살인이 시작된 것은 1888년 8월 31일입니다. 메리 앤 니콜스가 발견되었을 때, 경찰은 처음에 이것이 특별한 사건이라고 인식하지 못했습니다. 하지만 9월 8일, 또 다른 희생자 애니 채프먼이 발견되었을 때, 런던은 연쇄살인범의 존재를 깨달았습니다. 두 피해자는 모두 성매매 여성이었고, 비슷한 방식으로 살해당했습니다.",
+        "charCount": 179,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-3",
+        "kind": "evidence",
+        "text": "경찰은 범인에 대한 단서를 거의 찾을 수 없었습니다. 범인은 매우 신중하게 행동했습니다. 하지만 \"잭더리퍼\"라는 서명이 있는 편지들이 신문사와 경찰에 도착하기 시작했습니다. 이 편지들이 진짜인지 가짜인지는 여전히 논쟁의 대상입니다. 현장에서 발견된 것은 거의 없었지만, 피해자들의 신체 훼손 방식은 일관되었습니다.",
+        "charCount": 175,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "DISPUTED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-4",
+        "kind": "analysis",
+        "text": "범인의 정체를 파악하기 위해 많은 노력이 기울어졌습니다. 수백 명의 용의자가 심문되었습니다. 의사, 도축업자, 러시아 이민자, 왕실 인물까지도 의심받았습니다. 하지만 확실한 증거가 없었습니다. 범인은 의료 지식이 있는 것 같았지만, 이것이 직업을 좁히기에는 충분하지 않았습니다. 범인의 심리 프로필을 작성한 전문가들도 범인을 정확히 파악하지 못했습니다.",
+        "charCount": 197,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "GENERATED_DIAGRAM",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-5",
+        "kind": "mystery_deepens",
+        "text": "마지막 살인은 1888년 11월 9일이었습니다. 메리 제인 켈리가 끔찍하게 살해된 후, 리퍼의 살인은 갑자기 멈췄습니다. 이것은 범인이 체포되었을 수도, 죽었을 수도, 아니면 다른 이유로 멈춘 것일 수도 있습니다. 이후 130년 이상 동안, 많은 연구자들이 범인의 정체를 밝히려고 시도했습니다. DNA 기술도 도움이 되지 않았습니다.",
+        "charCount": 186,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "MIXED",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      },
+      {
+        "id": "script-6",
+        "kind": "conclusion",
+        "text": "잭더리퍼는 범죄의 역사에 깊은 영향을 미쳤습니다. 이 사건은 현대적 경찰 수사 기법의 발전을 가져왔고, 범죄 심리학의 기초가 되었습니다. 하지만 범인의 정체는 여전히 미스터리입니다. 혹시 당신이 알고 있는 정보가 이 수수께끼를 풀 수 있을까요? 136년이 지난 지금도, 런던의 어둠 속에는 여전히 리퍼의 비밀이 숨어있을지도 모릅니다.",
+        "charCount": 186,
+        "estimatedSeconds": 120,
+        "status": "done",
+        "sources": [],
+        "visualOrigin": "GENERATED_DIAGRAM",
+        "factStatus": "UNVERIFIED",
+        "needsDisclaimer": false
+      }
+    ],
+    "totalCharCount": 1272,
+    "estimatedMinutes": 0.0791044776119403
+  },
+  "scenes": [
+    {
+      "id": "scene-0",
+      "sectionId": "script-0",
+      "order": 0,
+      "text": "1888년 8월, 런던의 이스트엔드는 공포에 휩싸였습니다. 한 명의 연쇄살인범이 거리를 배회하고 있었던 것입니다. 이 범인은 역사상 가장 악명 높은 연쇄살인범 중 한 명이 되었습니다. 잭더리퍼는 10주 동안 적어도 5명의 여성을 살해했으며, 그 이후 흔적을 감추고 사라졌습니다. 범인의 정체는 지금까지도 규명되지 않았습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Whitechapel Murder Scene Photos",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "GENERATED_DIAGRAM",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-001",
+          "title": "Whitechapel Murder Scene Photos",
+          "publisher": "Metropolitan Police Archives",
+          "sourceType": "museum",
+          "publishedAt": "1888",
+          "url": "https://www.nationalarchives.gov.uk/jack-the-ripper",
+          "reliability": "high",
+          "factUsed": "Whitechapel Murder Scene Photos"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-1",
+      "sectionId": "script-1",
+      "order": 0,
+      "text": "1880년대의 런던은 산업 혁명의 중심이었지만, 심각한 빈곤 문제를 안고 있었습니다. 이스트엔드는 노동자 계급과 가난한 사람들의 거주지였습니다. 많은 여성들이 생존을 위해 성매매에 종사했습니다. 경찰 시스템도 미약했고, 범죄 해결 기술도 부족했습니다. 이런 환경이 리퍼의 활동을 가능하게 만들었습니다.",
+      "visualType": "official_document",
+      "visualQuery": "Police Investigation Files",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-002",
+          "title": "Police Investigation Files",
+          "publisher": "National Archives",
+          "sourceType": "museum",
+          "publishedAt": "1888-1891",
+          "url": "https://www.nationalarchives.gov.uk/mepo/3/141",
+          "reliability": "high",
+          "factUsed": "Police Investigation Files"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-2",
+      "sectionId": "script-2",
+      "order": 0,
+      "text": "살인이 시작된 것은 1888년 8월 31일입니다. 메리 앤 니콜스가 발견되었을 때, 경찰은 처음에 이것이 특별한 사건이라고 인식하지 못했습니다. 하지만 9월 8일, 또 다른 희생자 애니 채프먼이 발견되었을 때, 런던은 연쇄살인범의 존재를 깨달았습니다. 두 피해자는 모두 성매매 여성이었고, 비슷한 방식으로 살해당했습니다.",
+      "visualType": "newspaper",
+      "visualQuery": "Contemporary Newspaper Reports",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-003",
+          "title": "Contemporary Newspaper Reports",
+          "publisher": "The Times Archive",
+          "sourceType": "museum",
+          "publishedAt": "1888",
+          "url": "https://www.thetimes.com/archive/whitechapel",
+          "reliability": "high",
+          "factUsed": "Contemporary Newspaper Reports"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-3",
+      "sectionId": "script-3",
+      "order": 0,
+      "text": "경찰은 범인에 대한 단서를 거의 찾을 수 없었습니다. 범인은 매우 신중하게 행동했습니다. 하지만 \"잭더리퍼\"라는 서명이 있는 편지들이 신문사와 경찰에 도착하기 시작했습니다. 이 편지들이 진짜인지 가짜인지는 여전히 논쟁의 대상입니다. 현장에서 발견된 것은 거의 없었지만, 피해자들의 신체 훼손 방식은 일관되었습니다.",
+      "visualType": "map",
+      "visualQuery": "Whitechapel District Map - 1888",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "DISPUTED",
+      "sources": [
+        {
+          "id": "asset-ripper-004",
+          "title": "Whitechapel District Map - 1888",
+          "publisher": "Library of Congress",
+          "sourceType": "museum",
+          "publishedAt": "1888",
+          "url": "https://www.loc.gov/maps/whitechapel",
+          "reliability": "high",
+          "factUsed": "Whitechapel District Map - 1888"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-4",
+      "sectionId": "script-4",
+      "order": 0,
+      "text": "범인의 정체를 파악하기 위해 많은 노력이 기울어졌습니다. 수백 명의 용의자가 심문되었습니다. 의사, 도축업자, 러시아 이민자, 왕실 인물까지도 의심받았습니다. 하지만 확실한 증거가 없었습니다. 범인은 의료 지식이 있는 것 같았지만, 이것이 직업을 좁히기에는 충분하지 않았습니다. 범인의 심리 프로필을 작성한 전문가들도 범인을 정확히 파악하지 못했습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Suspect Photographs",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "GENERATED_DIAGRAM",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-005",
+          "title": "Suspect Photographs",
+          "publisher": "Metropolitan Police Historical Collection",
+          "sourceType": "museum",
+          "publishedAt": "1888",
+          "url": "https://www.metpolice.org/history/ripper-suspects",
+          "reliability": "high",
+          "factUsed": "Suspect Photographs"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-5",
+      "sectionId": "script-5",
+      "order": 0,
+      "text": "마지막 살인은 1888년 11월 9일이었습니다. 메리 제인 켈리가 끔찍하게 살해된 후, 리퍼의 살인은 갑자기 멈췄습니다. 이것은 범인이 체포되었을 수도, 죽었을 수도, 아니면 다른 이유로 멈춘 것일 수도 있습니다. 이후 130년 이상 동안, 많은 연구자들이 범인의 정체를 밝히려고 시도했습니다. DNA 기술도 도움이 되지 않았습니다.",
+      "visualType": "archive_photo",
+      "visualQuery": "Whitechapel Murder Scene Photos",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "MIXED",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-001",
+          "title": "Whitechapel Murder Scene Photos",
+          "publisher": "Metropolitan Police Archives",
+          "sourceType": "museum",
+          "publishedAt": "1888",
+          "url": "https://www.nationalarchives.gov.uk/jack-the-ripper",
+          "reliability": "high",
+          "factUsed": "Whitechapel Murder Scene Photos"
+        }
+      ],
+      "aiReconstructionExplained": false
+    },
+    {
+      "id": "scene-6",
+      "sectionId": "script-6",
+      "order": 0,
+      "text": "잭더리퍼는 범죄의 역사에 깊은 영향을 미쳤습니다. 이 사건은 현대적 경찰 수사 기법의 발전을 가져왔고, 범죄 심리학의 기초가 되었습니다. 하지만 범인의 정체는 여전히 미스터리입니다. 혹시 당신이 알고 있는 정보가 이 수수께끼를 풀 수 있을까요? 136년이 지난 지금도, 런던의 어둠 속에는 여전히 리퍼의 비밀이 숨어있을지도 모릅니다.",
+      "visualType": "official_document",
+      "visualQuery": "Police Investigation Files",
+      "visualStatus": "pending",
+      "narration": [],
+      "visualOrigin": "GENERATED_DIAGRAM",
+      "factStatus": "UNVERIFIED",
+      "sources": [
+        {
+          "id": "asset-ripper-002",
+          "title": "Police Investigation Files",
+          "publisher": "National Archives",
+          "sourceType": "museum",
+          "publishedAt": "1888-1891",
+          "url": "https://www.nationalarchives.gov.uk/mepo/3/141",
+          "reliability": "high",
+          "factUsed": "Police Investigation Files"
+        }
+      ],
+      "aiReconstructionExplained": false
+    }
+  ],
+  "sceneAssets": [
+    {
+      "sceneId": "scene-0",
+      "assetId": "ripper-001",
+      "asset": {
+        "id": "ripper-001",
+        "title": "Whitechapel Murder Scene Photos",
+        "publisher": "Metropolitan Police Archives",
+        "date": "1888",
+        "url": "https://www.nationalarchives.gov.uk/jack-the-ripper",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "1888년 8월, 런던의 이스트엔드는 공포에 휩싸였습니다. 한 명의 연쇄살인범이 거리를 배회하고 있었던 것입니다. 이 범인은 역사상 가장 악명 높은 연쇄살인범 중 한 명이 되었습니",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-1",
+      "assetId": "ripper-002",
+      "asset": {
+        "id": "ripper-002",
+        "title": "Police Investigation Files",
+        "publisher": "National Archives",
+        "date": "1888-1891",
+        "url": "https://www.nationalarchives.gov.uk/mepo/3/141",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "1880년대의 런던은 산업 혁명의 중심이었지만, 심각한 빈곤 문제를 안고 있었습니다. 이스트엔드는 노동자 계급과 가난한 사람들의 거주지였습니다. 많은 여성들이 생존을 위해 성매매에",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-2",
+      "assetId": "ripper-003",
+      "asset": {
+        "id": "ripper-003",
+        "title": "Contemporary Newspaper Reports",
+        "publisher": "The Times Archive",
+        "date": "1888",
+        "url": "https://www.thetimes.com/archive/whitechapel",
+        "assetType": "newspaper",
+        "license": "fair_use",
+        "realAsset": true
+      },
+      "usedFor": "살인이 시작된 것은 1888년 8월 31일입니다. 메리 앤 니콜스가 발견되었을 때, 경찰은 처음에 이것이 특별한 사건이라고 인식하지 못했습니다. 하지만 9월 8일, 또 다른 희생자",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-3",
+      "assetId": "ripper-004",
+      "asset": {
+        "id": "ripper-004",
+        "title": "Whitechapel District Map - 1888",
+        "publisher": "Library of Congress",
+        "date": "1888",
+        "url": "https://www.loc.gov/maps/whitechapel",
+        "assetType": "map",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "경찰은 범인에 대한 단서를 거의 찾을 수 없었습니다. 범인은 매우 신중하게 행동했습니다. 하지만 \"잭더리퍼\"라는 서명이 있는 편지들이 신문사와 경찰에 도착하기 시작했습니다. 이 편",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-4",
+      "assetId": "ripper-005",
+      "asset": {
+        "id": "ripper-005",
+        "title": "Suspect Photographs",
+        "publisher": "Metropolitan Police Historical Collection",
+        "date": "1888",
+        "url": "https://www.metpolice.org/history/ripper-suspects",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "범인의 정체를 파악하기 위해 많은 노력이 기울어졌습니다. 수백 명의 용의자가 심문되었습니다. 의사, 도축업자, 러시아 이민자, 왕실 인물까지도 의심받았습니다. 하지만 확실한 증거가",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-5",
+      "assetId": "ripper-001",
+      "asset": {
+        "id": "ripper-001",
+        "title": "Whitechapel Murder Scene Photos",
+        "publisher": "Metropolitan Police Archives",
+        "date": "1888",
+        "url": "https://www.nationalarchives.gov.uk/jack-the-ripper",
+        "assetType": "archive_photo",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "마지막 살인은 1888년 11월 9일이었습니다. 메리 제인 켈리가 끔찍하게 살해된 후, 리퍼의 살인은 갑자기 멈췄습니다. 이것은 범인이 체포되었을 수도, 죽었을 수도, 아니면 다른",
+      "startTime": 0,
+      "endTime": 0
+    },
+    {
+      "sceneId": "scene-6",
+      "assetId": "ripper-002",
+      "asset": {
+        "id": "ripper-002",
+        "title": "Police Investigation Files",
+        "publisher": "National Archives",
+        "date": "1888-1891",
+        "url": "https://www.nationalarchives.gov.uk/mepo/3/141",
+        "assetType": "official_document",
+        "license": "public_domain",
+        "realAsset": true
+      },
+      "usedFor": "잭더리퍼는 범죄의 역사에 깊은 영향을 미쳤습니다. 이 사건은 현대적 경찰 수사 기법의 발전을 가져왔고, 범죄 심리학의 기초가 되었습니다. 하지만 범인의 정체는 여전히 미스터리입니다",
+      "startTime": 0,
+      "endTime": 0
+    }
+  ],
+  "narrationSegments": [
+    {
+      "id": "narration-0",
+      "text": "1888년 8월, 런던의 이스트엔드는 공포에 휩싸였습니다. 한 명의 연쇄살인범이 거리를 배회하고 있었던 것입니다. 이 범인은 역사상 가장 악명 높은 연쇄살인범 중 한 명이 되었습니다. 잭더리퍼는 10주 동안 적어도 5명의 여성을 살해했으며, 그 이후 흔적을 감추고 사라졌습니다. 범인의 정체는 지금까지도 규명되지 않았습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-0.wav",
+      "durationSeconds": 17,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-1",
+      "text": "1880년대의 런던은 산업 혁명의 중심이었지만, 심각한 빈곤 문제를 안고 있었습니다. 이스트엔드는 노동자 계급과 가난한 사람들의 거주지였습니다. 많은 여성들이 생존을 위해 성매매에 종사했습니다. 경찰 시스템도 미약했고, 범죄 해결 기술도 부족했습니다. 이런 환경이 리퍼의 활동을 가능하게 만들었습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-1.wav",
+      "durationSeconds": 14,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-2",
+      "text": "살인이 시작된 것은 1888년 8월 31일입니다. 메리 앤 니콜스가 발견되었을 때, 경찰은 처음에 이것이 특별한 사건이라고 인식하지 못했습니다. 하지만 9월 8일, 또 다른 희생자 애니 채프먼이 발견되었을 때, 런던은 연쇄살인범의 존재를 깨달았습니다. 두 피해자는 모두 성매매 여성이었고, 비슷한 방식으로 살해당했습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-2.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-3",
+      "text": "경찰은 범인에 대한 단서를 거의 찾을 수 없었습니다. 범인은 매우 신중하게 행동했습니다. 하지만 \"잭더리퍼\"라는 서명이 있는 편지들이 신문사와 경찰에 도착하기 시작했습니다. 이 편지들이 진짜인지 가짜인지는 여전히 논쟁의 대상입니다. 현장에서 발견된 것은 거의 없었지만, 피해자들의 신체 훼손 방식은 일관되었습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-3.wav",
+      "durationSeconds": 16,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-4",
+      "text": "범인의 정체를 파악하기 위해 많은 노력이 기울어졌습니다. 수백 명의 용의자가 심문되었습니다. 의사, 도축업자, 러시아 이민자, 왕실 인물까지도 의심받았습니다. 하지만 확실한 증거가 없었습니다. 범인은 의료 지식이 있는 것 같았지만, 이것이 직업을 좁히기에는 충분하지 않았습니다. 범인의 심리 프로필을 작성한 전문가들도 범인을 정확히 파악하지 못했습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-4.wav",
+      "durationSeconds": 17,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-5",
+      "text": "마지막 살인은 1888년 11월 9일이었습니다. 메리 제인 켈리가 끔찍하게 살해된 후, 리퍼의 살인은 갑자기 멈췄습니다. 이것은 범인이 체포되었을 수도, 죽었을 수도, 아니면 다른 이유로 멈춘 것일 수도 있습니다. 이후 130년 이상 동안, 많은 연구자들이 범인의 정체를 밝히려고 시도했습니다. DNA 기술도 도움이 되지 않았습니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-5.wav",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    },
+    {
+      "id": "narration-6",
+      "text": "잭더리퍼는 범죄의 역사에 깊은 영향을 미쳤습니다. 이 사건은 현대적 경찰 수사 기법의 발전을 가져왔고, 범죄 심리학의 기초가 되었습니다. 하지만 범인의 정체는 여전히 미스터리입니다. 혹시 당신이 알고 있는 정보가 이 수수께끼를 풀 수 있을까요? 136년이 지난 지금도, 런던의 어둠 속에는 여전히 리퍼의 비밀이 숨어있을지도 모릅니다.",
+      "audioPath": "/home/user/-12/data/mystery-projects/349f5bbe-cfce-4dc6-a62b-363cc3d91e92/narration/narration-6.wav",
+      "durationSeconds": 18,
+      "sampleRate": 44100,
+      "channels": 1,
+      "format": "wav"
+    }
+  ],
+  "subtitleTracks": [
+    {
+      "language": "ko-KR",
+      "subtitles": [
+        {
+          "id": "subtitle-0-0",
+          "text": "1888년 8월, 런던의 이스트엔드는 공포에 휩싸였습니다. 한 명의 연쇄살인범이 거리를",
+          "startTime": 0,
+          "endTime": 4250,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-1",
+          "text": "배회하고 있었던 것입니다. 이 범인은 역사상 가장 악명 높은 연쇄살인범 중 한 명이",
+          "startTime": 4250,
+          "endTime": 8500,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-2",
+          "text": "되었습니다. 잭더리퍼는 10주 동안 적어도 5명의 여성을 살해했으며, 그 이후 흔적을",
+          "startTime": 8500,
+          "endTime": 12750,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-0-3",
+          "text": "감추고 사라졌습니다. 범인의 정체는 지금까지도 규명되지 않았습니다.",
+          "startTime": 12750,
+          "endTime": 17000,
+          "sceneId": "scene-0",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-0",
+          "text": "1880년대의 런던은 산업 혁명의 중심이었지만, 심각한 빈곤 문제를 안고 있었습니다.",
+          "startTime": 17000,
+          "endTime": 20500,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-1",
+          "text": "이스트엔드는 노동자 계급과 가난한 사람들의 거주지였습니다. 많은 여성들이 생존을 위해",
+          "startTime": 20500,
+          "endTime": 24000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-2",
+          "text": "성매매에 종사했습니다. 경찰 시스템도 미약했고, 범죄 해결 기술도 부족했습니다. 이런",
+          "startTime": 24000,
+          "endTime": 27500,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-17000-3",
+          "text": "환경이 리퍼의 활동을 가능하게 만들었습니다.",
+          "startTime": 27500,
+          "endTime": 31000,
+          "sceneId": "scene-1",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-0",
+          "text": "살인이 시작된 것은 1888년 8월 31일입니다. 메리 앤 니콜스가 발견되었을 때, 경찰은",
+          "startTime": 31000,
+          "endTime": 35000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-1",
+          "text": "처음에 이것이 특별한 사건이라고 인식하지 못했습니다. 하지만 9월 8일, 또 다른 희생자",
+          "startTime": 35000,
+          "endTime": 39000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-2",
+          "text": "애니 채프먼이 발견되었을 때, 런던은 연쇄살인범의 존재를 깨달았습니다. 두 피해자는 모두",
+          "startTime": 39000,
+          "endTime": 43000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-31000-3",
+          "text": "성매매 여성이었고, 비슷한 방식으로 살해당했습니다.",
+          "startTime": 43000,
+          "endTime": 47000,
+          "sceneId": "scene-2",
+          "verified": true
+        },
+        {
+          "id": "subtitle-47000-0",
+          "text": "경찰은 범인에 대한 단서를 거의 찾을 수 없었습니다. 범인은 매우 신중하게 행동했습니다.",
+          "startTime": 47000,
+          "endTime": 51000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-47000-1",
+          "text": "하지만 \"잭더리퍼\"라는 서명이 있는 편지들이 신문사와 경찰에 도착하기 시작했습니다. 이",
+          "startTime": 51000,
+          "endTime": 55000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-47000-2",
+          "text": "편지들이 진짜인지 가짜인지는 여전히 논쟁의 대상입니다. 현장에서 발견된 것은 거의",
+          "startTime": 55000,
+          "endTime": 59000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-47000-3",
+          "text": "없었지만, 피해자들의 신체 훼손 방식은 일관되었습니다.",
+          "startTime": 59000,
+          "endTime": 63000,
+          "sceneId": "scene-3",
+          "verified": true
+        },
+        {
+          "id": "subtitle-63000-0",
+          "text": "범인의 정체를 파악하기 위해 많은 노력이 기울어졌습니다. 수백 명의 용의자가",
+          "startTime": 63000,
+          "endTime": 66400,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-63000-1",
+          "text": "심문되었습니다. 의사, 도축업자, 러시아 이민자, 왕실 인물까지도 의심받았습니다. 하지만",
+          "startTime": 66400,
+          "endTime": 69800,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-63000-2",
+          "text": "확실한 증거가 없었습니다. 범인은 의료 지식이 있는 것 같았지만, 이것이 직업을 좁히기에는",
+          "startTime": 69800,
+          "endTime": 73200,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-63000-3",
+          "text": "충분하지 않았습니다. 범인의 심리 프로필을 작성한 전문가들도 범인을 정확히 파악하지",
+          "startTime": 73200,
+          "endTime": 76600,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-63000-4",
+          "text": "못했습니다.",
+          "startTime": 76600,
+          "endTime": 80000,
+          "sceneId": "scene-4",
+          "verified": true
+        },
+        {
+          "id": "subtitle-80000-0",
+          "text": "마지막 살인은 1888년 11월 9일이었습니다. 메리 제인 켈리가 끔찍하게 살해된 후,",
+          "startTime": 80000,
+          "endTime": 84500,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-80000-1",
+          "text": "리퍼의 살인은 갑자기 멈췄습니다. 이것은 범인이 체포되었을 수도, 죽었을 수도, 아니면",
+          "startTime": 84500,
+          "endTime": 89000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-80000-2",
+          "text": "다른 이유로 멈춘 것일 수도 있습니다. 이후 130년 이상 동안, 많은 연구자들이 범인의",
+          "startTime": 89000,
+          "endTime": 93500,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-80000-3",
+          "text": "정체를 밝히려고 시도했습니다. DNA 기술도 도움이 되지 않았습니다.",
+          "startTime": 93500,
+          "endTime": 98000,
+          "sceneId": "scene-5",
+          "verified": true
+        },
+        {
+          "id": "subtitle-98000-0",
+          "text": "잭더리퍼는 범죄의 역사에 깊은 영향을 미쳤습니다. 이 사건은 현대적 경찰 수사 기법의",
+          "startTime": 98000,
+          "endTime": 102500,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-98000-1",
+          "text": "발전을 가져왔고, 범죄 심리학의 기초가 되었습니다. 하지만 범인의 정체는 여전히",
+          "startTime": 102500,
+          "endTime": 107000,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-98000-2",
+          "text": "미스터리입니다. 혹시 당신이 알고 있는 정보가 이 수수께끼를 풀 수 있을까요? 136년이",
+          "startTime": 107000,
+          "endTime": 111500,
+          "sceneId": "scene-6",
+          "verified": true
+        },
+        {
+          "id": "subtitle-98000-3",
+          "text": "지난 지금도, 런던의 어둠 속에는 여전히 리퍼의 비밀이 숨어있을지도 모릅니다.",
+          "startTime": 111500,
+          "endTime": 116000,
+          "sceneId": "scene-6",
+          "verified": true
+        }
+      ],
+      "format": "ass"
+    }
+  ],
+  "output": {
+    "mp4": "/output.mp4",
+    "status": "complete"
+  }
+}

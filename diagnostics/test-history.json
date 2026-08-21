@@ -1,0 +1,87 @@
+[
+  {
+    "test": "render-pipeline",
+    "attempt": 1,
+    "results": [
+      {
+        "stage": "node",
+        "status": "PASS",
+        "message": "Node.js installed",
+        "timestamp": "2026-08-09T21:01:20.134Z"
+      },
+      {
+        "stage": "ffmpeg",
+        "status": "BLOCKED",
+        "message": "FFmpeg not in PATH - checking @ffmpeg-installer",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-types",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-scriptAnalysis",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-script",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-scenes",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-visuals",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-audio",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "module-render",
+        "status": "PASS",
+        "message": "Found",
+        "timestamp": "2026-08-09T21:01:20.141Z"
+      },
+      {
+        "stage": "test-data",
+        "status": "PASS",
+        "message": "Test project created",
+        "timestamp": "2026-08-09T21:01:20.142Z"
+      },
+      {
+        "stage": "metadata-enrichment",
+        "status": "BLOCKED",
+        "message": "require is not defined",
+        "timestamp": "2026-08-09T21:01:20.142Z"
+      },
+      {
+        "stage": "jest-tests",
+        "status": "PASS",
+        "message": "All tests passed",
+        "timestamp": "2026-08-09T21:01:23.633Z"
+      },
+      {
+        "stage": "ffmpeg-config",
+        "status": "BLOCKED",
+        "message": "require is not defined",
+        "timestamp": "2026-08-09T21:01:23.633Z"
+      }
+    ],
+    "timestamp": "2026-08-09T21:01:23.633Z"
+  }
+]

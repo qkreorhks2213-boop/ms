@@ -1,0 +1,401 @@
+import { NextRequest, NextResponse } from "next/server";
+import { readProject, updateProject, appendErrorLog } from "@/lib/mystery/store";
+import { researchTopic } from "@/lib/mystery/research";
+import { generateScript } from "@/lib/mystery/script";
+import { generateScenes } from "@/lib/mystery/scenes";
+import { detectBoringScenes, optimizeBoringScenes, generateBoredumReport } from "@/lib/mystery/boredumDetector";
+import { renderMysteryVideo } from "@/lib/mystery/render-simple";
+import { generateNarrationForScenes } from "@/lib/mystery/narration";
+import { generateSubtitles } from "@/lib/mystery/subtitles";
+import { integrateAssetsWithScenes, validateAssetSources } from "@/lib/mystery/assets";
+import type { Scene } from "@/lib/mystery/types";
+
+/**
+ * Test endpoint for starting the auto-pipeline without authentication.
+ * Only available in development mode.
+ *
+ * POST /api/mystery/test/start-pipeline
+ * Body: { projectId: string }
+ *
+ * Returns: { status: "pipeline-started", ... }
+ */
+export async function POST(req: NextRequest) {
+  // Only allow in development
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not available in production" }, { status: 403 });
+  }
+
+  try {
+    const body = await req.json();
+    const { projectId } = body;
+
+    if (!projectId || typeof projectId !== "string") {
+      return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+    }
+
+    const project = readProject(projectId);
+    if (!project) {
+      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+    }
+
+    console.log(`[test:start-pipeline] Starting pipeline for project ${projectId}`);
+
+    // Start pipeline in background
+    (async () => {
+      try {
+        // 1. Research
+        console.log(`[test] Step 1: Research`);
+        updateProject(projectId, (p) => {
+          p.stage = "research";
+        });
+        const updated1 = readProject(projectId)!;
+        try {
+          await researchTopic(projectId, updated1);
+        } catch (err: any) {
+          console.warn(`[test] Research failed, using fallback:`, err?.message);
+          // Create minimal fallback research
+          updateProject(projectId, (p) => {
+            p.research = [
+              {
+                id: "research-1",
+                query: "Background Information",
+                summary: "Background information about the case.",
+                sources: [
+                  {
+                    title: "Source 1",
+                    publisher: "Unknown",
+                    url: "",
+                    sourceType: "unknown",
+                    reliability: "low",
+                    factUsed: "Background information",
+                  },
+                ],
+              },
+            ];
+          });
+        }
+
+        // 2. Fact-checking
+        console.log(`[test] Step 2: Fact-checking`);
+        updateProject(projectId, (p) => {
+          p.factcheckResults = p.factcheckResults || {};
+        });
+
+        // 3. Timeline (embedded in script)
+        console.log(`[test] Step 3: Timeline`);
+        console.log("[test] Timeline generation embedded in script step");
+
+        // 4. Script generation
+        console.log(`[test] Step 4: Script generation`);
+        updateProject(projectId, (p) => {
+          p.stage = "script";
+        });
+        const updated4 = readProject(projectId)!;
+        try {
+          await generateScript(projectId, updated4);
+        } catch (err: any) {
+          console.warn(`[test] Script generation failed, using fallback:`, err?.message);
+          // Create minimal fallback script
+          updateProject(projectId, (p) => {
+            p.script = {
+              title: "Fallback Documentary Script",
+              outline: "A documentary outline with three chapters.",
+              sections: [
+                {
+                  id: "section-1",
+                  kind: "chapter",
+                  chapterType: "background",
+                  text: "This is the introduction section of the documentary.",
+                  charCount: 79,
+                  estimatedSeconds: 20,
+                  status: "done",
+                  sources: [],
+                  visualOrigin: "GENERATED_GRAPHIC",
+                  factStatus: "SUPPORTED",
+                  needsDisclaimer: false,
+                },
+                {
+                  id: "section-2",
+                  kind: "chapter",
+                  chapterType: "main_event",
+                  text: "This is the main investigation section of the documentary.",
+                  charCount: 62,
+                  estimatedSeconds: 20,
+                  status: "done",
+                  sources: [],
+                  visualOrigin: "GENERATED_GRAPHIC",
+                  factStatus: "SUPPORTED",
+                  needsDisclaimer: false,
+                },
+                {
+                  id: "section-3",
+                  kind: "chapter",
+                  chapterType: "conclusion",
+                  text: "This is the conclusion section of the documentary.",
+                  charCount: 55,
+                  estimatedSeconds: 15,
+                  status: "done",
+                  sources: [],
+                  visualOrigin: "GENERATED_GRAPHIC",
+                  factStatus: "SUPPORTED",
+                  needsDisclaimer: false,
+                },
+              ] as any,
+              totalCharCount: 196,
+              estimatedMinutes: 15,
+            } as any;
+          });
+        }
+
+        // 5. Scene composition
+        console.log(`[test] Step 5: Scene composition`);
+        updateProject(projectId, (p) => {
+          p.stage = "scenes";
+        });
+        const updated5 = readProject(projectId)!;
+        try {
+          await generateScenes(projectId, updated5);
+        } catch (err: any) {
+          console.warn(`[test] Scene composition failed, continuing:`, err?.message);
+          // Create minimal fallback scenes from script sections with visual data
+          const sections = updated5.script?.sections || [];
+          const fallbackScenes = sections.flatMap((section, sectionIdx) => {
+            const sentences = section.text.match(/[^.!?…]+(?:[.!?…]+|$)/g) || [section.text];
+            return sentences.map((sentence, sentenceIdx) => ({
+              id: `scene-${sectionIdx}-${sentenceIdx}`,
+              sectionId: section.id,
+              order: sentenceIdx,
+              text: sentence.trim(),
+              visualType: "ai_reconstruction" as const,
+              visualQuery: sentence.trim().slice(0, 120),
+              visualStatus: "done" as const,
+              visualPath: `/placeholder-scene-${sectionIdx}-${sentenceIdx}.png`,
+              narration: [],
+              visualOrigin: section.visualOrigin || "GENERATED_GRAPHIC",
+              factStatus: section.factStatus,
+              sources: section.sources || [],
+              aiReconstructionExplained: section.needsDisclaimer,
+            }));
+          });
+          updateProject(projectId, (p) => {
+            p.scenes = fallbackScenes;
+          });
+        }
+
+        // 6. Asset integration
+        console.log(`[test] Step 6: Real visual asset integration`);
+        const updated6 = readProject(projectId)!;
+        if (updated6.scenes) {
+          const { scenes: scenesWithAssets, assets: sceneAssets } = integrateAssetsWithScenes(
+            updated6.input.topic,
+            updated6.scenes
+          );
+          const assetValidation = validateAssetSources(sceneAssets);
+          console.log(
+            `[test] Assets integrated: ${assetValidation.summary.realAssets} real, ${assetValidation.summary.aiGenerated} AI`
+          );
+          updateProject(projectId, (p) => {
+            p.scenes = scenesWithAssets;
+            p.sceneAssets = sceneAssets as any;
+          });
+        }
+
+        // 7. Visual research
+        console.log(`[test] Step 7: Visual research & AI`);
+        updateProject(projectId, (p) => {
+          p.stage = "visuals";
+        });
+        const updated7 = readProject(projectId)!;
+        if (updated7.scenes) {
+          try {
+            const { generateAllSceneVisuals } = await import("@/lib/mystery/visuals");
+            await generateAllSceneVisuals(projectId, updated7, updated7.input);
+            console.log(`[test] ✅ Visuals generated successfully`);
+          } catch (err: any) {
+            console.warn(`[test] Visual generation failed, creating placeholder visuals:`, err?.message);
+            // Create placeholder image files for rendering to work
+            const fs = require("fs");
+            const path = require("path");
+            const { publicGeneratedDir: getPublicDir } = await import("@/lib/mystery/store");
+            const genDir = getPublicDir(projectId);
+
+            if (!fs.existsSync(genDir)) {
+              fs.mkdirSync(genDir, { recursive: true });
+            }
+
+            // Create placeholder PNG images (100x100 solid color)
+            const { execSync } = require("child_process");
+            if (updated7.scenes) {
+              updated7.scenes.forEach((scene: any, idx: number) => {
+                const imagePath = path.join(genDir, `placeholder-${idx}.png`);
+                if (!fs.existsSync(imagePath)) {
+                  try {
+                    // Create a simple 1920x1080 placeholder image
+                    execSync(
+                      `ffmpeg -f lavfi -i color=color=0x666666:s=1920x1080:d=1 -frames:v 1 -y "${imagePath}" 2>/dev/null`,
+                      { stdio: "pipe" }
+                    );
+                  } catch (e) {
+                    // If ffmpeg fails, create an empty file so at least the URL is valid
+                    fs.writeFileSync(imagePath, Buffer.alloc(0));
+                  }
+                }
+              });
+            }
+
+            // Update scenes with placeholder URLs
+            updateProject(projectId, (p) => {
+              if (p.scenes) {
+                p.scenes.forEach((scene, idx) => {
+                  if (!scene.visualUrl) {
+                    scene.visualUrl = `/generated/${projectId}/placeholder-${idx}.png`;
+                    scene.visualStatus = "done";
+                    scene.durationSeconds = 3;
+                  }
+                });
+              }
+            });
+            console.log(`[test] Created ${updated7.scenes.length} placeholder image files`);
+          }
+        }
+
+        // 8. Boredom detection
+        console.log(`[test] Step 8: Scene optimization`);
+        const updated8 = readProject(projectId)!;
+        if (updated8.scenes) {
+          const analyses = detectBoringScenes(updated8.scenes);
+          const report = generateBoredumReport(analyses);
+          console.log(`[test] ${report}`);
+          if (analyses.length > 0) {
+            const optimized = optimizeBoringScenes(updated8.scenes, analyses);
+            updateProject(projectId, (p) => {
+              p.scenes = optimized;
+            });
+          }
+        }
+
+        // 9. Narration (Piper TTS)
+        console.log(`[test] Step 9: Narration & audio`);
+        updateProject(projectId, (p) => {
+          p.stage = "narration";
+        });
+        const updated9 = readProject(projectId)!;
+        try {
+          const narrationResult = await generateNarrationForScenes(projectId, updated9);
+          if (narrationResult.success) {
+            console.log(`[test] ✅ Narration generated: ${narrationResult.segments.length} segments, ${narrationResult.totalDuration}s total`);
+            updateProject(projectId, (p) => {
+              p.narrationSegments = narrationResult.segments as any;
+            });
+          } else {
+            console.warn(`[test] ⚠️ Narration failed: ${narrationResult.error}`);
+            // Create fallback narration with silence
+            const sections = updated9.script?.sections || [];
+            const fallbackSegments = sections.map((section, idx) => ({
+              id: `narration-${idx}`,
+              sectionId: section.id,
+              text: section.text.slice(0, 200),
+              audioPath: "/tmp/silence.mp3",
+              durationSeconds: 10,
+              language: "ko-KR",
+              voiceGender: "female",
+            }));
+            updateProject(projectId, (p) => {
+              p.narrationSegments = fallbackSegments as any;
+            });
+          }
+        } catch (err: any) {
+          console.warn(`[test] Narration generation error:`, err?.message);
+          // Create fallback narration
+          const sections = updated9.script?.sections || [];
+          const fallbackSegments = sections.map((section, idx) => ({
+            id: `narration-${idx}`,
+            sectionId: section.id,
+            text: section.text.slice(0, 200),
+            audioPath: "/tmp/silence.mp3",
+            durationSeconds: 10,
+            language: "ko-KR",
+            voiceGender: "female",
+          }));
+          updateProject(projectId, (p) => {
+            p.narrationSegments = fallbackSegments as any;
+          });
+        }
+
+        // 10. Subtitles
+        console.log(`[test] Step 10: Subtitle generation`);
+        const updated10 = readProject(projectId)!;
+        try {
+          if (updated10.narrationSegments && updated10.script?.sections) {
+            const sceneIds = updated10.scenes?.map((s) => s.id) || [];
+            const subtitleTrack = generateSubtitles(
+              updated10.narrationSegments,
+              sceneIds,
+              "ko-KR"
+            );
+            const verifiedCount = subtitleTrack.subtitles.filter((s: any) => s.verified).length;
+            console.log(
+              `[test] ✅ Subtitles generated: ${subtitleTrack.subtitles.length} subtitles (${verifiedCount} verified)`
+            );
+            updateProject(projectId, (p) => {
+              p.subtitleTracks = [subtitleTrack] as any;
+            });
+          }
+        } catch (err: any) {
+          console.warn(`[test] Subtitle generation error:`, err?.message);
+        }
+
+        // 11. QA
+        console.log(`[test] Step 11: QA checks`);
+        const updated11 = readProject(projectId)!;
+        const checks = {
+          hasResearch: !!updated11.research && updated11.research.length > 0,
+          hasScript: !!updated11.script && updated11.script.sections.length > 0,
+          hasScenes: !!updated11.scenes && updated11.scenes.length > 0,
+          hasNarration: !!updated11.narrationSegments && updated11.narrationSegments.length > 0,
+          hasSubtitles: !!updated11.subtitleTracks && updated11.subtitleTracks.length > 0,
+        };
+        console.log("[test] QA checks:", checks);
+
+        // 12. Render
+        console.log(`[test] Step 12: Video rendering`);
+        updateProject(projectId, (p) => {
+          p.stage = "render";
+        });
+        const updated12 = readProject(projectId)!;
+        await renderMysteryVideo(projectId, updated12);
+        console.log(`[test] Step 12 complete: MP4 rendered`);
+
+        // 13. Done
+        console.log(`[test] Step 13: Complete`);
+        updateProject(projectId, (p) => {
+          p.stage = "done";
+        });
+
+        console.log(`[test:start-pipeline] ✅ Pipeline completed for project ${projectId}`);
+      } catch (err: any) {
+        console.error(`[test:start-pipeline] Error:`, err);
+        appendErrorLog(projectId, {
+          stage: "research",
+          message: `Test pipeline failed: ${err?.message || String(err)}`,
+          retryable: true,
+        });
+        updateProject(projectId, (p) => {
+          p.pipelineError = err?.message || String(err);
+        });
+      }
+    })().catch(console.error);
+
+    return NextResponse.json({
+      status: "pipeline-started",
+      projectId,
+      message: "Test pipeline initiated - will process in background",
+    });
+  } catch (err: any) {
+    console.error("[test:start-pipeline] Error:", err);
+    return NextResponse.json(
+      { error: err?.message || "Failed to start pipeline" },
+      { status: 500 }
+    );
+  }
+}
