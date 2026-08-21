@@ -55,7 +55,7 @@ export function MysteryStudio({ project, onRefresh }: MysteryStudioProps) {
       setIsRunning(true);
       setError(null);
 
-      const response = await fetch(`/api/mystery/projects/${project.id}/auto-pipeline-v2/step`, {
+      const response = await fetch(`/api/mystery/projects/${project.id}/auto-pipeline-v2`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ stepId }),
